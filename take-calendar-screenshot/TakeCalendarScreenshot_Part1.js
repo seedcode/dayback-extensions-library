@@ -299,7 +299,7 @@ try {
 
             } else if ((inputs.hasOwnProperty('screenshotSizeOptions') && Object.keys(inputs.screenshotSizeOptions).length > 1) || inputs.screenshotAllowCustomSize) {
                 template = template + '<div id="_screenshot_pleaseWait" style="display: none;">' + progressBar + '</div>';
-                template = template + '<div id="_screenshot_options"><h4><div class="fa fa-camera" style="color: #5cb85c;"></div>&nbsp;&nbsp;Please Select Size:</h4><BR>';                
+                template = template + '<div id="_screenshot_options"><h4><div class="fa fa-camera" style="color: #5cb85c;"></div>&nbsp;&nbsp;Please Select Screenshot Size:</h4><BR>';                
 
                 if (inputs.hasOwnProperty('screenshotSizeOptions') && Object.entries(inputs.screenshotSizeOptions).length > 1) {
                     for (const [sizeName, sizeObj] of Object.entries(inputs.screenshotSizeOptions)) {
