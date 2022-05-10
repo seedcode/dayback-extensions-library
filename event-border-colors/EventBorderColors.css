@@ -1,0 +1,30 @@
+/* Event Borders Colors CSS v1.0 
+ *
+ * Sets Event Color by Custom Field Value. Please define 
+ * a list of CSS classes for each individual custom field 
+ * value. The example below creates 4 classes for the 
+ * custom field "Reminder Type". Each of the 4 values 
+ * defines a 5 pixel wide left border, and a border color
+ * that is distinct for each reminder type.
+ */
+ 
+ .reminderType_checkin_class {
+    border-left-color: rgb(0, 204, 255) !important;
+    border-left-width: 5px !important;
+  }
+  
+.reminderType_estimate_class {
+    border-left-color: green !important;
+    border-left-width: 5px !important;
+}
+
+.reminderType_troubleshoot_class {
+    border-left-color: orange !important;
+    border-left-width: 5px !important;
+}
+
+.reminderType_other_class {
+    border-left-color: darkblue !important;
+    border-left-width: 5px !important;
+}
+  
