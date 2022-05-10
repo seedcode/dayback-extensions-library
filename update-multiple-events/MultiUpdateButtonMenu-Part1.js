@@ -183,13 +183,11 @@ try {
 
     //----------- End Configuration --------------------  
 
-    // Multi Select Update Code base on Keycombo batch edit code app action
-    // https://github.com/seedcode/dayback-keycombo-batch-edit
-    // You should not need to edit below this line 
-    //
-    // Function takes a multiSelect object, and an object of changes to be
-    // applied to an event. You can supply any editable event variables that should
+    // Multi Select Update function takes a multiSelect object, and an object of changes
+    // to be applied to an event. You can supply any editable event variables that should
     // https://docs.dayback.com/article/124-action-objects-methods#editEvent
+    //
+    // You should not need to edit below this line.
 
     function updateEvents(multiSelect, changes) {
         var updatedEventCount = 0;
