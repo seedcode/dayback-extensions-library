@@ -1,0 +1,128 @@
+
+/* Create Tooltip CSS v1.0 */
+
+.tooltip.top .showTooltipRowOnBottom {
+    display: none;
+}
+
+.tooltip.top .showTooltipRowOnTop {
+    display: block; 
+}
+
+.tooltip.bottom .showTooltipRowOnTop {
+    display: none; 
+}
+
+.tooltip.bottom .showTooltipRowOnBottom {
+    display: block;
+}
+
+.customToolTip .toolTipHeader {
+    background: #4e5964 !important;
+    padding: 5px 5px 5px 5px;
+    text-align: center;
+    font-size: 14px;
+    color: white;
+    font-weight: 300 !important;
+    margin-top: 8px; 
+    margin-bottom: 8px;
+}
+.customToolTip .toolTipHeader:first-of-type {
+    margin-top: -5px !important;
+    margin-bottom: 8px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+
+.customToolTip .shiftUp {
+    margin-top: -5px !important;
+    margin-bottom: 8px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+
+.customToolTip .toolTipRow {
+    padding: 2px;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+.customToolTip .toolTipProgress {
+    padding: 2px;
+    padding-left: 10px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-right: 2px;
+}
+
+.customToolTip .toolTipProgress .progressText {
+    padding: 3px;
+    display: block;
+}
+.customToolTip .toolTipProgress .progress {
+    margin-top: 3px;
+    margin: 0px;
+    padding: 2px;
+    width: 100%;
+    background: #708090;
+    border: 1px solid #4e5964;
+    border-radius: 3px;
+    height: 15px;
+}
+
+.customToolTip .toolTipProgress .progress .progress__bar {
+    height: 100%;
+    width: 0%;
+    border-radius: 3px;
+    background-color: #2b5dcd;
+}
+
+.customToolTip .toolTipLabel {
+    text-align: right !important;
+    color: #B0C4DE;
+    padding-right: 0px;
+}
+
+.customToolTip .toolTipTextRow {
+    text-align: left !important;
+    padding: 2px;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+.customToolTip .toolTipContentRow {
+    text-align: left !important;
+    padding: 0px;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.customToolTip .textRight {
+    text-align: right !important;
+}
+
+.customToolTip .toolTipSeparator {
+    border-top: 1px solid #B0C4DE;
+    margin-bottom: 7px;
+    margin-top: 7px;
+}
+
+.customToolTip .toolTipValue img {
+    width: 100% !important;
+    max-width: 100%;
+    border-radius: 3px;
+    border: 1px solid #4e5964;
+}
+
+.customToolTip .tooltip-inner {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+    width: 200px;
+}
+
+/* End Custom Tooltip CSS */
