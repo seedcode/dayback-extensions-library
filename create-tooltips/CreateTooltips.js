@@ -709,8 +709,6 @@ function run() {
 
     content = content + "</div>";
 
-    console.log(tooltipOptions);
-
     var openTooltip = dbk.tooltip(content, tooltipOptions);
 
     return action.callbacks.confirm();
