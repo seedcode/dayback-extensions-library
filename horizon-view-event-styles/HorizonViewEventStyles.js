@@ -105,10 +105,20 @@ try {
                 'schedule': 'Installations',
                 'customEventStyle': 'diamonds_blue',
             },
-            'event_circles_blue': {
-                'schedule': 'Installations',
-                'customEventStyle': 'circles_blue',
-            },
+            'event_circles_blue': function(events) {
+
+                // Example filter function:
+                // ------------------------
+                //
+                // Filter for events in the 'Installations' calendar 
+                // with custom field 'customEventStyle' containing 
+                // value 'circles_blue'
+                
+                return events.filter(event => {
+                    return event.schedule.name == 'Installations' &&
+                            getCustomFieldValue(event, 'customEventStyle') == 'circles_blue'
+                });
+            }
         };
 
     //----------- Helper functions -------------------        
