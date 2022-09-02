@@ -1,8 +1,12 @@
+/* Navigate Calendar on Gesture 2.7 */
+
 /* Left Button */
 
 .calendar .dbkswn_container_left.active {
     visibility: visible;
     opacity: 1;  
+    pointer-events: auto;
+    transform: scale(1);
     top: 25% !important;
     height: 50%;
     transition: all 100ms ease-out; /* Tell browser to use a transition when background-color changed */
@@ -10,6 +14,8 @@
 .calendar .dbkswn_container_right.active {
     visibility: visible;
     opacity: 1; 
+    pointer-events: auto;
+    transform: scale(1);
     top: 25% !important; 
     height: 50%;
     transition: all 100ms ease-out; /* Tell browser to use a transition when background-color changed */
@@ -20,6 +26,8 @@
     visibility: none;
     position: absolute;
     opacity: 0; 
+    pointer-events: none;
+    transform: scale(0);
     background: #666;
     z-index: 2400;
     left: 35px;
@@ -70,6 +78,8 @@
     visibility: none;
     position: absolute;
     opacity: 0;
+    pointer-events: none;
+    transform: scale(0);
     background: #666;
     z-index: 2400;
     right: 38px;
@@ -119,3 +129,5 @@
 .mobile .calendar .dbkswn_container_right { right: 12px; }
 .mobile .calendar .dbkswn_container_left .dbkswn_btn_left { left: 37px; }
 .mobile .calendar .dbkswn_container_right .dbkswn_btn_right { left: 38px; }
+
+/* End Navigate Calendar on Gesture 2.7 */
