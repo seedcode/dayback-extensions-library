@@ -27,7 +27,8 @@ try {
   // Array of account emails for whom this action will run. Leave blank to allow the action to run for everyone.
   // Example: ['person@domain.com', 'someone@domain.com']
   
-  // options.restrictedToAccounts = ['kc@seedcode.com'];
+  // Enable track pad support. Default is set to off
+  options.trackpadSupport = false;
 
   // Timeout to detect trackpad
   options.trackpadTimeout = 200;
@@ -83,6 +84,7 @@ function run() {
 
   var calendarContainer = document.querySelector('.calendar');
   var headerContainer = document.getElementById('header');
+  
   // Register wheel and swipe handlers
     if (calendarContainer && !seedcodeCalendar.get('calendarOnWheel')) {
         calendarContainer.onwheel = function (e) {
@@ -90,10 +92,11 @@ function run() {
         // Directionality detection
         ySum += e.deltaY;
         xSum += e.deltaX;
-
         clearTimeout(holdTimeout);
         holdTimeout = setTimeout(function () {           
-            if (ySum == 0 || Math.abs(xSum) * .5 > Math.abs(ySum)) {
+
+            if ((options.trackpadSupport == true && ySum != 0 && Math.abs(xSum) * .5 > Math.abs(ySum)) || (options.trackpadSupport == false && ySum == 0)) {
+            
                 if (xSum < -1) {
                     document.getElementById('dbkswn_container_left').classList.toggle('active');
                     pageDate('back', 'wheel');              
