@@ -1,4 +1,4 @@
-// Multi Update Popup Menu - Part 1 v1.0
+// Multi Update Button Menu - Part 1 v1.1
 //
 // Purpose:
 // Adds a single button, multiple buttons, or container
@@ -35,12 +35,12 @@ try {
         // popover? If you want a taller popover, increase the number of
         // items in the list.
 
-        maxItemsInList: 7,
+        maxItemsInList: 5,
 
         // Define whether you would like to allow more than one status
         // for an event at the same time.
 
-        statusMultiSelect: true,
+        statusMultiSelect: false,
 
         // Define whether a user should be able to add or remove the
         // 'none' resource from an Event's resource list.
@@ -232,7 +232,8 @@ try {
                     <div class="buttonListDivider"/>
                     <div class="buttonList">
                         <div class="pad-large text-center">
-                            <button translate="" ng-click="popover.config.show = false;" class="btn btn-xs btn-secondary">Cancel</button> 
+                            <button id="clearMultiUpdateRequest" style="display: none; margin-right: 5px;" translate="" ng-click="popover.config.clearSelected();" class="btn btn-xs btn-secondary">Clear</button>
+                            <button translate="" style="margin-right: 5px;" ng-click="popover.config.show = false;" class="btn btn-xs btn-secondary">Cancel</button> 
                             <button disabled id="confirmMultiUpdateChanges" translate="" ng-click="popover.config.confirmMultiUpdateChanges();" class="btn btn-xs  btn-success dbk_button_success">Confirm</button>
                         </div>                    
                     </div>
@@ -259,6 +260,7 @@ try {
                 // Register functions
                 changePopoverTab: changePopoverTab,
                 confirmMultiUpdateChanges: confirmMultiUpdateChanges,
+                clearSelected: clearSelected,
                 closePopover: function () {
                     let closeButton = document.getElementById(
                         "_popoverCloseButton"
@@ -471,6 +473,41 @@ try {
                 summarizeChanges();
             }
 
+            function clearSelected() {
+
+                var tablist = [
+                    "setStatus",
+                    "setResources",
+                    "addResources",
+                    "removeResources"
+                ];
+
+                tablist.forEach((tab) => {
+
+                    var tabItems = document.getElementById("tab_" + tab);
+                    if (tabItems && tab == 'setStatus') {
+                        var selectedItems = tabItems.querySelectorAll(".item[data-item-selected='1']")
+                        selectedItems.forEach((item) => { toggleStatus(item); });
+                    } else if (tabItems) {
+                        var selectedItems = tabItems.querySelectorAll(".item[data-item-selected='1']")
+                        selectedItems.forEach((item) => { toggleResource(item); });
+                    }
+                });
+
+                var btn = document.getElementById('clearMultiUpdateRequest');
+                if (btn) {
+                    btn.style.display = 'none';
+                }
+                
+                var openFolders = document.querySelectorAll(".item.folderBackgroundColor.open");
+
+                if (openFolders && openFolders.length > 0) {
+                    openFolders.forEach((folder) => {
+                        folder.classList.remove('open');
+                    });
+                }
+            }
+
             function summarizeChanges() {
                 let summaryRow = document.querySelector(
                     ".multiUpdatePopup .summaryRow"
@@ -575,6 +612,11 @@ try {
 
                 if (html.length > 0) {
                     $(summaryRow).slideDown(400);
+
+                    var btn = document.getElementById('clearMultiUpdateRequest');
+                    if (btn) {
+                        btn.style.display = 'inline';
+                    }
                 } else {
                     $(summaryRow).slideUp(400);
                 }
@@ -1449,7 +1491,7 @@ try {
                         0,
                         3000
                     );
-
+                    
                     seedcodeCalendar.init("multiSelect", undefined);
                     return;
                 }
