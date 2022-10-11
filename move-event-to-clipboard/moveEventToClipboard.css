@@ -6,7 +6,7 @@
 }
 
 .moveToClipboardButton button:active {
-	  background-color: rgb(50, 118, 177);
+    background-color: rgb(50, 118, 177);
     color: white;
 }   
   
