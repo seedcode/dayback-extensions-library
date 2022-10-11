@@ -1,7 +1,17 @@
 /* Move Event to Cliboard v1.0 CSS */
 
+.moveToClipboardButton button {
+    background-color: rgb(50, 118, 177);
+    border-color: rgb(50, 118, 177);
+}
+
+.moveToClipboardButton button:active {
+	  background-color: rgb(50, 118, 177);
+    color: white;
+}   
+  
 .moveEventFromClipboardCursor {
-  cursor: copy;
+    cursor: copy;
 }
 
 .eventInClipboard {
