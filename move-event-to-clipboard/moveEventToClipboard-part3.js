@@ -39,6 +39,8 @@ function run() {
 
     // Get Event in clipboard
     var eventInClipboard = seedcodeCalendar.get('eventInClipboard');
+    var beforeMoveLocation = {};
+    var afterMoveLocation = {};
 
     // If we are pasting an event, run the moveEvent function, otherwise
     // confirm callback and allow standard event creation to take place
@@ -62,6 +64,8 @@ function run() {
         var old_event = eventInClipboard.event;
         var old_editEvent = eventInClipboard.editEvent;
         
+        console.log(old_event);
+
         // Set the changes object and revent object by cloning the
         // time of day. Get the difference in minutes or days and
         // apply that to a new moment object from the new start time
@@ -114,7 +118,12 @@ function run() {
         }
 
         action.preventAction = true;
+
+        // Get element's current on screen location
+        beforeMoveLocation = getOffset(old_event.eventID);
+
         // Update the original event with new start time
+
         dbk.updateEvent(
             old_event,
             changesObject,
@@ -174,6 +183,12 @@ function run() {
                 "<span translate>Undo</span>" +
                 '<span class="message-icon-separator" style="opacity: 0.8;"><i class="fa fa-lg fa-undo"></i></span>';                
 
+                // Get element's current on screen location
+
+                setTimeout(function() {
+                    beforeMoveLocation = getOffset(old_event.eventID);
+                }, 300);
+
                 helpers.showMessage(
                     revertMessage,
                     0,
@@ -184,24 +199,41 @@ function run() {
             }
         }
 
+        // Helper function to return the current on-screen DOM elemnet ID of an event by it's ID
+
+        function getDomIdByEventID(eventID) {
+            var clientEvents = seedcodeCalendar.get('element').fullCalendar('clientEvents');
+            var events = clientEvents.filter((event) => {
+                return event.eventID == eventID;
+            });
+            
+            return events && events.length > 0 ? events[0]._id : undefined;
+        }
+
         // Only redraw events if they are not shown after view change changes DOM element 
 
         function redrawEvents(eventID) {
             
             // Grab all displayed events
-            var clientEvents = seedcodeCalendar.get('element').fullCalendar('clientEvents');
-            var events = clientEvents.filter((event) => {
-                return event.eventID == eventID;
-            });
-        
+            var domID = getDomIdByEventID(eventID);
+
+
+            
             // If we have an event with that ID, check that it is is in the DOM, and if not, 
             // redraw events
 
-            if (events.length > 0) {
-                let domID = events[0]._id;
+            if (domID && domID !== undefined) {
+
+                // Get element's current on screen location
+                afterMoveLocation = getOffset(eventID);
+
+                let domLocationChanged = afterMoveLocation.top == beforeMoveLocation.top && afterMoveLocation.left == beforeMoveLocation.left ? false : true;
                 var e = document.querySelector('[data-id="' + domID + '"]');
+
                 if (!e || e === undefined) {
                     seedcodeCalendar.get('element').fullCalendar('refetchEvents');
+                } else if (!domLocationChanged) {
+                    e.remove();
                 }
             } else {
                 seedcodeCalendar.get('element').fullCalendar('refetchEvents');
@@ -273,6 +305,10 @@ function run() {
         function revertChanges(showError) {
             isUndo = true;
             action.preventAction = true;
+
+            // Get element's current on screen location
+            beforeMoveLocation = getOffset(old_event.eventID);
+
             dbk.updateEvent(
                 old_event,
                 revertObject,
@@ -283,6 +319,29 @@ function run() {
                     isUndo: true
                 }
             );
+        }
+
+        function getOffset(eventID) {
+            
+            var domID = getDomIdByEventID(eventID);
+            var domElement = document.querySelector('[data-id="' + domID + '"]');
+            
+            var offset;
+
+            if (!domElement) {
+                offset = { left: undefined, top: undefined };
+            } else {
+                var _x = 0;
+                var _y = 0;
+                while(domElement && !isNaN( domElement.offsetLeft ) && !isNaN( domElement.offsetTop ) ) {
+                    _x += domElement.offsetLeft - domElement.scrollLeft;
+                    _y += domElement.offsetTop - domElement.scrollTop;
+                    domElement = domElement.offsetParent;
+                }
+                offset = { top: _y, left: _x };
+            }
+
+            return offset;
         }
     }
 }
