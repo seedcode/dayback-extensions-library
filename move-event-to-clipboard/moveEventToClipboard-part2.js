@@ -43,8 +43,6 @@ function run() {
 
     if (eventInClipboard) {
       
-        console.log("WTF!!");
-
         utilities.showModal(
             'Move in progress',    
             'Cannot edit events while events are in clipboard. Clear your clipboard?',
