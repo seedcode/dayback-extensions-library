@@ -67,6 +67,8 @@ function run() {
             x[0].classList.add("moveEventFromClipboardCursor");
             x[0].style.cursor = 'copy';
         }, 10);
+        
+        registerViewDoubleClickListener();
     }
     
     // Function removes the CSS cursor to the current view
@@ -76,7 +78,53 @@ function run() {
             x[0].classList.remove("moveEventFromClipboardCursor");
             x[0].style.cursor = 'auto';
         }, 10);  
+
+        var view = document.querySelector('div.fc-view');
+           
+        if (view) {
+            view.removeEventListener('dblclick', overrideAddEventButton);
+        }        
     }
+
+    // Function overrides doubleclick Add Event button drawer and repaints Add Event button
+
+    function registerViewDoubleClickListener() {
+    
+        let retries = 0;
+        let maxReries = 200;
+        addListener();
+    
+        function addListener() {
+            retries++;
+            var view = document.querySelector('div.fc-view');
+           
+            if (view) {
+                view.addEventListener('dblclick', overrideAddEventButton);
+            } else if (retries < maxReries) {
+                setTimeout(addListener, 5);
+            }
+        }  
+    }
+
+    function overrideAddEventButton() {
+    
+        let retries = 0;
+        let maxReries = 200;
+        redrawButton();
+    
+        function redrawButton() {
+            retries++;
+    
+            var btn = document.querySelector('div.ng-popover button[ng-click="addEvent(newEvent)"]');
+            if (btn) {
+                btn.innerHTML = "Paste Event";
+                btn.style.backgroundColor = "rgb(50, 118, 177)";
+                btn.style.borderColor = "rgb(50, 118, 177)";
+            } else if (retries < maxReries) {
+                setTimeout(redrawButton, 5);
+            }
+        }  
+    }    
 }
 
 //----------- Run function wrapper and helpers - you shouldn’t need to edit below this line. -------------------
