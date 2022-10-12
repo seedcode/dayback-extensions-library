@@ -31,4 +31,9 @@
   color: #AAA !important;
 }
 
+.moveButton .btn {
+  background-color: rgb(50, 118, 177);
+  border-color: rgb(33, 72, 106);
+}
+
 /* End - Move Event to Cliboard v1.0 CSS */
