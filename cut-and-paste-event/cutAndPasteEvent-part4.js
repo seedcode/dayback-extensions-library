@@ -1,12 +1,12 @@
-// Move Event to Clipboard v1.0 - Part 4
+// Cut and Paste Event v1.0 - Part 4
 //
 // Purpose:
 // Adds an Event Button function which temporarily
 // moves the event to the clipboard. The clipboard
 // persists between view changes. Event can be
 // moved to its destination time and resource
-// allocation and respect move context. 
-// 
+// allocation and respect move context.
+//
 // https://dayback.com/listing/custom-action-menu/
 //
 // Action Type: Before Calendar Rendered
@@ -27,7 +27,6 @@ try {
     // Leave this set to 0 to avoid unexpected behavior
 
     options.runTimeout = 0;
-
 } catch (error) {
     reportError(error);
 }
@@ -36,86 +35,84 @@ try {
 
 // Action code goes inside this function
 function run() {
-
     // Register functions for managing cliboard and on screen cursor
     // changes between views.
-    
+
     seedcodeCalendar.init("addCursor", addCursor);
     seedcodeCalendar.init("removeCursor", removeCursor);
     seedcodeCalendar.init("clearClipboard", clearClipboard);
-    
+
     // Function clears the cliboard and removes the cursor
     function clearClipboard() {
-        
         seedcodeCalendar.init("eventInClipboard", undefined);
         removeCursor();
-    
+
         // Repaint the calendar to remove any events that show
         // the eventInCliboard CSS style
-        var repaintCalendar = document.querySelectorAll('.eventInClipboard');
+        var repaintCalendar = document.querySelectorAll(".eventInClipboard");
         if (repaintCalendar.length > 0) {
             repaintCalendar.forEach((e) => {
-                e.classList.remove('eventInClipboard');
+                e.classList.remove("eventInClipboard");
             });
         }
     }
-    
+
     // Function adds a CSS cursor to the current view
     function addCursor() {
-          setTimeout(function() {
+        setTimeout(function () {
             var x = document.getElementsByClassName("fc-view");
             x[0].classList.add("moveEventFromClipboardCursor");
-            x[0].style.cursor = 'copy';
+            x[0].style.cursor = "copy";
         }, 10);
-        
+
         registerViewDoubleClickListener();
     }
-    
+
     // Function removes the CSS cursor to the current view
     function removeCursor() {
-        setTimeout(function() {
+        setTimeout(function () {
             var x = document.getElementsByClassName("fc-view");
             x[0].classList.remove("moveEventFromClipboardCursor");
-            x[0].style.cursor = 'auto';
-        }, 10);  
+            x[0].style.cursor = "auto";
+        }, 10);
 
-        var view = document.querySelector('div.fc-view');
-           
+        var view = document.querySelector("div.fc-view");
+
         if (view) {
-            view.removeEventListener('dblclick', overrideAddEventButton);
-        }        
+            view.removeEventListener("dblclick", overrideAddEventButton);
+        }
     }
 
     // Function overrides doubleclick Add Event button drawer and repaints Add Event button
 
     function registerViewDoubleClickListener() {
-    
         let retries = 0;
         let maxReries = 200;
         addListener();
-    
+
         function addListener() {
             retries++;
-            var view = document.querySelector('div.fc-view');
-           
+            var view = document.querySelector("div.fc-view");
+
             if (view) {
-                view.addEventListener('dblclick', overrideAddEventButton);
+                view.addEventListener("dblclick", overrideAddEventButton);
             } else if (retries < maxReries) {
                 setTimeout(addListener, 5);
             }
-        }  
+        }
     }
 
     function overrideAddEventButton() {
-    
         let retries = 0;
         let maxReries = 200;
         redrawButton();
-    
+
         function redrawButton() {
             retries++;
-    
-            var btn = document.querySelector('div.ng-popover button[ng-click="addEvent(newEvent)"]');
+
+            var btn = document.querySelector(
+                'div.ng-popover button[ng-click="addEvent(newEvent)"]'
+            );
             if (btn) {
                 btn.innerHTML = "Paste Event";
                 btn.style.backgroundColor = "rgb(50, 118, 177)";
@@ -123,8 +120,8 @@ function run() {
             } else if (retries < maxReries) {
                 setTimeout(redrawButton, 5);
             }
-        }  
-    }    
+        }
+    }
 }
 
 //----------- Run function wrapper and helpers - you shouldn’t need to edit below this line. -------------------

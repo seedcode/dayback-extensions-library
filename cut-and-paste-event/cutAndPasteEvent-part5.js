@@ -1,12 +1,12 @@
-// Move Event to Clipboard v1.0 - Part 5
+// Cut and Paste Event v1.0 - Part 5
 //
 // Purpose:
 // Adds an Event Button function which temporarily
 // moves the event to the clipboard. The clipboard
 // persists between view changes. Event can be
 // moved to its destination time and resource
-// allocation and respect move context. 
-// 
+// allocation and respect move context.
+//
 // https://dayback.com/listing/custom-action-menu/
 //
 // Action Type: After Events Rendered
@@ -27,7 +27,6 @@ try {
     // Leave this set to 0 to avoid unexpected behavior
 
     options.runTimeout = 0;
-
 } catch (error) {
     reportError(error);
 }
@@ -36,17 +35,18 @@ try {
 
 // Action code goes inside this function
 function run() {
-
     // Grab current events in clipboard and apply the eventInClipboard CSS
     // style to the event with that eventID
 
-    let eventInClipboard = seedcodeCalendar.get('eventInClipboard');
-    if (!eventInClipboard || !eventInClipboard.hasOwnProperty('event')) {
+    let eventInClipboard = seedcodeCalendar.get("eventInClipboard");
+    if (!eventInClipboard || !eventInClipboard.hasOwnProperty("event")) {
         return;
     }
 
     let eventID = eventInClipboard.event.eventID;
-    var clientEvents = seedcodeCalendar.get('element').fullCalendar('clientEvents');
+    var clientEvents = seedcodeCalendar
+        .get("element")
+        .fullCalendar("clientEvents");
     var events = clientEvents.filter((event) => {
         return event.eventID == eventID;
     });
@@ -54,8 +54,8 @@ function run() {
     if (events.length > 0) {
         let domID = events[0]._id;
         var e = document.querySelector('[data-id="' + domID + '"]');
-        if (e && e !== undefined && !e.classList.contains('eventInClipboard')) {
-            e.classList.add('eventInClipboard');
+        if (e && e !== undefined && !e.classList.contains("eventInClipboard")) {
+            e.classList.add("eventInClipboard");
         }
     }
 }

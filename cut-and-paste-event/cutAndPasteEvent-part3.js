@@ -1,12 +1,12 @@
-// Move Event to Clipboard v1.0 - Part 3
+// Cut and Paste Event v1.0 - Part 3
 //
 // Purpose:
 // Adds an Event Button function which temporarily
 // moves the event to the clipboard. The clipboard
 // persists between view changes. Event can be
 // moved to its destination time and resource
-// allocation and respect move context. 
-// 
+// allocation and respect move context.
+//
 // https://dayback.com/listing/custom-action-menu/
 //
 // Action Type: On Event Create
@@ -27,7 +27,6 @@ try {
     // Leave this set to 0 to avoid unexpected behavior
 
     options.runTimeout = 0;
-
 } catch (error) {
     reportError(error);
 }
@@ -36,9 +35,8 @@ try {
 
 // Action code goes inside this function
 function run() {
-
     // Get Event in clipboard
-    var eventInClipboard = seedcodeCalendar.get('eventInClipboard');
+    var eventInClipboard = seedcodeCalendar.get("eventInClipboard");
     var beforeMoveLocation = {};
     var afterMoveLocation = {};
 
@@ -47,23 +45,22 @@ function run() {
     if (eventInClipboard) {
         moveEvent(eventInClipboard);
     } else {
-        action.callbacks.confirm(); 
+        action.callbacks.confirm();
     }
 
-    // Move event function 
+    // Move event function
     function moveEvent(eventInClipboard) {
-        
-        // Remove the cursor while we are adding the event 
+        // Remove the cursor while we are adding the event
         // Cancel callbacks so that we do not display the standard
         // Add Event popup
 
-        seedcodeCalendar.get('removeCursor')();
-        action.callbacks.cancel();    
+        seedcodeCalendar.get("removeCursor")();
+        action.callbacks.cancel();
 
         // Get the event we are moving
         var old_event = eventInClipboard.event;
         var old_editEvent = eventInClipboard.editEvent;
-        
+
         console.log(old_event);
 
         // Set the changes object and revent object by cloning the
@@ -81,39 +78,36 @@ function run() {
         };
 
         if (old_event.allDay == false) {
-
             // Get old event duration and apply to new event.
-            var minDiff = old_event.end.diff(old_event.start, 'minutes');
+            var minDiff = old_event.end.diff(old_event.start, "minutes");
 
             var end = editEvent.start.clone();
-            end.add(minDiff, 'minutes');
+            end.add(minDiff, "minutes");
 
             changesObject = {
                 start: editEvent.start.clone(),
                 end: end,
-                allDay: editEvent.allDay ? true : false,
+                allDay: editEvent.allDay ? true : false
             };
-
-        } else { 
-            
+        } else {
             // Get old event duration and apply to new event.
-            var minDiff = old_event.end.diff(old_event.start, 'days');
+            var minDiff = old_event.end.diff(old_event.start, "days");
             var end = editEvent.start.clone();
-            end.add(minDiff, 'days');
+            end.add(minDiff, "days");
 
             changesObject = {
                 start: editEvent.start.clone(),
                 end: end,
-                allDay: editEvent.allDay ? true : false,
+                allDay: editEvent.allDay ? true : false
             };
         }
-        
+
         // If we are creating an event in a resource column, a resource will be
-        // prepopulated in the editEvent object. Non-resource changes, the 
+        // prepopulated in the editEvent object. Non-resource changes, the
         // editEvent rource is set to none, and therefore should be applied
         // as it will erase exisitng resource list
 
-        if (editEvent.resource.length > 0 && editEvent.resource[0] != 'none') {
+        if (editEvent.resource.length > 0 && editEvent.resource[0] != "none") {
             changesObject.resource = editEvent.resource.slice();
         }
 
@@ -142,19 +136,18 @@ function run() {
             revertFunc,
             error
         ) {
-
             // Clear the clipboard and redraw on screen events
             // if a view change or prior filter change does not
             // show the event.
 
             action.preventAction = false;
             redrawEvents(old_event.eventID);
-            seedcodeCalendar.get('clearClipboard')();
+            seedcodeCalendar.get("clearClipboard")();
 
-            var updateError = '';
-            
+            var updateError = "";
+
             if (error) {
-                let updateError=
+                let updateError =
                     error.error && error.error.message
                         ? error.error.message
                         : error.message
@@ -165,27 +158,26 @@ function run() {
                         ? error.errorCode
                         : "Unknown";
 
-                    // One or more updates failed, revert all changes
-                    utilities.showModal(
-                        "Error during save",
-                        updateError + ". Changes will be reverted.",
-                        "continue",
-                        revertChanges
-                    );
+                // One or more updates failed, revert all changes
+                utilities.showModal(
+                    "Error during save",
+                    updateError + ". Changes will be reverted.",
+                    "continue",
+                    revertChanges
+                );
             } else {
-
                 var revertMessage =
-                '<span class="message-icon-separator success">' +
-                '<i class="fa fa-lg fa-check"></i>' +
-                "</span>" +
-                "<span translate>Event Moved</span>" +
-                '<span class="message-separator"> | </span>' +
-                "<span translate>Undo</span>" +
-                '<span class="message-icon-separator" style="opacity: 0.8;"><i class="fa fa-lg fa-undo"></i></span>';                
+                    '<span class="message-icon-separator success">' +
+                    '<i class="fa fa-lg fa-check"></i>' +
+                    "</span>" +
+                    "<span translate>Event Moved</span>" +
+                    '<span class="message-separator"> | </span>' +
+                    "<span translate>Undo</span>" +
+                    '<span class="message-icon-separator" style="opacity: 0.8;"><i class="fa fa-lg fa-undo"></i></span>';
 
                 // Get element's current on screen location
 
-                setTimeout(function() {
+                setTimeout(function () {
                     beforeMoveLocation = getOffset(old_event.eventID);
                 }, 300);
 
@@ -202,41 +194,45 @@ function run() {
         // Helper function to return the current on-screen DOM elemnet ID of an event by it's ID
 
         function getDomIdByEventID(eventID) {
-            var clientEvents = seedcodeCalendar.get('element').fullCalendar('clientEvents');
+            var clientEvents = seedcodeCalendar
+                .get("element")
+                .fullCalendar("clientEvents");
             var events = clientEvents.filter((event) => {
                 return event.eventID == eventID;
             });
-            
+
             return events && events.length > 0 ? events[0]._id : undefined;
         }
 
-        // Only redraw events if they are not shown after view change changes DOM element 
+        // Only redraw events if they are not shown after view change changes DOM element
 
         function redrawEvents(eventID) {
-            
             // Grab all displayed events
             var domID = getDomIdByEventID(eventID);
 
-
-            
-            // If we have an event with that ID, check that it is is in the DOM, and if not, 
+            // If we have an event with that ID, check that it is is in the DOM, and if not,
             // redraw events
 
             if (domID && domID !== undefined) {
-
                 // Get element's current on screen location
                 afterMoveLocation = getOffset(eventID);
 
-                let domLocationChanged = afterMoveLocation.top == beforeMoveLocation.top && afterMoveLocation.left == beforeMoveLocation.left ? false : true;
+                let domLocationChanged =
+                    afterMoveLocation.top == beforeMoveLocation.top &&
+                    afterMoveLocation.left == beforeMoveLocation.left
+                        ? false
+                        : true;
                 var e = document.querySelector('[data-id="' + domID + '"]');
 
                 if (!e || e === undefined) {
-                    seedcodeCalendar.get('element').fullCalendar('refetchEvents');
+                    seedcodeCalendar
+                        .get("element")
+                        .fullCalendar("refetchEvents");
                 } else if (!domLocationChanged) {
                     e.remove();
                 }
             } else {
-                seedcodeCalendar.get('element').fullCalendar('refetchEvents');
+                seedcodeCalendar.get("element").fullCalendar("refetchEvents");
             }
         }
 
@@ -256,12 +252,12 @@ function run() {
 
             // Clear cliboard and redraw events
             redrawEvents(old_event.eventID);
-            seedcodeCalendar.get('clearClipboard')();
+            seedcodeCalendar.get("clearClipboard")();
 
-            var updateError = '';
-            
+            var updateError = "";
+
             if (error) {
-                let updateError=
+                let updateError =
                     error.error && error.error.message
                         ? error.error.message
                         : error.message
@@ -272,29 +268,21 @@ function run() {
                         ? error.errorCode
                         : "Unknown";
 
-                    //One or more updates failed, revert all changes
-                    utilities.showModal(
-                        "Error during save",
-                        updateError +
-                            ". Changes will be reverted.",
-                        "continue",
-                        revertChanges
-                    );
-            } else {
-
-                var revertMessage =
-                '<span class="message-icon-separator success">' +
-                '<i class="fa fa-lg fa-check"></i>' +
-                "</span>" +
-                "<span translate>Event Restored to Original Location and Resource</span>";
-
-                helpers.showMessage(
-                    revertMessage,
-                    0,
-                    5000,
-                    null,
-                    null
+                //One or more updates failed, revert all changes
+                utilities.showModal(
+                    "Error during save",
+                    updateError + ". Changes will be reverted.",
+                    "continue",
+                    revertChanges
                 );
+            } else {
+                var revertMessage =
+                    '<span class="message-icon-separator success">' +
+                    '<i class="fa fa-lg fa-check"></i>' +
+                    "</span>" +
+                    "<span translate>Event Restored to Original Location and Resource</span>";
+
+                helpers.showMessage(revertMessage, 0, 5000, null, null);
             }
         }
 
@@ -309,23 +297,18 @@ function run() {
             // Get element's current on screen location
             beforeMoveLocation = getOffset(old_event.eventID);
 
-            dbk.updateEvent(
-                old_event,
-                revertObject,
-                null,
-                verifyUndone,
-                {
-                    isCustomAction: true,
-                    isUndo: true
-                }
-            );
+            dbk.updateEvent(old_event, revertObject, null, verifyUndone, {
+                isCustomAction: true,
+                isUndo: true
+            });
         }
 
         function getOffset(eventID) {
-            
             var domID = getDomIdByEventID(eventID);
-            var domElement = document.querySelector('[data-id="' + domID + '"]');
-            
+            var domElement = document.querySelector(
+                '[data-id="' + domID + '"]'
+            );
+
             var offset;
 
             if (!domElement) {
@@ -333,7 +316,11 @@ function run() {
             } else {
                 var _x = 0;
                 var _y = 0;
-                while(domElement && !isNaN( domElement.offsetLeft ) && !isNaN( domElement.offsetTop ) ) {
+                while (
+                    domElement &&
+                    !isNaN(domElement.offsetLeft) &&
+                    !isNaN(domElement.offsetTop)
+                ) {
                     _x += domElement.offsetLeft - domElement.scrollLeft;
                     _y += domElement.offsetTop - domElement.scrollTop;
                     domElement = domElement.offsetParent;

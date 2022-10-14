@@ -1,12 +1,12 @@
-// Move Event to Clipboard v1.0 - Part 6
+// Cut and Paste Event v1.0 - Part 6
 //
 // Purpose:
 // Adds an Event Button function which temporarily
 // moves the event to the clipboard. The clipboard
 // persists between view changes. Event can be
 // moved to its destination time and resource
-// allocation and respect move context. 
-// 
+// allocation and respect move context.
+//
 // https://dayback.com/listing/custom-action-menu/
 //
 // Action Type: After View Changed
@@ -27,7 +27,6 @@ try {
     // Leave this set to 0 to avoid unexpected behavior
 
     options.runTimeout = 0;
-
 } catch (error) {
     reportError(error);
 }
@@ -36,13 +35,12 @@ try {
 
 // Action code goes inside this function
 function run() {
-
     // Check if we have an event in cliboard after a view change and then
     // re-add the Move Event cursor
 
-    let eventInClipboard = seedcodeCalendar.get('eventInClipboard');
-    if (eventInClipboard && eventInClipboard.hasOwnProperty('event')) {
-		seedcodeCalendar.get("addCursor")();
+    let eventInClipboard = seedcodeCalendar.get("eventInClipboard");
+    if (eventInClipboard && eventInClipboard.hasOwnProperty("event")) {
+        seedcodeCalendar.get("addCursor")();
     }
 }
 

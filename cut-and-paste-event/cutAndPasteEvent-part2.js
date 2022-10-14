@@ -1,12 +1,12 @@
-// Move Event to Clipboard v1.0 - Part 2
+// Cut and Paste Event v1.0 - Part 2
 //
 // Purpose:
 // Adds an Event Button function which temporarily
 // moves the event to the clipboard. The clipboard
 // persists between view changes. Event can be
 // moved to its destination time and resource
-// allocation and respect move context. 
-// 
+// allocation and respect move context.
+//
 // https://dayback.com/listing/custom-action-menu/
 //
 // Action Type: On Event Click
@@ -26,7 +26,6 @@ try {
     // Leave this set to 0 to avoid unexpected behavior
 
     options.runTimeout = 0;
-
 } catch (error) {
     reportError(error);
 }
@@ -35,43 +34,35 @@ try {
 
 // Action code goes inside this function
 function run() {
-
     // Get event in cliboard
-    var eventInClipboard = seedcodeCalendar.get('eventInClipboard');
-    
+    var eventInClipboard = seedcodeCalendar.get("eventInClipboard");
+
     // Prevent click from opening Event Popover if we have a move in progress
 
     if (eventInClipboard) {
-      
         utilities.showModal(
-            'Move in progress',    
-            'Cannot edit events while events are in clipboard. Clear your clipboard?',
-            'Cancel', function () {
+            "Move in progress",
+            "Cannot edit events while events are in clipboard. Clear your clipboard?",
+            "Cancel",
+            function () {
                 action.callbacks.cancel();
             },
-            'Clear Clipboard', function() {
-    
+            "Clear Clipboard",
+            function () {
                 // Clear Clipbaord if the user wants to open the event
-                seedcodeCalendar.get('clearClipboard')();
-                
+                seedcodeCalendar.get("clearClipboard")();
+
                 var cancelMessage =
-                '<span class="message-icon-separator success">' +
-                '<i class="fa fa-lg fa-times" style="color: red;"></i>' +
-                "</span>" +
-                "<span translate>Event Move Cancelled</span>";                
-    
-                helpers.showMessage(
-                    cancelMessage,
-                    0,
-                    2000,
-                    null,
-                    null
-                );
-    
+                    '<span class="message-icon-separator success">' +
+                    '<i class="fa fa-lg fa-times" style="color: red;"></i>' +
+                    "</span>" +
+                    "<span translate>Event Move Cancelled</span>";
+
+                helpers.showMessage(cancelMessage, 0, 2000, null, null);
+
                 action.callbacks.confirm();
             }
         );
-    
     } else {
         action.callbacks.confirm();
     }

@@ -1,12 +1,12 @@
-// Move Event to Clipboard v1.0 - Part 1
+// Cut and Paste Event v1.0 - Part 1
 //
 // Purpose:
 // Adds an Event Button function which temporarily
 // moves the event to the clipboard. The clipboard
 // persists between view changes. Event can be
 // moved to its destination time and resource
-// allocation and respect move context. 
-// 
+// allocation and respect move context
+//
 // https://dayback.com/listing/custom-action-menu/
 //
 // Action Type: Button Action
@@ -29,6 +29,14 @@ try {
 
     options.runTimeout = 0;
 
+    // ----------- Button Configuration --------------------
+    //
+    // Button requires no special configuration. Please add
+    // an Event Button Action with the CSS class name
+    // configuration set to cutAndPasteButton.
+    //
+    // This will ensure that the CSS will be able to style
+    // the button appropritely.
 } catch (error) {
     reportError(error);
 }
@@ -37,7 +45,6 @@ try {
 
 // Action code goes inside this function
 function run() {
-
     // Get current event and editEvent objects
 
     var moveEvent = {
@@ -46,26 +53,26 @@ function run() {
     };
 
     // Store event in persistent cliboard
-    seedcodeCalendar.init('eventInClipboard', moveEvent);
+    seedcodeCalendar.init("eventInClipboard", moveEvent);
 
     // Gray out event pill by applying eventInClipboard CSS style
-    var e = document.querySelector('[data-id="' + event['_id'] + '"]');
-    e.classList.add('eventInClipboard');
+    var e = document.querySelector('[data-id="' + event["_id"] + '"]');
+    e.classList.add("eventInClipboard");
 
     // Enable the Add Event cursore for moving the event
-    seedcodeCalendar.get('addCursor')();
+    seedcodeCalendar.get("addCursor")();
 
-    // Set persistent toast message that lasts a whole day. if cancel button is clicked, will 
+    // Set persistent toast message that lasts a whole day. if cancel button is clicked, will
     utilities.showMessage(
         "Event is ready to be moved to a new date <div style='display: inline-block;padding: 4px; background-color: #555; padding-bottom: 5px; border: 1px solid #DDD; color: white;border-radius: 5px;margin: 4px;line-height: 1rem; padding-right: 10px;'><i class='fa fa-fw fa-times'></i> Cancel </div>",
-        100, 
+        100,
         86400000,
         "message",
-        seedcodeCalendar.get('clearClipboard')
+        seedcodeCalendar.get("clearClipboard")
     );
-        
-    // Close popovers 
-    $rootScope.$broadcast('closePopovers'); 
+
+    // Close popovers
+    $rootScope.$broadcast("closePopovers");
 }
 
 //----------- Run function wrapper and helpers - you shouldn’t need to edit below this line. -------------------

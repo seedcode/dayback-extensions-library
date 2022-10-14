@@ -1,15 +1,23 @@
-/* Move Event to Cliboard v1.0 CSS */
+/* Cut and Paste Event v1.0 CSS */
 
-.moveToClipboardButton button {
+.cutAndPasteButton button {
     background-color: rgb(50, 118, 177);
     border-color: rgb(50, 118, 177);
 }
 
-.moveToClipboardButton button:active {
+.cutAndPasteButton button:active {
     background-color: rgb(50, 118, 177);
     color: white;
 }   
-  
+
+.cutAndPasteButton button:before {
+  font-family: FontAwesome;
+  content: "\f0c4";
+  font-size: 13px;
+  color: white;
+  padding-right: 5px;
+}
+
 .moveEventFromClipboardCursor {
     cursor: copy;
 }
@@ -36,4 +44,4 @@
   border-color: rgb(33, 72, 106);
 }
 
-/* End - Move Event to Cliboard v1.0 CSS */
+/* End - Cut and Paste Event v1.0 CSS */
