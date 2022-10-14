@@ -5,17 +5,22 @@
     border-color: rgb(50, 118, 177);
 }
 
+.cutAndPasteButton button:hover {
+    background-color: rgb(48, 113, 169);
+    border-color: rgb(40, 94, 142);
+}
+
 .cutAndPasteButton button:active {
-    background-color: rgb(50, 118, 177);
+	background-color: rgb(50, 118, 177);
     color: white;
 }   
 
 .cutAndPasteButton button:before {
-  font-family: FontAwesome;
-  content: "\f0c4";
-  font-size: 13px;
-  color: white;
-  padding-right: 5px;
+    font-family: FontAwesome;
+    content: "\f0c4";
+    font-size: 13px;
+    color: white;
+    padding-right: 5px;   
 }
 
 .pasteEventFromClipboardCursor {
