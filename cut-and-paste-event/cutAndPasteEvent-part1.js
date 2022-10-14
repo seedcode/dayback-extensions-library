@@ -11,7 +11,7 @@
 //
 // Action Type: Button Action
 // Prevent Default Action: Yes
-// CSS Class: moveButton
+// CSS Class: cutAndPasteButton
 //
 // More info on button actions here:
 // https://docs.dayback.com/article/5-custom-actions

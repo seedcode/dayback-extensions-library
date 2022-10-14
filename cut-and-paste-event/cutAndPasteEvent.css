@@ -18,7 +18,7 @@
   padding-right: 5px;
 }
 
-.moveEventFromClipboardCursor {
+.pasteEventFromClipboardCursor {
     cursor: copy;
 }
 
@@ -39,9 +39,17 @@
   color: #AAA !important;
 }
 
-.moveButton .btn {
+.pasteEventButton {
   background-color: rgb(50, 118, 177);
   border-color: rgb(33, 72, 106);
+}
+
+.pasteEventButton:before {
+  font-family: FontAwesome;
+  content: "\f0ea";
+  font-size: 13px;
+  color: white;
+  padding-right: 5px;
 }
 
 /* End - Cut and Paste Event v1.0 CSS */

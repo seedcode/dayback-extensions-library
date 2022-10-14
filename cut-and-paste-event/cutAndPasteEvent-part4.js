@@ -61,7 +61,7 @@ function run() {
     function addCursor() {
         setTimeout(function () {
             var x = document.getElementsByClassName("fc-view");
-            x[0].classList.add("moveEventFromClipboardCursor");
+            x[0].classList.add("pasteEventFromClipboardCursor");
             x[0].style.cursor = "copy";
         }, 10);
 
@@ -72,7 +72,7 @@ function run() {
     function removeCursor() {
         setTimeout(function () {
             var x = document.getElementsByClassName("fc-view");
-            x[0].classList.remove("moveEventFromClipboardCursor");
+            x[0].classList.remove("pasteEventFromClipboardCursor");
             x[0].style.cursor = "auto";
         }, 10);
 
@@ -115,8 +115,7 @@ function run() {
             );
             if (btn) {
                 btn.innerHTML = "Paste Event";
-                btn.style.backgroundColor = "rgb(50, 118, 177)";
-                btn.style.borderColor = "rgb(50, 118, 177)";
+                btn.classList.add("pasteEventButton");
             } else if (retries < maxReries) {
                 setTimeout(redrawButton, 5);
             }
