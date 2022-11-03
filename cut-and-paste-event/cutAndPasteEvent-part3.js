@@ -61,8 +61,6 @@ function run() {
         var old_event = eventInClipboard.event;
         var old_editEvent = eventInClipboard.editEvent;
 
-        console.log(old_event);
-
         // Set the changes object and revent object by cloning the
         // time of day. Get the difference in minutes or days and
         // apply that to a new moment object from the new start time
@@ -77,28 +75,32 @@ function run() {
             resource: old_event.resource.slice()
         };
 
-        if (old_event.allDay == false) {
+        if (editEvent.allDay == false) {
             // Get old event duration and apply to new event.
             var minDiff = old_event.end.diff(old_event.start, "minutes");
-
+            var start = editEvent.start.clone();
             var end = editEvent.start.clone();
+        
             end.add(minDiff, "minutes");
-
+          
             changesObject = {
-                start: editEvent.start.clone(),
+                start: start,
                 end: end,
-                allDay: editEvent.allDay ? true : false
+                allDay: old_event.allDay 
             };
+
         } else {
-            // Get old event duration and apply to new event.
-            var minDiff = old_event.end.diff(old_event.start, "days");
-            var end = editEvent.start.clone();
+            var minDiff = Math.ceil(editEvent.start.diff(old_event.start, "days",true));
+            var start   = old_event.start.clone();
+            var end     = old_event.end.clone();
+            
+            start.add(minDiff, "days");
             end.add(minDiff, "days");
 
             changesObject = {
-                start: editEvent.start.clone(),
+                start: start,
                 end: end,
-                allDay: editEvent.allDay ? true : false
+                allDay: old_event.allDay
             };
         }
 
