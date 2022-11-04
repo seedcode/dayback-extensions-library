@@ -1,4 +1,4 @@
-// Take Calendar Screenshot - Part 1 v1.0
+// Take Calendar Screenshot - Part 1 v2.0
 //
 // Purpose:
 // Adds a button which allows you to take a screen shot of the
@@ -10,7 +10,7 @@
 // install Part 2 of the action, unmodified. 
 // 
 // Action Type: Before Calendar Rendered
-// Prevent Default Action: Yes
+// Prevent Default Action: No
 // 
 // More info on custom actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -115,21 +115,24 @@ try {
         // SCREENSHOT FUNCTION CONFIGURATION
         // -----------------------------------------------------------------------------
 
+        // If using FileMaker, specify the name of the filemaker script to run to save image to container
+
+        inputs.fileMakerSaveImageScript = 'Save Screenshot - DayBack';
+
         // Select default screenshot width and height in pixels
 
         inputs.screenshotSizeDefault = {
-             width: 1900,
+            width: 1900,
             height: 1200
         };
         
-        // Screenshot will be taken automatically after a 10 second
-        // delay. We load the larger Canvas in a hidden window which 
-        // requires that DayBack reload all the events for that 
-        // Canvas size. If you are using very large screen shot sizes
+        // Screenshot will be taken automatically after a 3 second delay.
+        // This is to allow the calendar to adjust the events.
+        // If you are using very large screen shot sizes
         // and you ahve a lot of events, you may need to increase
         // this timeout for your organization
         
-        options.screenshotTimeDelayInSeconds = 10;
+        options.screenshotTimeDelayInSeconds = 3;
         
         // Ask User for Custom Sizes
         // -------------------------
@@ -157,11 +160,15 @@ try {
         // in screen shots. This default list will hide the screen shot 
         // button and top navigation portion of the page
     
-        inputs.hideElementsInScreenshot = [ 'calendar-button-container', 'navigation', 'btn-toolbar' ];
+        inputs.hideElementsInScreenshot = [ 'modal', 'modal-backdrop', 'calendar-button-container', 'navigation', 'btn-toolbar', 'view-nav', 'calendar-nav',  ];
 
         //----------- Define Take Calendar Screenshot button action here -----------
 
         function customButtonAction_takeScreenshot() {
+                                
+            var calendarContainer = document.getElementById('calendar-container');
+            var calendarScroll = document.querySelector('.calendar-scroll');
+            var autoHeight = true;
 
             // Define Screen Shot Selector Pop-over
             var config = {
@@ -170,7 +177,11 @@ try {
                 destroy: true,
                 show: true,
                 width: 650,
-                makeImageFunction: makeImage
+                makeImageFunction: makeImage,
+                setAutoHeightFunction: function(input) {
+                    autoHeight = input;
+                },
+                autoHeight: autoHeight,
             };
 
             // Defile progress Counter 
@@ -192,7 +203,12 @@ try {
 
             // Define makeImage function that will be triggered form the popover
             function makeImage(width, height, makeCustomSize = false) {
-                
+
+                // Set height of screenshot automatically
+                if (autoHeight) {
+                    height = calendarScroll.scrollHeight + calendarScroll.getBoundingClientRect().top;
+                }
+
                 // Very screen shot and determine valid size ranges for canvas
                 if (makeCustomSize == true) {
                    var wObj = document.getElementById('_screenShot_width');
@@ -216,73 +232,90 @@ try {
                     document.getElementById('_screenshot_pleaseWait').style.display = 'block';             
                 }
 
-                // Check sidebar visibily, and ensure iframe visibility is off
+                // Check sidebar visibily
                 var sidebarIsVisible = false;
                 var sidebar = document.getElementsByClassName("sidebar-toggle");
 
                 if (sidebar && sidebar.length > 0) {   
-                    var style = window ? window.getComputedStyle(sidebar[0]) : parent.window.getComputedStyle(sidebar[0]);
+                    var style = getComputedStyle(sidebar[0]);
                     sidebarIsVisible = style.display === 'none' ? false : true;
                 }
 
-                // Open iframe after set interval
-                var offscreenTopOffset = (parent.window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight) - 10;
-                var iframe = document.createElement('iframe');
-                iframe.id = 'dbk_screenshotIframe';
-                iframe.width = width + 'px';
-                iframe.height = height + 'px';
-                iframe.style.zIndex = '1000';
-                iframe.style.background = 'white';
-                iframe.style.position = 'absolute';
-                iframe.style.top = offscreenTopOffset + 'px';
-
                 if (sidebarIsVisible) {
-                    iframe.src = 'https://app.dayback.com/#/?sidebarShow=false';
-                } else {
-                    iframe.src = 'https://app.dayback.com/#/';
+                    location.hash = '#/?sidebarShow=false';
                 }
-    
-                document.body.appendChild(iframe);
+
+                //Adjust current calendar size
+                document.body.style.width = width + 'px';
+                document.body.style.height = height + 'px';
+                calendarContainer.style.width = width + 'px';
+                calendarContainer.style.height = height + 'px';
+                dbk.resetResources();
+
+                //Center the modal                
+                document.querySelector('.modal-dialog').style.marginLeft = ((innerWidth - 650) / 2) + 'px'
+
+                //Hide the calendar scroll bar
+                if (calendarScroll){
+                    calendarScroll.style.overflow = 'hidden';
+                }
+
 
                 // Start progress countdown and run screenshot function when countdown ends
                 progressCountdown(0, options.screenshotTimeDelayInSeconds, '_pageBeginCountdown', '_pageBeginCountdownText').then(value => {
 
-                    // Hide any on screen elements that we do not want in a screenshot
-                    if (inputs.hasOwnProperty('hideElementsInScreenshot') && inputs.hideElementsInScreenshot.length > 0) {
-                        for ( var i in inputs.hideElementsInScreenshot ) { 
-                            var css = iframe.contentWindow.document.getElementsByClassName(inputs.hideElementsInScreenshot[i]);
-                            if (css && css.length > 0) { css[0].style.display = 'none'; }
-                        }
-                    }
-
                     // Take canvas screenshot
-                    html2canvas(iframe.contentWindow.document.body)
-                    .then(canvas => {
-                        const image = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream')
-                        const a = document.createElement('a');
-                        a.setAttribute('download', 'dayback.png');
-                        a.setAttribute('href', image);
-                        var c = document.getElementById('dbk_screenshotIframe');
-                        document.body.removeChild(c);
+                    html2canvas(calendarContainer, {width: width, height: height, ignoreElements: ignoreElementsFunction}).then(function(canvas) {
+                        const image = canvas.toDataURL('image/png');
 
-                        a.click();
+                        // Download the image or send to FileMaker script
+                        if (utilities.getDBKPlatform() === 'dbkfmjs'){
+                            dbk.performFileMakerScript(inputs.fileMakerSaveImageScript, image.split(',')[1]);
+                        } else {
+                            const stream = image.replace('image/png', 'image/octet-stream')
+                            const a = document.createElement('a');
+                            a.setAttribute('download', 'dayback.png');
+                            a.setAttribute('href', stream);
+                            a.click();
+                        }
                         canvas.remove();
+                        
+                        // Close popover
+                        document.getElementById('_popoverCloseButton').click();
 
-                        // Reset sidebar visibility in current window if we switched it off in the canvas
+                        // Reset sidebar visibility if we switched it off in the canvas
                         if (sidebarIsVisible) {
                             location.hash = '#/?sidebarShow=true';
                         }
 
-                        // Close popover
-                        document.getElementById('_popoverCloseButton').click();                    
+                        // Reset document width and height
+                        document.body.style.width = null;
+                        document.body.style.height = null;
+                        calendarContainer.style.width = null;
+                        calendarContainer.style.height = null;
+                        dbk.resetResources();
+
+                        // Reset the calendar scroll bar
+                        if (calendarScroll){
+                            calendarScroll.style.overflow = null;
+                        }
                     });
+                    
+
+                    function ignoreElementsFunction(element){
+                        for (var i = 0; i < inputs.hideElementsInScreenshot.length; i++) {
+                            if (element.classList.contains(inputs.hideElementsInScreenshot[i])) {
+                                return true;
+                            }
+                        }
+                    }
                 });
             }
             
             var template = '<div style="background: rgba(0,0,0,0.75); color: white;">' + '<div class="pad-large text-center"><a id="_popoverCloseButton" ng-click="popover.config.show = false;" style="float: right; cursor: pointer; color: white; font-size: 1.5rem;"><span class="fa fa-times"></span></a>';
             var progressBar = '<h4><div class="fa fa-spinner fa-spin" style="color: #5cb85c;"></div>&nbsp;&nbsp;Please Wait ...</h4><BR>' +
             '<progress value="0" max="' + options.screenshotTimeDelayInSeconds + '" id="_pageBeginCountdown"></progress> ' +
-            '<p> Downloading in <span id="_pageBeginCountdownText">' + options.screenshotTimeDelayInSeconds + ' </span> seconds</p> ';
+            '<p> Taking screenshot in <span id="_pageBeginCountdownText">' + options.screenshotTimeDelayInSeconds + ' </span> seconds</p> ';
 
             // If we have no size options defined, screenshots are automatic
             if (inputs.screenshotSizeDefault.width  > 0 && 
@@ -314,9 +347,11 @@ try {
                     template = template + 
                     ' <input id="_screenShot_width"  type="number" style="color: black; width: 55px;" SIZE=5 value="' + inputs.screenshotSizeDefault.width + '"> x ' +
                     ' <input id="_screenShot_height" type="number" style="color: black; width: 55px;" SIZE=5 value="' + inputs.screenshotSizeDefault.height + '"> ' +
-                    ' <button translate ng-click="popover.config.makeImageFunction(document.getElementById(\'_screenShot_width\').value, document.getElementById(\'_screenShot_height\').value, true);" class="btn btn-xs btn-success" style="margin: 5px;">Make Custom Size</button><BR><BR>';
+                    ' <button translate ng-click="popover.config.makeImageFunction(document.getElementById(\'_screenShot_width\').value, document.getElementById(\'_screenShot_height\').value, true);"' +
+                    ' class="btn btn-xs btn-success" style="margin: 5px;">Make Custom Size</button><BR><BR>';
                 }
 
+                template = template + '<input type="checkbox" ng-checked="true" id="_screenShot_autoHeight" ng-model="popover.config.autoHeight" ng-change="popover.config.setAutoHeightFunction(popover.config.autoHeight);" style="margin: 5px;">&nbsp;&nbsp;Automatically Adjust Height<BR><BR>';
                 template = template + '</div>';
 
             } else {
@@ -354,9 +389,6 @@ function run() {
 
     // Create the button drawer while checking CSS parent element load status
     createButtonDrawer();
-
-    // Once all is loaded, confirm callback and run other functions configured for this handler
-    return confirmCallback();
 
     // Handle creation of button
     function createButtonDrawer() {
