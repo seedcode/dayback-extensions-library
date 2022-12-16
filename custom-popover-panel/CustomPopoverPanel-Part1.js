@@ -356,12 +356,12 @@ try {
             className: "customPopoverPanelDrawer",
             autoOpen: true,
             restriction: function () {
-                // Check that Custom field Reminder Type is set to "Project"
-                const reminderType = getCustomFieldValue("reminderType");
+                // Check that Custom field Panel Type is set to "Project"
+                const panelType = getCustomFieldValue("panelType");
                 return (
                     editEvent.schedule.name == "Clinic Schedule" ||
-                    (Array.isArray(reminderType) &&
-                    reminderType.includes("Project")
+                    (Array.isArray(panelType) &&
+                    panelType.includes("Project")
                         ? true
                         : false)
                 );
@@ -516,7 +516,7 @@ try {
             className: "customPopoverPanelDrawer",
             autoOpen: false,
             restriction: {
-                reminderType: "Check-in"
+                panelType: "Check-in"
             },
             rows: [
                 {
@@ -646,7 +646,7 @@ try {
             className: "customPopoverPanelDrawer",
             autoOpen: true,
             restriction: {
-                reminderType: "Planning"
+                panelType: "Planning"
             },
             rows: [
                 {
