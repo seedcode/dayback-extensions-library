@@ -1,13 +1,16 @@
 // Advanced Resource Filters - v1.0
 
 // Purpose:
+
 // Creates toggle buttons and multi-select boxes
 // of grouped resource tag attributes. Relies on
 // the Mutation Observer Code Library to modify
 // the sidebar. Please download and install
 // this library before use.
 
-// Co-requisite: Mutation Observer Library v1.0
+// Co-requisite: Mutation Observer Library 
+
+// Please download and install:
 // https://github.com/seedcode/dayback-extensions-library/blob/main/dayback-mutation-observer/
 
 // Action Type: Before Calendar Rendered
@@ -32,6 +35,11 @@ try {
     // Set to false if you wish to keep DayBack's default behavior
 
     inputs.resourceFiltersOnTop = true;
+
+    // Configure whether Calendar should be grayed out if no resources
+    // matched criteria
+
+    inputs.noMatchFadesCalendar = true;
 
     // Tag Multi-Select Groups
     // -----------------------
@@ -191,6 +199,7 @@ try {
     };
 
     //----------- End Configuration -------------------
+    
 } catch (error) {
     reportError(error);
 }
@@ -201,14 +210,49 @@ try {
 function run() {
     var fullTagList = [];
 
+    var config = seedcodeCalendar.get('config');
+    var calendarDiv = document.querySelector('.calendar');
+    
     // Start New Observer
 
-    seedcodeCalendar.get("dbkObserver").new({
+    var observer = seedcodeCalendar.get("dbkObserver");
+
+    if (!observer) {
+        reportError({ message: "<span style='color: red'>This App Action Requires that you install the Mutation Observer Module. Please see App Action comments for further detail.</span>" });
+        return action.callbacks.confirm();
+    }
+
+    observer.new({
         name: "modifySidebar",
         watch: document.getElementById("sidebar"),
         until: "#sidebar .filters-popover-container resources-filter .filters-resource .header-block",
         then: injectCustomCode
     });
+
+    if (inputs.noMatchFadesCalendar) {
+        observer.new({
+            name: "calendarGrayscaler",
+            watch: document.getElementById("sidebar"),
+            until: "#sidebar .filters-popover-container resources-filter .filters-resource",
+            then: function(observer) {
+                let recList = document.querySelector(".calendarList.resource-list");
+                let msg = document.querySelector('.message-dialog.message-show');
+
+                if (!recList || !recList.hasChildNodes()) {
+                    calendarDiv.classList.add('grayscale');
+                    if (!msg) {
+                        helpers.showMessage("No Resources Match Your Filter", 0, 1000000);
+                    }
+                } else if (calendarDiv.classList.contains('grayscale')) {
+                    calendarDiv.classList.remove('grayscale');
+                    let msg = document.querySelector('.message-dialog.message-show');
+                    if (msg) {
+                        msg.parentElement.removeChild(msg);f
+                    }
+                }
+            }
+        });
+    }
 
     action.callbacks.confirm();
 
@@ -313,94 +357,98 @@ function run() {
         let tagContainer = document.createElement("DIV");
         tagContainer.classList = "tagContainer";
 
-        // Add Tag multiselects
-
-        Object.keys(inputs.tagGroups).forEach((tagGroupName) => {
-            let group = inputs.tagGroups[tagGroupName];
-
-            let tagGroupDiv = document.createElement("DIV");
-            let label = document.createElement("DIV");
-            let inputGroupDiv = document.createElement("DIV");
-            let selectWrapperDiv = document.createElement("DIV");
-            let selectBox = document.createElement("SELECT");
-
-            tagGroupDiv.classList = "tagGroup";
-            label.classList = "tagGroupLabel";
-            label.innerText = group.groupname;
-            inputGroupDiv.classList = "input-group";
-            selectWrapperDiv.classList = "custom-select";
-
-            selectBox.dataset.tagfiltergroup = tagGroupName;
-            selectBox.multiple = true;
-
-            let oOption = document.createElement("OPTION");
-            oOption.value = "";
-            oOption.innerText = group.boxtitle;
-            selectBox.appendChild(oOption);
-
-            Object.keys(group.tags).forEach((tagName) => {
-                fullTagList.push(tagName);
-                let filter = group.tags[tagName];
-                let oOption = document.createElement("OPTION");
-                oOption.value = tagName;
-                oOption.innerText = filter.name ? filter.name : tagName;
-                oOption.dataset.tagfilter = 1;
-                oOption.dataset.tagfiltername = tagName;
-                oOption.dataset.tagfilterstatus = 0;
-                oOption.dataset.tagfiltergroup = tagGroupName;
-                selectBox.appendChild(oOption);
-            });
-
-            selectWrapperDiv.appendChild(selectBox);
-            inputGroupDiv.appendChild(selectWrapperDiv);
-            tagGroupDiv.appendChild(label);
-            tagGroupDiv.appendChild(inputGroupDiv);
-
-            // Add to filter list
-            tagContainer.appendChild(tagGroupDiv);
-        });
-
         // Add individual Tag Pills
 
-        Object.keys(inputs.tagFilters).forEach((tag) => {
-            fullTagList.push(tag);
-            let filter = inputs.tagFilters[tag];
-            let tagSpan = document.createElement("SPAN");
-            let tagContent = document.createElement("SPAN");
+        if (inputs.tagFilters) {
+            Object.keys(inputs.tagFilters).forEach((tag) => {
+                fullTagList.push(tag);
+                let filter = inputs.tagFilters[tag];
+                let tagSpan = document.createElement("SPAN");
+                let tagContent = document.createElement("SPAN");
 
-            tagSpan.classList = "tag tag-" + filter.class;
-            tagSpan.style.backgroundColor = filter.color;
-            tagSpan.dataset.tagfilter = 1;
-            tagSpan.dataset.tagfiltername = tag;
-            tagSpan.dataset.tagfilterstatus = 0;
-            tagContent.classList = "tag-content";
+                tagSpan.classList = "tag tag-" + filter.class;
+                tagSpan.style.backgroundColor = filter.color;
+                tagSpan.dataset.tagfilter = 1;
+                tagSpan.dataset.tagfiltername = tag;
+                tagSpan.dataset.tagfilterstatus = 0;
+                tagContent.classList = "tag-content";
 
-            if (filter.hasOwnProperty("icon")) {
-                let i;
-                if (filter.icon.match(/^http/)) {
-                    i = document.createElement("img");
-                    i.src = filter.icon;
-                } else {
-                    i = document.createElement("I");
-                    i.classList = "fa " + filter.icon;
-                    i.style.color = filter.iconColor;
+                if (filter.hasOwnProperty("icon")) {
+                    let i;
+                    if (filter.icon.match(/^http/)) {
+                        i = document.createElement("img");
+                        i.src = filter.icon;
+                    } else {
+                        i = document.createElement("I");
+                        i.classList = "fa " + filter.icon;
+                        i.style.color = filter.iconColor;
+                    }
+                    tagContent.appendChild(i);
                 }
-                tagContent.appendChild(i);
-            }
 
-            let tn = document.createTextNode(" " + tag);
-            tagContent.appendChild(tn);
-            tagSpan.appendChild(tagContent);
-            tagSpan.onclick = function () {
-                toggleFilter(tagSpan);
-            };
+                let tn = document.createTextNode(" " + tag);
+                tagContent.appendChild(tn);
+                tagSpan.appendChild(tagContent);
+                tagSpan.onclick = function () {
+                    toggleFilter(tagSpan);
+                };
 
-            // Add to filter list
-            tagContainer.appendChild(tagSpan);
-        });
+                // Add to filter list
+                tagContainer.appendChild(tagSpan);
+            });
 
-        div.appendChild(tagContainer);
-        container.appendChild(div);
+            div.appendChild(tagContainer);
+            container.appendChild(div);                
+        }
+
+        // Add Tag multiselects
+
+        if (inputs.tagGroups) {
+            Object.keys(inputs.tagGroups).forEach((tagGroupName) => {
+                let group = inputs.tagGroups[tagGroupName];
+
+                let tagGroupDiv = document.createElement("DIV");
+                let label = document.createElement("DIV");
+                let inputGroupDiv = document.createElement("DIV");
+                let selectWrapperDiv = document.createElement("DIV");
+                let selectBox = document.createElement("SELECT");
+
+                tagGroupDiv.classList = "tagGroup";
+                label.classList = "tagGroupLabel";
+                label.innerText = group.groupname;
+                inputGroupDiv.classList = "input-group";
+                selectWrapperDiv.classList = "custom-select";
+
+                selectBox.dataset.tagfiltergroup = tagGroupName;
+                selectBox.multiple = true;
+
+                let oOption = document.createElement("OPTION");
+                oOption.value = "";
+                oOption.innerText = group.boxtitle;
+                selectBox.appendChild(oOption);
+
+                Object.keys(group.tags).forEach((tagName) => {
+                    fullTagList.push(tagName);
+                    let filter = group.tags[tagName];
+                    let oOption = document.createElement("OPTION");
+                    oOption.value = tagName;
+                    oOption.innerText = filter.name ? filter.name : tagName;
+                    oOption.dataset.tagfilter = 1;
+                    oOption.dataset.tagfiltername = tagName;
+                    oOption.dataset.tagfilterstatus = 0;
+                    oOption.dataset.tagfiltergroup = tagGroupName;
+                    selectBox.appendChild(oOption);
+                });
+
+                selectWrapperDiv.appendChild(selectBox);
+                inputGroupDiv.appendChild(selectWrapperDiv);
+                tagGroupDiv.appendChild(label);
+                tagGroupDiv.appendChild(inputGroupDiv);
+
+                // Add to filter list
+                tagContainer.appendChild(tagGroupDiv);
+            });
+        }
 
         toggleTagStyles();
 
