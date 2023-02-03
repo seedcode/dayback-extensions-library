@@ -509,9 +509,9 @@ function run() {
     }
     
     function encodeHTMLEntities(s) {
-        return s.replace(/\</, '&lt;').replace('/>, &gt;').replace(/[\u00A0-\u017e\u0180-\u9999]/gim, function(i) {
-            return '&#' + i.charCodeAt(0) + ';';
-        });
+        let textArea = document.createElement('textarea');
+        textArea.innerText = s;
+        return textArea.innerHTML;
     }
     
 }
