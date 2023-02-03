@@ -207,7 +207,7 @@ function run() {
                         div.classList = "eventNotes empty";
                     }
     
-                    if (notesText != "") {
+                    if (notesText != "" && notesText != "null" && notesText != "undefined") {
                         i.style.setProperty("--background", inputs.iconColorWithNote);
                         i.style.filter = "brightness(150%) !important";
                     } else if (inputs.isHorizonView && inputs.horizonIconColorWithoutNote != '') {
