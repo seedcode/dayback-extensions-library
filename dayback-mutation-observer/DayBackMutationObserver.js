@@ -55,9 +55,9 @@ try {
                                 // the same name's observer. Can be used in
                                 // place of stop
 
-        observer.restart();     // Restarts observtion of the same node, if 
+        observer.restart();     // Restarts observation of the same node, if 
                                 // you expect your injects to go away, and they
-                                // need to be pluged in each time the node is changed
+                                // need to be plugged in each time the node is changed
 
         // You also have access to the entire node tree and the last
         // mutation that returned true
@@ -105,7 +105,7 @@ try {
     observer.restart()
     observer.destroy()
 
-    observer.foundNode      // A reference to the querySelector value if you used one
+    observer.foundNode      // A reference to the node element matching your querySelector, if you used one
     observer.foundOnStart   // True if we did not need to start observer, as node was present
     observer.lastMutation   // Last mutation that triggered your custom code function
     observer.mutationList   // The full list of node changes that trigged the lastMutation
@@ -115,7 +115,7 @@ try {
     Configuration Options:
     ----------------------
 
-    mame: "uniqueName"
+    name: "uniqueName"
 
         A unique short string identifying the observer. 
         Prevents collision if app actions start multiple observers
@@ -128,23 +128,23 @@ try {
     until: conditionCheck() or querySelector string 
 
         You can specify a function that checks whether the mutation matches
-        a truth condition, such as the modification of a even, or editEvent 
+        a truth condition, such as the modification of an event or editEvent 
         value, or you can use a simple querySelector string to identify
-        if a node has been build (probably the most common usage)
+        if a node has been built (probably the most common usage)
 
     then: functionToRun
 
         The function will be passed the observer object configuration collection
-        as well as stop/start/restart/destroy functons as well as the
+        including stop/start/restart/destroy functions as well as the
         last matched mutation, and mutation observer object itself.
-        Details on this collection provideded later
+        Details on this collection provided later
 
     Optional Parameters:
     --------------------
 
-    The following prameters provide advnced flow control for your mutation
+    The following prameters provide advanced flow control for your mutation
     observer. All of these have defaults, so you may not need to use these
-    settings unless you find you have to.
+    settings.
 
 
     checkStopConditionOnStart: true
@@ -237,7 +237,7 @@ function run() {
     function newObserver(params) {
         // Each observer must be named
         if (!params.hasOwnProperty("name")) {
-            alert("Please provide observer name");
+            utilities.showModal('Observer Needs Name', "Please provide a name for your observer.", 'ok');
             return;
         }
 
@@ -275,7 +275,7 @@ function run() {
                 return true;
             };
 
-        // Observer Muttion Type Configuration Options. By default the observer will watch
+        // Observer Mutation Type Configuration Options. By default the observer will watch
         // the child list and all subtree changes. You do not need to modify these defaults
         // unless you have a special case where you don't need to monitor childList or
         // subtree changes. By default the stop condition will be checked when a
