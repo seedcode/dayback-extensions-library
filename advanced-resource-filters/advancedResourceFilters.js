@@ -41,7 +41,67 @@ try {
 
     inputs.noMatchFadesCalendar = true;
 
-    // Tag Multi-Select Groups
+    // Tag Buttons
+    // -----------
+    //
+    // Defines a list of Tag Filters which should be displayed as individual filter buttons
+    // Each tag can contains several variables. All are required unless otherwise specifed:
+    //
+    //  class (optional)
+    //
+    //      An optional class ID for this tag if you wish to apply custom styles beyond
+    //      a tag color, icon, icon color and border color
+    //
+    //  color
+    //
+    //      The color code of the background color for the tag. If no color is specified
+    //      the defauly gray tag color will be used.
+    //
+    //  icon
+    //
+    //      This is either a FontAwesome icon name such as fa-pencil, fa-clock-o, etc.,
+    //      or it is a URL of an image file which should be used as an icon.
+    //      Ommitting an icon will just show a text tag.
+    //
+    //  iconColor
+    //
+    //      This only apples to FontAwesome icons, and can be ommitted if using an image
+    //      for an icon.
+    //
+    //  borderColor
+    //
+    //      This is border color of the tag when the tag is toggle on.
+
+    inputs.tagFilters = {
+        Available: {
+            class: "test",
+            color: "rgb(168, 224, 255)",
+            icon: "fa-clock-o",
+            iconColor: "rgb(52, 0, 244)",
+            borderColor: "rgba(0, 0, 155, 0.5)"
+        },
+        "Lab Supervisor": {
+            class: "person",
+            color: "#FFF4FF",
+            icon: "fa-flask",
+            iconColor: "#FF5F1F",
+            borderColor: "rgba(255, 95, 31, 0.8)"
+        },
+        "Santa Monica": {
+            class: "any",
+            color: "#DDFFDD",
+            icon: "https://a.slack-edge.com/production-standard-emoji-assets/14.0/apple-medium/1f334@2x.png",
+            borderColor: "rgba(0,155,0,0.8)"
+        },
+        Hollywood: {
+            class: "any",
+            color: "rgb(237, 194, 238)",
+            icon: "https://a.slack-edge.com/production-standard-emoji-assets/14.0/apple-medium/2b50@2x.png",
+            borderColor: "rgba(100,0,100,0.5)"
+        }
+    };
+
+    // Multi-Select Tag Groups
     // -----------------------
     //
     // You may define a group of related tags by specifying a group, followed by an
@@ -135,66 +195,6 @@ try {
                     name: "French"
                 }
             }
-        }
-    };
-
-    // Tag Buttons
-    // -----------
-    //
-    // Defines a list of Tag Filters which should be displayed as individual filter buttons
-    // Each tag can contains several variables. All are required unless otherwise specifed:
-    //
-    //  class (optional)
-    //
-    //      An optional class ID for this tag if you wish to apply custom styles beyond
-    //      a tag color, icon, icon color and border color
-    //
-    //  color
-    //
-    //      The color code of the background color for the tag. If no color is specified
-    //      the defauly gray tag color will be used.
-    //
-    //  icon
-    //
-    //      This is either a FontAwesome icon name such as fa-pencil, fa-clock-o, etc.,
-    //      or it is a URL of an image file which should be used as an icon.
-    //      Ommitting an icon will just show a text tag.
-    //
-    //  iconColor
-    //
-    //      This only apples to FontAwesome icons, and can be ommitted if using an image
-    //      for an icon.
-    //
-    //  borderColor
-    //
-    //      This is border color of the tag when the tag is toggle on.
-
-    inputs.tagFilters = {
-        Available: {
-            class: "test",
-            color: "rgb(168, 224, 255)",
-            icon: "fa-clock-o",
-            iconColor: "rgb(52, 0, 244)",
-            borderColor: "rgba(0, 0, 155, 0.5)"
-        },
-        "Lab Supervisor": {
-            class: "person",
-            color: "#FFF4FF",
-            icon: "fa-flask",
-            iconColor: "#FF5F1F",
-            borderColor: "rgba(255, 95, 31, 0.8)"
-        },
-        "Santa Monica": {
-            class: "any",
-            color: "#DDFFDD",
-            icon: "https://a.slack-edge.com/production-standard-emoji-assets/14.0/apple-medium/1f334@2x.png",
-            borderColor: "rgba(0,155,0,0.8)"
-        },
-        Hollywood: {
-            class: "any",
-            color: "rgb(237, 194, 238)",
-            icon: "https://a.slack-edge.com/production-standard-emoji-assets/14.0/apple-medium/2b50@2x.png",
-            borderColor: "rgba(100,0,100,0.5)"
         }
     };
 
