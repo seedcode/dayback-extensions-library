@@ -237,18 +237,14 @@ function run() {
             then: function(observer) {
                 let recList = document.querySelector(".calendarList.resource-list");
                 let msg = document.querySelector('.message-dialog.message-show');
-
                 if (!recList || !recList.hasChildNodes()) {
                     calendarDiv.classList.add('grayscale');
-                    if (!msg) {
-                        helpers.showMessage("No Resources Match Your Filter", 0, 1000000);
-                    }
+                    helpers.showMessage("No Resources Match Your Filter", 0, 1000000);
                 } else if (calendarDiv.classList.contains('grayscale')) {
                     calendarDiv.classList.remove('grayscale');
-                    let msg = document.querySelector('.message-dialog.message-show');
-                    if (msg) {
-                        msg.parentElement.removeChild(msg);f
-                    }
+                    msg.parentElement.removeChild(msg);
+                } else if (msg) {
+                    msg.parentElement.removeChild(msg);                        
                 }
             }
         });
@@ -528,6 +524,8 @@ function run() {
                 seedcodeCalendar.init("customBoxOpen", 1);
                 this.nextSibling.classList.toggle("select-hide");
                 this.classList.toggle("select-arrow-active");
+
+                itemListContainer.scrollTop = 0;
                 this.parentNode.parentNode.parentNode.classList.toggle(
                     "expanded"
                 );
