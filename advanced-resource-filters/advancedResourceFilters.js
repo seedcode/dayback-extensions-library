@@ -55,22 +55,22 @@ try {
     //  color
     //
     //      The color code of the background color for the tag. If no color is specified
-    //      the defauly gray tag color will be used.
+    //      the default gray tag color will be used.
     //
     //  icon
     //
     //      This is either a FontAwesome icon name such as fa-pencil, fa-clock-o, etc.,
     //      or it is a URL of an image file which should be used as an icon.
-    //      Ommitting an icon will just show a text tag.
+    //      Omitting an icon will just show a text tag.
     //
     //  iconColor
     //
-    //      This only apples to FontAwesome icons, and can be ommitted if using an image
+    //      This only applies to FontAwesome icons, and can be omitted if using an image
     //      for an icon.
     //
     //  borderColor
     //
-    //      This is border color of the tag when the tag is toggle on.
+    //      This is the border color of the tag when the tag is toggled on.
 
     inputs.tagFilters = {
         Available: {
@@ -117,18 +117,17 @@ try {
     //
     //      groupname:
     //
-    //          The description of the select box which appears in white font
+    //          The description of the select box that appears in white font
     //          above the select box itself.
     //
     //      boxtitle:
     //
-    //          The instruction to the user describing the contents of the contents
-    //          of the select box.
+    //          The instruction to the user describing the contents of the select box. 
     //
     //      tags:
     //
-    //          An object containing tag codes and the full text description of what
-    //          the tag means. Having a tag code and a full text description allows
+    //          An object containing tag codes and the full-text description of what
+    //          the tag means. Having a tag code and a full-text description allows
     //          you to explain the tags you've defined for each resource with a more
     //          rich text description.
     //
