@@ -191,13 +191,22 @@ try {
 // Action code goes inside this function
 
 function run() {
-    // Configure synthesizer
 
-    var fmSynth = seedcodeCalendar.get("fmSynth");
-    if (!fmSynth) {
-        fmSynth = new Tone.FMSynth().toDestination();
-        fmSynth.volume.value = getUserVolume();
-        seedcodeCalendar.init("fmSynth", fmSynth);
+    // Ignore new On Create events which also issue On Event Click 
+    if (!event.hasOwnProperty('eventID') || event['eventID'].length < 1) {
+        return action.callbacks.confirm();        
+    }
+
+    // Configure synthesizer
+    try {
+        var fmSynth = seedcodeCalendar.get('fmSynth');
+        if (!fmSynth) {
+            fmSynth = new Tone.FMSynth().toDestination();
+            fmSynth.volume.value = getUserVolume();
+            seedcodeCalendar.init('fmSynth', fmSynth);
+        }   
+    } catch(ex) {
+        return action.callbacks.confirm(); 
     }
 
     // Get current key being pressed
