@@ -66,11 +66,17 @@ function run() {
 
     function _keyup(e) {
         let keyDown = seedcodeCalendar.get("keyDown");
+        if (keyDown) {
+            keyDown = seedcodeCalendar.init("keyDown", {}, true);
+        }
         delete keyDown[e.code];
     }
 
     function _keydown(e) {
         let keyDown = seedcodeCalendar.get("keyDown");
+        if (keyDown) {
+            keyDown = seedcodeCalendar.init("keyDown", {}, true);
+        }        
         keyDown[e.code] = e.key;
     }
 }
