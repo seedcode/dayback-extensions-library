@@ -1,0 +1,236 @@
+/* ----- Advanced Tag Filters CSS v1.0 ----- */
+
+/* Tag Filter Group Multi Select Boxes */
+
+.filters-by-tag .custom-select {
+    position: relative;
+    padding-right: 10px;
+}
+
+.filters-by-tag .custom-select select {
+    display: none;
+}
+
+.filters-by-tag .custom-select .select-selected {
+    background-color: #555555;
+    display: block;
+    border: 1px solid rgb(150, 150, 150);
+    border-bottom: 1px solid rgb(150, 150, 150);
+    border-radius: 5px 5px 5px 5px;
+    margin-left: 5px;
+    color: black;
+    font-size: 12px;
+}
+
+.filters-by-tag .custom-select .select-selected .selectedItemsList {
+    color: white;
+    width: 100%;
+    height: 15px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.filters-by-tag .custom-select .select-selected .selectedItemsList.empty {
+    color: black;
+}
+
+.filters-by-tag .custom-select .select-selected.select-arrow-active {
+    background-color: #555555;
+    border: 1px solid rgb(150, 150, 150);
+    border-bottom: 0px solid rgb(150, 150, 150);
+    border-radius: 5px 5px 0px 0px;
+    margin-left: 5px;
+    color: white;
+    font-size: 12px;
+}
+
+.filters-by-tag .custom-select .select-selected:after {
+    color: black;
+    position: absolute;
+    font-family: FontAwesome;
+    content: '\f0da';
+    top: 2px;
+    right: 21px;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+    font-size: 15px;
+    padding-right: 10px;
+}
+
+.filters-by-tag .custom-select .select-selected.select-arrow-active:after {
+    position: absolute;
+    color: black;
+    font-family: FontAwesome;
+    content: '\f0d7';
+    top: 2px;
+    right: 23px;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+    font-size: 15px;
+    padding-right: 10px;
+}
+
+.filters-by-tag .custom-select .select-items {
+    overflow-y: auto;
+    max-height: 55px;
+    padding: 0px;
+    border: 1px solid rgb(150, 150, 150);
+    border-radius: 0px 0px 5px 5px;
+    padding-right: 10px;
+    margin-left: 5px;
+    margin-right: 10px;
+    margin-bottom: 20px;
+}
+
+.filters-by-tag .custom-select .select-items div,
+.filters-by-tag .custom-select .select-selected {
+    color: white;
+    font-size: 12px;
+    padding: 6px;
+    line-height: 14px;
+    cursor: pointer;
+    user-select: none;
+    padding-right: 10px;
+}
+
+.filters-by-tag .custom-select .select-selected {
+    background-color: #555555;
+    overflow-y: auto;
+
+}
+
+.filters-by-tag .custom-select .select-items {
+    position: absolute;
+    background-color: rgb(40, 40, 40);
+    left: 0;
+    right: 0;
+    z-index: 1;
+}
+
+.filters-by-tag .custom-select .select-hide {
+    display: none;
+}
+
+.filters-by-tag .custom-select .select-items div:hover,
+.filters-by-tag .custom-select .same-as-selected {
+    background-color: #154cc2;
+    color: white;
+}
+
+.filters-by-tag .custom-select .select-items .item-is-selected:after {
+    position: absolute;
+    font-family: FontAwesome;
+    content: '\f00c';
+    border: 6px solid transparent;
+    font-size: 10px;
+    line-height: 0.5rem;
+}
+
+/* Tag Button Filters */
+
+.filters-by-tag .tagGroup .input-group {
+    display: block;
+}
+
+.filters-by-tag {
+    display: flex;
+    margin-top: -15px;
+    vertical-align: top;
+}
+
+.filters-by-tag .tagGroup {
+    padding-top: 0px;
+    margin-top: 0px;
+    min-height: 44px;
+    -webkit-transition: min-height 0.2s ease-in-out;
+    -moz-transition: min-height 0.2s ease-in-out;
+    -o-transition: min-height 0.2s ease-in-out;
+    transition: min-height 0.2s ease-in-out;
+    overflow: hidden;
+}
+
+.filters-by-tag .tagGroup:last-of-type {
+    margin-bottom: 8px;
+}
+
+.filters-by-tag .tagGroup.expanded {
+    min-height: 118px;
+    -webkit-transition: min-height 0.2s ease-in-out;
+    -moz-transition: min-height 0.2s ease-in-out;
+    -o-transition: min-height 0.2s ease-in-out;
+    transition: min-height 0.2s ease-in-out;
+    overflow: hidden;
+
+}
+
+.filters-by-tag .tagGroup label {
+    font-size: 12px;
+    font-weight: normal;
+    line-height: 1rem;
+    padding-top: 0px;
+    margin-top: -10px !important;
+
+}
+
+.filters-by-tag .tagGroup {
+    position: relative;
+    display: inline-block;
+    float: left;
+    width: 100%;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.filters-by-tag .tagContainer {
+    position: relative;
+    display: inline-block;
+    float: left;
+    line-height: 33px;
+    padding-bottom: 5px;
+}
+
+.filters-by-tag {
+    padding-bottom: 10px;
+}
+
+.filters-by-tag .tag {
+    border: 2px solid rgb(50, 50, 50);
+    padding: 3px 12px;
+    line-height: 22px;
+    font-size: 1.3rem;
+}
+
+.filters-by-tag .tag.active {
+    border: 2px solid #66afe9;
+    -webkit-box-shadow: inset 0 1px 1px rgb(0 0 0/ 8%),
+        0 0 0px rgb(102 175 233 / 60%);
+    box-shadow: inset 3px 3px 3px rgb(0 0 0/ 28%),
+        0 0 0px rgb(102 175 233 / 100%);
+    filter: saturate(1.5) brightness(1.03);
+}
+
+.filters-by-tag .tag.inactive {
+    color: rgb(50, 50, 50) !important;
+    padding: 3px 12px;
+}
+
+.filters-by-tag .tagContainer .tag-content img {
+    max-height: 15px;
+    max-width: 15px;
+    margin-top: -2px;
+    padding-right: 2px;
+    vertical-align: middle;
+}
+
+.filters-by-tag .tagContainer .tag-content i {
+    padding-right: 2px;
+}
+
+.calendar.grayscale {
+    filter: grayscale(1);    
+}
+
+/* End Tag Filters */

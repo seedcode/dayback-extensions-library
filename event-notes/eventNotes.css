@@ -1,0 +1,179 @@
+/* Event Notes CSS v1.0 */
+
+.eventNotes {
+    display: inline;
+    position: absolute;
+    right: 2px !important;
+    top: 2px !important;
+    padding-left: 2px;
+    padding-right: 2px;
+    border-radius: 10px;
+    line-height: 10px;
+}
+
+.editNotes.scrollableNotes {
+    overflow: auto; 
+    overflow-x: hidden;
+}
+
+.eventNotes.empty i:before {
+    margin: 0px !important;
+    padding: 0px !important;
+    font-size: 10px !important;
+    top: 0px;
+    opacity: 1;
+    color: var(--background);
+    filter: brightness(120%) !important;
+  	text-shadow: 1px 1px 6px #666666;
+}
+
+.eventNoteGlowBorder {
+	border-color: #66afe9;
+    box-shadow: 0 0 5px #66afe9
+}
+
+.eventNotes.annotated i:before {
+    margin: 0px !important;
+    padding: 0px !important;
+    font-size: 10px !important;
+    top: 0px;
+    opacity: 1;
+    color: var(--background);
+    filter: brightness(120%) !important;
+}
+
+.addNotes BUTTON {
+	min-width: unset;
+  	padding: 0px 3px 0px 3px;
+    margin: 7px 2px 3px 4px;
+}
+
+.editNotes {
+	width: 160px;
+ 	height: 69px;
+    display: flex;  
+    flex-wrap: wrap;
+}
+
+.editNotes .textareaDiv {
+    display: inline-block;
+    width: 126px;
+    padding-top: 4px;
+}
+
+.editNotes .textareaDiv TEXTAREA {
+  	color: white;
+  	background-color: rgba(0,0,0,0);
+}
+
+.editNotes .buttonsDiv {
+    display: inline-block;
+    width: 34px;
+    text-align: right;
+    vertical-align: top;
+    margin-top: 4px; 
+    float: right;
+}
+
+.editNotes .buttonsDiv BUTTON {
+	min-width: unset;
+  	padding: 2px 2px 2px 2px;
+    margin: 0px 2px 5px 2px;
+	line-height: 0;
+  	font-size: 11px;
+}
+
+.notesChatIconIcon {
+    color: #00AA00;
+    font-size: 11px !important;
+    padding-right: 6px;
+}
+
+.editNotes .buttonsDiv BUTTON.deleteButton {
+    background-color: rgb(217, 83, 79);
+    border-color:rgb(217, 83, 79);
+    color: white;
+}
+
+.editNotes .buttonsDiv BUTTON.cancelButton {
+    background-color: rgb(150,150,150);
+    border-color:rgb(150,150,150);
+    color: white;
+}
+
+.editNotes .buttonsDiv BUTTON.deleteButton:active {
+    background-color: rgb(187, 83, 79);
+    border-color:rgb(187, 83, 79);
+    color: white;
+}
+
+.fc-event-time.wrapTime {
+    white-space: normal !important;
+  	width: 90%;
+}
+
+/* Force some views to unset width */
+
+.fc-view-basicResourceDays .fc-event-time.wrapTime {
+    white-space: unset !important;
+    width: unset 
+}
+
+.fc-view-basicResourceHor .fc-event-time.wrapTime {
+    white-space: unset !important;
+    width: unset;
+}
+
+.fc-view-agendaResourceHor .fc-event-time.wrapTime {
+    white-space: unset !important;
+    width: unset;
+}
+
+.fc-view-basicDay .fc-event-time.wrapTime {
+    white-space: unset !important;
+    width: unset;
+}
+
+.fc-view-basicWeek .fc-event-time.wrapTime {
+    white-space: unset !important;
+    width: unset;
+}
+.fc-view-month .fc-event-time.wrapTime {
+    white-space: unset !important;
+    width: unset;
+}
+
+.fc-view-agendaDays .fc-event-time.wrapTime {
+    white-space: unset !important;
+    width: unset;
+}
+
+/* Wrap Titles */
+
+.fc-event-title.event-title-inline {
+    display: inline-block;
+}
+
+.fc-event-inner.event-constrain.wrapTime div.wrapper span.fc-event-title {
+    padding-left: 13px !important;
+}
+
+.fc-event-inner.event-constrain.wrapTime div.eventNotes {
+    top: 0px !important;
+    left: 2px !important;
+    right: unset;
+    width: 10px;
+}
+
+.fc-event-inner.event-constrain.wrapTime div.eventNotes i.fa.fa-comment::before  {
+    font-size: 8px !important;
+}
+
+div.nub-content .eventNotes { 
+    right: unset !important;
+    margin-left: 4px;
+}
+
+div.nub-content.wrapTime .nub-event-text {
+    padding-left: 15px;
+}

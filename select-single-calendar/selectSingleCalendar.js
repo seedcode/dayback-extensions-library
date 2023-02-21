@@ -1,10 +1,11 @@
-// DayBack Custom Action Template v1.02
+// Select A Single Calendar Source v1.0
 
 // Purpose:
-// A standardized template for DayBack custom actions
-// Add action code in the run function to be executed with error and timeout checking
-// Action Type: Before Calendar Rendered, After Calendar Rendered, On Resources Fetched etc...
-// Prevent Default Action: Yes, No
+// This app action will allow you to single select a calendar source. 
+// So you will only be able to view one calendar source on the calendar at a time. 
+
+// Action Type: After Source Selection 
+// Prevent Default Action: No
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -20,6 +21,7 @@ try {
 
 	// Seconds to wait to allow this action to run before reporting an error (set to 0 to deactivate)
 	options.runTimeout = 8;
+	
 	// Array of account emails for whom this action will run. Leave blank to allow the action to run for everyone.
 	// Example: ['person@domain.com', 'someone@domain.com']
 	options.restrictedToAccounts = [];
@@ -38,7 +40,20 @@ try {
 
 // Action code goes inside this function
 function run() {
-	// Your Code Here
+	var schedules = seedcodeCalendar.get('schedules');
+
+	if (!seedcodeCalendar.get("updatingSchedules") && params.data.isLast && params.data.item && params.data.item.status && params.data.item.status.selected) {
+    	//Deselect all other sources
+  		seedcodeCalendar.init("updatingSchedules", true); 
+  		schedules.forEach(function(schedule) {
+    	if (schedule !== params.data.item && schedule.status.selected) { 
+      		dbk.toggleCalendar(schedule); 
+    	}
+  	});
+
+  	seedcodeCalendar.init("updatingSchedules", false); 
+}
+
 }
 
 //----------- Run function wrapper and helpers - you shouldn’t need to edit below this line. -------------------
