@@ -241,18 +241,21 @@ function run() {
 				let msg = document.querySelector(
 					'.message-dialog.message-show'
 				);
+
 				if (!recList || !recList.hasChildNodes()) {
 					calendarDiv.classList.add('grayscale');
-					helpers.showMessage(
-						'No Resources Match Your Filter',
-						0,
-						1000000
-					);
+					if (!msg) {
+						helpers.showMessage(
+							'No Resources Match Your Filter',
+							0,
+							1000000
+						);
+					}
 				} else if (calendarDiv.classList.contains('grayscale')) {
 					calendarDiv.classList.remove('grayscale');
-					msg.parentElement.removeChild(msg);
-				} else if (msg) {
-					msg.parentElement.removeChild(msg);
+					if (msg) {
+						msg.parentElement.removeChild(msg);
+					}
 				}
 			},
 		});
