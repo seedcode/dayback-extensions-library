@@ -10,7 +10,7 @@
 // https://dayback.com/listing/custom-action-menu/
 //
 // Action Type: Button Action
-// Prevent Default Action: Yes
+//
 // CSS Class: cutAndPasteButton
 //
 // More info on button actions here:
