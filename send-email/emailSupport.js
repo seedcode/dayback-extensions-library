@@ -52,8 +52,6 @@ try {
 	inputs.emailTo = 'support@seedcode.com';
 	inputs.emailSubject = editEvent.titleEdit;
 
-	//
-
 	//----------- End Configuration -------------------
 } catch (error) {
 	reportError(error);
