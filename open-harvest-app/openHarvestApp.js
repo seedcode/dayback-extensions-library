@@ -40,12 +40,7 @@ try {
 	reportError(error);
 }
 
-// ----------- The action itself: -------------------
-//
-// If you want to change the contents of email, you may need to modify
-// the following section of code
-//
-// ---------------------------------------------------
+// ----------- The action itself: you likely don't need to change this code ------------
 
 // Action code goes inside this function
 function run() {
