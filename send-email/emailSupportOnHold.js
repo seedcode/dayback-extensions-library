@@ -5,7 +5,7 @@
 // This takes effect when an event has been changed to the status specified
 //
 // Action Type: Event Action
-// Prevent Default Action: Yes
+// Prevent Default Action: No
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -108,8 +108,6 @@ function run() {
 
 		open(finalURL);
 	}
-
-	confirmCallback();
 }
 
 //----------- Run function wrapper and helpers - you shouldn’t need to edit below this line. -------------------
