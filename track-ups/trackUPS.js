@@ -3,7 +3,7 @@
 // Purpose:
 // This button action will look through an event's
 // description and will automatically open the first
-// UPS package code that it finds.
+// URL that it finds
 //
 // Action Type: Button Action
 // Open In New Window: Yes
@@ -29,7 +29,7 @@ try {
 
 	options.restrictedToAccounts = [];
 
-	// Define the Variable you want to scan for the UPS code
+	// Define the variable you want to scan for a URL
 
 	inputs.scanVariable = event.description;
 
@@ -42,12 +42,10 @@ try {
 
 // Action code goes inside this function
 function run() {
-	//Define where we are reading ups numbers from
-
-	console.log(event);
+	// Define where we are reading ups numbers from
 	var searchText = inputs.scanVariable;
 
-	//Specify the ups tracking base url
+	// Specify the ups tracking base url
 	var upsURL =
 		'http://wwwapps.ups.com/WebTracking/track?loc=en_US&track.x=Track&trackNums=';
 
@@ -56,7 +54,7 @@ function run() {
 		/\b(1Z ?[0-9A-Z]{3} ?[0-9A-Z]{3} ?[0-9A-Z]{2} ?[0-9A-Z]{4} ?[0-9A-Z]{3} ?[0-9A-Z]|[\dT]\d\d\d ?\d\d\d\d ?\d\d\d)\b/
 	);
 
-	// you could then iterate through urls but we just want the first one
+	// You could then iterate through urls but we just want the first one
 	if (upsTracking) {
 		open(upsURL + upsTracking[0]);
 	}
