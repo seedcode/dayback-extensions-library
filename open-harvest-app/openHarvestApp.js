@@ -5,7 +5,7 @@
 // tracking modal using the Harvest app. You will
 // need to modify the code to reflect the URL
 // Action Type: Button Action
-// Open In New Window: Yes
+// Open In New Window: No
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
