@@ -1,11 +1,11 @@
-// Key Combination Batch Edit v1.1
+// Post Event to Slack v1.1
 
 // Purpose:
-// Applies changes to selected events when a key combination is held
-// and one of the selected events is clicked
+// This button action will copy the details of an event and post
+// them to a Slack Channel. You will need to modify the configuraiton
 //
-// Action Type: After Calendar Rendered
-// Prevent Default Action: No
+// Action Type: Buitton Action
+// Open In New Window: Yes
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -27,6 +27,10 @@ try {
     // Example: ['person@domain.com', 'someone@domain.com']
 
     options.restrictedToAccounts = [];
+
+    // Configure your API key
+
+    inputs.apiUrl = 'YourSlackWebHookURL';
 
     //----------- End Configuration -------------------
 } catch (error) {
@@ -67,7 +71,7 @@ function run() {
     // Post the request
     // Your WebHook URL
 
-    $.ajax("YourSlackWebHookURL", {
+    $.ajax(inputs.apiUrl, {
         type : "POST",
         data : JSON.stringify(sendData),
         success: function(data){
