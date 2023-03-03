@@ -81,10 +81,14 @@
     background-size: 20px 20px, 25px 25px, 23px 23px, 25px 25px, 20px 20px, 15px 15px, 25px 25px;
 }
 
-.star-burst:active {
+.calendar .star-burst:active {
     transform: scale(1.9);
     background-color: black;
     box-shadow: 0 2px 25px rgba(255, 0, 130, 0.2);
+}
+
+.sidebar-drag-item .star-burst:active {
+    transform: scale(1.0);
 }
 
 .star-burst.animate:before {

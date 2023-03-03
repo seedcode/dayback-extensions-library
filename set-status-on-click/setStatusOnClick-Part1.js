@@ -269,11 +269,19 @@ function run() {
             setStatusChangeSound(statusCode, fmSynth);
 
             for (let i = 0; i < events.length; i++) {
-                events[i].classList.add("zoom-in-out-box");
-                events[i].classList.add("star-burst");
-                events[i].classList.add("animate");
-                events[i].style.backgroundColor = afterColor;
-                events[i].style.color = utilities.generateTextColor(afterColor);
+                events[i].classList.add('star-burst'); 
+                events[i].classList.add('animate'); 
+                events[i].classList.add("zoom-in-out-box"); 
+
+                let parent = events[i].parentElement;
+                let colorSwatch = events[i].querySelector('.color-swatch');
+                
+                if (!parent.classList.contains("sidebar-drag-item")) {
+                    events[i].style.backgroundColor = afterColor;
+                    events[i].style.color = utilities.generateTextColor(afterColor);			
+                } else if (colorSwatch) {
+                    colorSwatch.style.backgroundColor = afterColor;
+                }
             }
 
             setTimeout(function () {
