@@ -161,7 +161,7 @@ function cancelTimeoutCheck() {
 function reportError(error) {
     var errorTitle = 'Error Running Custom Action';
     var errorMessage = '<p>There was a problem running the action "<span style="white-space: nowrap">' + action.name + '</span>"</p><p>Error: ' + error.message + '.</p><p>This may result in unexpected behavior of the calendar.</p>';
-    if (action.preventDefault && timeout) {
+    if (action.preventDefault && action.category !== event && timeout) {
         confirmCallback();
     }
     else {
