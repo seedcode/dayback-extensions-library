@@ -25,7 +25,13 @@ try {
     // Leave this set to 0 to avoid unexpected behavior
 
     options.runTimeout = 0;
+    
+    // Some browsers like FireFox delay DayBack from loading when we load Tone.js
+    // This setting will delay loading Tone.js by a specific number of miliseconds
+    // to allow DayBack to load fully. 
 
+    inputs.libraryLoadTimeout = 5000;
+    
     //----------- End Configuration -------------------
 } catch (error) {
     reportError(error);
@@ -43,7 +49,7 @@ function run() {
         script.src = "https://unpkg.com/tone";
         script.async = true;
         document.getElementsByTagName("head")[0].appendChild(script);
-    },0);
+    }, inputs.libraryLoadTimeout);
         
     var trackerRunning = seedcodeCalendar.init("trackerRunning", false, true);
 
