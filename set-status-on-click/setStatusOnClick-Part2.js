@@ -36,11 +36,15 @@ try {
 // Action code goes inside this function
 
 function run() {
-    // Add Tone.js Library for playing sounds
-    var script = document.createElement("script");
-    script.src = "https://unpkg.com/tone";
-    document.getElementsByTagName("head")[0].appendChild(script);
 
+    // Add Tone.js Library for playing sounds
+    setTimeout(function () {
+        var script = document.createElement("script");
+        script.src = "https://unpkg.com/tone";
+        script.async = true;
+        document.getElementsByTagName("head")[0].appendChild(script);
+    },0);
+        
     var trackerRunning = seedcodeCalendar.init("trackerRunning", false, true);
 
     addEventListener("focus", _addKeyListeners);
@@ -58,15 +62,15 @@ function run() {
     }
 
     function _removeKeyListeners(e) {
-        document.removeEventListener("keyup", _keyup);
-        document.removeEventListener("keydown", _keydown);
-        seedcodeCalendar.init("keyDown", {});
-        trackerRunning = false;
+      document.removeEventListener("keyup", _keyup);
+      document.removeEventListener("keydown", _keydown);
+      seedcodeCalendar.init("keyDown", {});
+      trackerRunning = false;
     }
 
     function _keyup(e) {
         let keyDown = seedcodeCalendar.get("keyDown");
-        if (keyDown) {
+        if (!keyDown || e.key == 'Meta') {
             keyDown = seedcodeCalendar.init("keyDown", {}, true);
         }
         delete keyDown[e.code];
@@ -74,7 +78,7 @@ function run() {
 
     function _keydown(e) {
         let keyDown = seedcodeCalendar.get("keyDown");
-        if (keyDown) {
+        if (!keyDown) {
             keyDown = seedcodeCalendar.init("keyDown", {}, true);
         }        
         keyDown[e.code] = e.key;
