@@ -59,7 +59,7 @@ try {
 
 	inputs.statusSoundMap = {
 		Done: 'successHigh',
-		Hot: 'drumpMP3',
+		Hot: 'drumSoloMP3',
 		none: 'resetStatus',
 	};
 
@@ -163,7 +163,7 @@ try {
 			fmSynth.triggerAttackRelease('F4', '36n', (now += 0.075), 0.5);
 		},
 
-		drumpMP3: function (fmSynth) {
+		drumSoloMP3: function (fmSynth) {
 			var player = new Tone.Player(
 				'https://tonejs.github.io/audio/drum-samples/handdrum-loop.mp3'
 			).toDestination();
