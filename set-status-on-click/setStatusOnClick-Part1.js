@@ -76,7 +76,7 @@ try {
 
 	// Define a function that checkes if the status change is permitted
 	// function should return true if the change is permitted and
-	// return false if not. If the change is not permitted an erro
+	// return false if not. If the change is not permitted an error
 	// sound will play.
 
 	inputs.statusChangeAllowed = function (statusCode) {
@@ -342,7 +342,7 @@ function run() {
 	// Helper function to get a status color
 
 	function getStatusColor(statusCode) {
-		if (statusCode == 'none') {
+		if (statusCode == seedcodeCalendar.get('config').noFilterLabel) {
 			return event.schedule.backgroundColor;
 		}
 
