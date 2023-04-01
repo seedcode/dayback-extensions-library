@@ -43,13 +43,22 @@ try {
 
 function run() {
 
+    // Only run on desktop environments
+	if (environment.isMobileDevice) {
+        return;
+    }
+
     // Add Tone.js Library for playing sounds
-    setTimeout(function () {
+  	seedcodeCalendar.init("tone.js.available", false);
+  	setTimeout(function () {
         var script = document.createElement("script");
-        script.src = "https://unpkg.com/tone";
+		script.onload = function() {   	
+             seedcodeCalendar.init("tone.js.available", true);
+        }
+    	script.src = "https://unpkg.com/tone";
         script.async = true;
         document.getElementsByTagName("head")[0].appendChild(script);
-    }, inputs.libraryLoadTimeout);
+    },5000);
         
     var trackerRunning = seedcodeCalendar.init("trackerRunning", false, true);
 
