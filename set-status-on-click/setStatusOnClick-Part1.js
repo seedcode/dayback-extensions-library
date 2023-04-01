@@ -1,4 +1,4 @@
-// Set Status on Click - Part 1 v1.0
+// Set Status on Click - Part 1 v1.3
 //
 // Purpose:
 // Allows point and click Status changes when a key is
@@ -192,7 +192,12 @@ try {
 // Action code goes inside this function
 
 function run() {
-	// Configure synthesizer
+
+    	// Only run on desktop environments
+	if (environment.isMobileDevice || seedcodeCalendar.get("tone.js.available") != true) {
+        	return action.callbacks.confirm();        
+  	}
+  	
 	// Ignore new On Create events which also issue On Event Click
 	if (!event.hasOwnProperty('eventID') || event['eventID'].length < 1) {
 		return action.callbacks.confirm();
