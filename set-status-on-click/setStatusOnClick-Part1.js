@@ -22,9 +22,8 @@ try {
 	//----------- Configuration -------------------
 
 	// Seconds to wait to allow this action to run before reporting an error (set to 0 to deactivate)
-	// Leave this set to 0 to avoid unexpected behavior
 
-	options.runTimeout = 0;
+	options.runTimeout = 8;
 
 	// Get Account name for custom configurations
 
@@ -63,7 +62,7 @@ try {
 		none: 'resetStatus',
 	};
 
-	// Set sound volume level. The default is -20 percent of regular volume
+	// Set sound volume level. The default is -5 percent of regular volume
 
 	inputs.volume = -5;
 
@@ -76,7 +75,7 @@ try {
 
 	// Define a function that checkes if the status change is permitted
 	// function should return true if the change is permitted and
-	// return false if not. If the change is not permitted an erro
+	// return false if not. If the change is not permitted an error
 	// sound will play.
 
 	inputs.statusChangeAllowed = function (statusCode) {
@@ -127,7 +126,7 @@ try {
 	//           The frequency of the note you want to trigger
 	//
 	//      duration: (optional)
-	//           How long the note should be held for beforetriggering the release. This value must be greater than 0.
+	//           How long the note should be held for before triggering the release. This value must be greater than 0.
 	//
 	//      time: (optional)
 	//           When the note should be triggered.
@@ -195,7 +194,7 @@ function run() {
 	// Configure synthesizer
 	// Ignore new On Create events which also issue On Event Click
 	if (!event.hasOwnProperty('eventID') || event['eventID'].length < 1) {
-		return action.callbacks.confirm();
+		return confirmCallback();
 	}
 
 	// Configure synthesizer
@@ -207,7 +206,7 @@ function run() {
 			seedcodeCalendar.init('fmSynth', fmSynth);
 		}
 	} catch (ex) {
-		return action.callbacks.confirm();
+		return confirmCallback();
 	}
 
 	// Get current key being pressed
@@ -225,25 +224,25 @@ function run() {
 		Tone.Transport.stop();
 		Tone.Transport.start();
 
-		return action.callbacks.cancel();
+		return cancelCallback();
 	} else if (keyDown) {
 		// Check if we status that corresponds to a pressed key
 		let found = false;
 		Object.keys(inputs.keyStatusMap).forEach((key) => {
 			if (!found && keyDown[key]) {
-				action.callbacks.cancel();
+				cancelCallback();
 				changeStatusWithSound(inputs.keyStatusMap[key]);
 				found = true;
 			}
 		});
 
 		if (!found) {
-			return action.callbacks.confirm();
+			return confirmCallback();
 		}
 	} else {
 		// No key held, can pass click through and open
 		// event popover
-		return action.callbacks.confirm();
+		return confirmCallback();
 	}
 
 	// Function fires when a keyboard key is being held down
@@ -297,7 +296,7 @@ function run() {
 
 			// Optionally display a please wait message
 			if (inputs.showPleaseWaitMessage) {
-				helpers.showMessage('Saving. Please wait ...', 0, 5000);
+				dbk.showMessage('Saving. Please wait ...', 0, 5000);
 			}
 
 			// Block runtime of event clicks while saving is in progress
