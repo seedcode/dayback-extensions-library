@@ -70,10 +70,10 @@ function run() {
 						editEvent[params.data.field + 'Label'] = [];
 					}
 				}
-				action.callbacks.cancel();
+				cancelCallback();
 			}, 0);
 		} else {
-			action.callbacks.confirm();
+			confirmCallback();
 		}
 
 		function checkField(field) {
