@@ -77,9 +77,8 @@ function run() {
 
 	/**
 	 * @returns {void}
-	 * @description Attempts to click the specified button to open the drawer
+	 * @description Attempts to programatically click the specified button to open the drawer
 	 */
-	// Adds an invisible button over the resource button so that we can modify the list when it's clicked
 	function clickButton() {
 		let targetSelector =
 			inputs.drawerButton === 'customButtons'
