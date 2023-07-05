@@ -1,4 +1,4 @@
-// Take Calendar Screenshot - Part 2 v1.0
+// Take Calendar Screenshot - Part 2 v2.0
 //
 // Purpose:
 // This is a Part 2 of the Take Calendar Screenshot custom app 
@@ -105,7 +105,7 @@ function run() {
     function toggleButtonsWithAnalytics() {
         var toggleClass = buttonContainer.classList.contains(options.cssGroupName + '_container_static') ? options.cssGroupName + '_container_no_analytics_static' : options.cssGroupName + '_container_no_analytics';
 
-        if (calendarView.name == 'month') {
+        if (calendarView.name == 'month' || calendarView.name == 'agendaDays') {
             buttonContainer.classList.add(toggleClass);
         } else {
             buttonContainer.classList.remove(toggleClass);
@@ -175,7 +175,7 @@ function cancelTimeoutCheck() {
 function reportError(error) {
     var errorTitle = 'Error Running Custom Action';
     var errorMessage = '<p>There was a problem running the action "<span style="white-space: nowrap">' + action.name + '</span>"</p><p>Error: ' + error.message + '.</p><p>This may result in unexpected behavior of the calendar.</p>';
-    if (action.preventDefault && timeout) {
+    if (action.preventDefault && action.category !== event && timeout) {
         confirmCallback();
     }
     else {

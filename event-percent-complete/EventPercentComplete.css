@@ -1,0 +1,9 @@
+/* Event Percent Complete CSS v1.0 */
+
+.event_percent_overage_nub_content {
+    border: 1px solid red;
+    border-left: 1px solid red !important;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+

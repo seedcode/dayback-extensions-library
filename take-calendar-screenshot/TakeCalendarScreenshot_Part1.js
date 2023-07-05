@@ -10,7 +10,7 @@
 // install Part 2 of the action, unmodified. 
 // 
 // Action Type: Before Calendar Rendered
-// Prevent Default Action: Yes
+// Prevent Default Action: No
 // 
 // More info on custom actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -117,7 +117,7 @@ try {
 
         // If using FileMaker, specify the name of the filemaker script to run to save image to container
 
-        inputs.fileMakerSaveImageScript = 'Save DayBack Screenshot';
+        inputs.fileMakerSaveImageScript = 'Save Screenshot - DayBack';
 
         // Select default screenshot width and height in pixels
 
@@ -168,6 +168,7 @@ try {
                                 
             var calendarContainer = document.getElementById('calendar-container');
             var calendarScroll = document.querySelector('.calendar-scroll');
+            var autoHeight = true;
 
             // Define Screen Shot Selector Pop-over
             var config = {
@@ -176,7 +177,11 @@ try {
                 destroy: true,
                 show: true,
                 width: 650,
-                makeImageFunction: makeImage
+                makeImageFunction: makeImage,
+                setAutoHeightFunction: function(input) {
+                    autoHeight = input;
+                },
+                autoHeight: autoHeight,
             };
 
             // Defile progress Counter 
@@ -199,6 +204,11 @@ try {
             // Define makeImage function that will be triggered form the popover
             function makeImage(width, height, makeCustomSize = false) {
 
+                // Set height of screenshot automatically
+                if (autoHeight) {
+                    height = calendarScroll.scrollHeight + calendarScroll.getBoundingClientRect().top;
+                }
+              
                 // Very screen shot and determine valid size ranges for canvas
                 if (makeCustomSize == true) {
                    var wObj = document.getElementById('_screenShot_width');
@@ -337,9 +347,11 @@ try {
                     template = template + 
                     ' <input id="_screenShot_width"  type="number" style="color: black; width: 55px;" SIZE=5 value="' + inputs.screenshotSizeDefault.width + '"> x ' +
                     ' <input id="_screenShot_height" type="number" style="color: black; width: 55px;" SIZE=5 value="' + inputs.screenshotSizeDefault.height + '"> ' +
-                    ' <button translate ng-click="popover.config.makeImageFunction(document.getElementById(\'_screenShot_width\').value, document.getElementById(\'_screenShot_height\').value, true);" class="btn btn-xs btn-success" style="margin: 5px;">Make Custom Size</button><BR><BR>';
+                    ' <button translate ng-click="popover.config.makeImageFunction(document.getElementById(\'_screenShot_width\').value, document.getElementById(\'_screenShot_height\').value, true);"' +
+                    ' class="btn btn-xs btn-success" style="margin: 5px;">Make Custom Size</button><BR><BR>';
                 }
 
+                template = template + '<input type="checkbox" ng-checked="true" id="_screenShot_autoHeight" ng-model="popover.config.autoHeight" ng-change="popover.config.setAutoHeightFunction(popover.config.autoHeight);" style="margin: 5px;">&nbsp;&nbsp;Automatically Adjust Height<BR><BR>';
                 template = template + '</div>';
 
             } else {
@@ -377,9 +389,6 @@ function run() {
 
     // Create the button drawer while checking CSS parent element load status
     createButtonDrawer();
-
-    // Once all is loaded, confirm callback and run other functions configured for this handler
-    return confirmCallback();
 
     // Handle creation of button
     function createButtonDrawer() {
@@ -662,7 +671,7 @@ function cancelTimeoutCheck() {
 function reportError(error) {
     var errorTitle = 'Error Running Custom Action';
     var errorMessage = '<p>There was a problem running the action "<span style="white-space: nowrap">' + action.name + '</span>"</p><p>Error: ' + error.message + '.</p><p>This may result in unexpected behavior of the calendar.</p>';
-    if (action.preventDefault && timeout) {
+    if (action.preventDefault && action.category !== event && timeout) {
         confirmCallback();
     }
     else {

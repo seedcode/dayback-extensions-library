@@ -1,0 +1,181 @@
+/* Custom Popover Panel */
+
+.customPopoverPanel button {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    min-width: 50px !important;   
+}
+
+.customPopoverPanelButtonBar button.pull-right { 
+    float: unset !important; 
+    margin-right: 0px;
+    margin-left: 25px;
+}
+
+.customPopoverPanelDrawer button {
+    padding-left: 3px !important;
+    padding-right: 3px !important;
+    min-width: 50px !important;   
+}
+
+.customPopoverPanel button.dbk_icon_cog {
+    padding: 0px !important;
+    margin: 0px !important;
+    min-width: unset !important;  
+}
+
+.customPopoverPanel button.customPopoverPanelButton { 
+    width: auto !important;
+    margin: 0px !important;
+    margin-left: 17px !important;
+    margin-right: 0px !important;
+    padding-left: 13px !important;
+    padding-right: 13px !important;
+    min-width: 20px !important;
+}
+
+
+.customUtilityDrawerContainer {
+    margin-top: -15px !important;
+    height: 460px;
+}
+
+.customUtilityDrawerContainer.scrollable {
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.customPopoverPanelDrawer {
+  margin-bottom: 15px;
+}
+
+.customPopoverPanelDrawer .panelHeader {
+    background: #4e5964 !important;
+    padding: 5px 5px 5px 5px;
+    text-align: center;
+    font-size: 14px;
+    color: white;
+    font-weight: 300 !important;
+    margin-top: 8px; 
+    margin-bottom: 8px;
+}
+.customPopoverPanelDrawer .panelHeader:first-of-type {
+    margin-top: 0px; 
+    margin-bottom: 8px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+
+.customPopoverPanelDrawer .shiftUp {
+    margin-top: -5px !important;
+    margin-bottom: 8px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+
+.customPopoverPanelDrawer .panelRow {
+    padding: 2px;
+    padding-left: 10px;
+    padding-right: 15px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+.customPopoverPanelDrawer .panelProgress {
+    padding: 2px;
+    padding-left: 10px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-right: 2px;
+}
+
+.customPopoverPanelDrawer .panelProgress .progressText {
+    padding: 3px;
+    display: block;
+}
+.customPopoverPanelDrawer .panelProgress .progress {
+    margin-top: 3px;
+    margin: 0px;
+    width: 100%;
+    background: #708090;
+    border: 1px solid #4e5964;
+    border-radius: 3px;
+    height: 15px;
+}
+
+.customPopoverPanelDrawer .panelProgress .progress .progress__bar {
+    height: 100%;
+    width: 0%;
+    border-radius: 3px;
+    background-color: #2b5dcd;
+}
+
+.customPopoverPanelDrawer .panelProgress .progress .progress__bar.delayed {
+    background-color: red;
+}
+
+.customPopoverPanelDrawer .panelLabel {
+    text-align: right !important;
+    color: #B0C4DE;
+    padding-right: 0px;
+}
+
+.customPopoverPanelDrawer .panelTextRow {
+    text-align: left !important;
+    padding: 2px;
+    padding-left: 10px;
+    padding-right: 15px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+.customPopoverPanelDrawer .panelContentRow {
+    text-align: left !important;
+    padding: 0px;
+    padding-left: 10px;
+    padding-right: 15px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.customPopoverPanelDrawer .textRight {
+    text-align: right !important;
+}
+
+.customPopoverPanelDrawer .panelSeparator {
+    border-top: 1px solid #B0C4DE;
+    margin-bottom: 7px;
+    margin-top: 7px;
+}
+
+.customPopoverPanelDrawer .panelValue img {
+    width: 100% !important;
+    max-width: 100%;
+    border-radius: 3px;
+    border: 1px solid #4e5964;
+    padding-right: 15px;
+}
+
+.postScrollDiv {
+    background: rgba(100, 100, 100, 1);
+    /* width: 100% */
+    height: 40px;
+    position: absolute;
+    bottom: -20px;
+    z-index: 10000;
+    text-align: center;
+    background: linear-gradient(rgba(100, 100, 100, 0) 0%, rgba(100, 100, 100, 1) 46%);
+}
+
+.postScrollPadding {
+    margin-bottom: 30px !important;
+}
+
+.postScrollDiv span {
+    display: block;
+    width: 100%;
+    position: absolute;
+    bottom: 6px;
+    color: lightgray;
+}
+
+/* End Custom Popover Panels */

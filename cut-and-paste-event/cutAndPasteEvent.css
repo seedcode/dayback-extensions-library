@@ -1,0 +1,60 @@
+/* Cut and Paste Event v1.0 CSS */
+
+.cutAndPasteButton button {
+    background-color: rgb(50, 118, 177);
+    border-color: rgb(50, 118, 177);
+}
+
+.cutAndPasteButton button:hover {
+    background-color: rgb(48, 113, 169);
+    border-color: rgb(40, 94, 142);
+}
+
+.cutAndPasteButton button:active {
+	background-color: rgb(50, 118, 177);
+    color: white;
+}   
+
+.cutAndPasteButton button:before {
+    font-family: FontAwesome;
+    content: "\f0c4";
+    font-size: 13px;
+    color: white;
+    padding-right: 5px;   
+}
+
+.pasteEventFromClipboardCursor {
+    cursor: copy;
+}
+
+.eventInClipboard {
+    border-style: dashed;
+    background-color: #DDD !important;
+    color: #AAA !important;
+    background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 5px,
+    #ddd 5px,
+    #eee 20px
+  );   
+}
+
+.eventInClipboard a {
+  color: #AAA !important;
+}
+
+.pasteEventButton {
+  background-color: rgb(50, 118, 177);
+  border-color: rgb(33, 72, 106);
+}
+
+.pasteEventButton:before {
+  font-family: FontAwesome;
+  content: "\f0ea";
+  font-size: 13px;
+  color: white;
+  padding-right: 5px;
+}
+
+/* End - Cut and Paste Event v1.0 CSS */
