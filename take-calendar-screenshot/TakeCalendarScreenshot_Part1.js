@@ -208,7 +208,7 @@ try {
                 if (autoHeight) {
                     height = calendarScroll.scrollHeight + calendarScroll.getBoundingClientRect().top;
                 }
-
+              
                 // Very screen shot and determine valid size ranges for canvas
                 if (makeCustomSize == true) {
                    var wObj = document.getElementById('_screenShot_width');
