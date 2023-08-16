@@ -1,4 +1,4 @@
-// DayBack Custom Action Template v1.02
+// DayBack Custom Action Template v1.03
 
 // Purpose:
 // A standardized template for DayBack custom actions
@@ -9,25 +9,40 @@
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
 
-// Declare globals
-var options = {};
-var inputs = {};
+// @ts-check - Type checking with JSDoc (Remove this line to disable)
+
+// Declare global imports
+// @ts-ignore
+const globals = {action, dbk, seedcodeCalendar, utilities};
+
+const options = {};
+const inputs = {};
 
 try {
 	//----------- Configuration -------------------
 
 	// Options specified for this action
 
-	// Seconds to wait to allow this action to run before reporting an error (set to 0 to deactivate)
+	/**
+	 * Seconds to wait to allow this action to run before reporting an error (set to 0 to deactivate)
+	 * @type {number}
+	 */
 	options.runTimeout = 8;
-	// Array of account emails for whom this action will run. Leave blank to allow the action to run for everyone.
-	// Example: ['person@domain.com', 'someone@domain.com']
+
+	/**
+	 * Array of account emails for whom this action will run. Leave blank to allow the action to run for everyone.
+	 * Example: ['person@domain.com', 'someone@domain.com']
+	 * @type {Array<string>}
+	 */
 	options.restrictedToAccounts = [];
 
 	// Any input data for the action should be specified here
 
-	// The currently signed in account email
-	inputs.account = seedcodeCalendar.get('config').account;
+	/**
+	 * The currently signed in account email
+	 * @type {string}
+	 */
+	inputs.account = globals.seedcodeCalendar.get('config').account;
 
 	//----------- End Configuration -------------------
 } catch (error) {
@@ -43,8 +58,15 @@ function run() {
 
 //----------- Run function wrapper and helpers - you shouldn’t need to edit below this line. -------------------
 
+// Shared type definitions
+/**
+ * @typedef {Object} ActionError
+ * @property {string} name
+ * @property {string} message
+ */
+
 // Variables used for helper functions below
-var timeout;
+let timeout;
 
 // Execute the run function as defined above
 try {
@@ -54,72 +76,84 @@ try {
 		(options.restrictedToAccounts &&
 			options.restrictedToAccounts.indexOf(inputs.account) > -1)
 	) {
-		if (action.preventDefault && options.runTimeout) {
+		if (globals.action.preventDefault && options.runTimeout) {
 			timeoutCheck();
 		}
 		run();
-	} else if (action.preventDefault) {
+	} else if (globals.action.preventDefault) {
 		confirmCallback();
 	}
 } catch (error) {
 	reportError(error);
 }
 
-// Run confirm callback when preventDefault is true. Used for async actions
+/**
+ * Run confirm callback when preventDefault is true. Used for async actions
+ * @type {() => void}
+ */
 function confirmCallback() {
 	cancelTimeoutCheck();
-	if (action.callbacks.confirm) {
-		action.callbacks.confirm();
+	if (globals.action.callbacks.confirm) {
+		globals.action.callbacks.confirm();
 	}
 }
 
-// Run cancel callback when preventDefault is true. Used for async actions
+/**
+ * Run cancel callback when preventDefault is true. Used for async actions
+ * @type {() => void}
+ */
 function cancelCallback() {
 	cancelTimeoutCheck();
-	if (action.callbacks.cancel) {
-		action.callbacks.cancel();
+	if (globals.action.callbacks.cancel) {
+		globals.action.callbacks.cancel();
 	}
 }
 
-// Check if the action has run within the specified time limit when preventDefault is enabled
+/**
+ * Check if the action has run within the specified time limit when preventDefault is enabled
+ * @type {() => void}
+ */
 function timeoutCheck() {
 	timeout = setTimeout(
 		function () {
-			var error = {
+			const error = {
 				name: 'Timeout',
 				message:
 					'The action was unable to execute within the allotted time and has been stopped',
 			};
-			reportError(error, true);
+			reportError(error);
 		},
 		options && options.runTimeout ? options.runTimeout * 1000 : 0
 	);
 }
 
+/** @type {() => void} */
 function cancelTimeoutCheck() {
 	if (timeout) {
 		clearTimeout(timeout);
 	}
 }
 
-// Function to report any errors that occur when running this action
-// Follows standard javascript error reporter format of an object with name and message properties
+/**
+ * Report any errors that occur when running this action
+ * Follows standard javascript error reporter format of an object with name and message properties
+ * @type {(error: ActionError) => void}
+ */
 function reportError(error) {
-	var errorTitle = 'Error Running Custom Action';
-	var errorMessage =
-		'<p>There was a problem running the action "<span style="white-space: nowrap">' +
-		action.name +
-		'</span>"</p><p>Error: ' +
-		error.message +
-		'.</p><p>This may result in unexpected behavior of the calendar.</p>';
-	if (action.preventDefault && action.category !== event && timeout) {
+	const errorTitle = 'Error Running Custom Action';
+	const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${globals.action.name}</span>"</p><p>Error: ${error.message}.</p><p>This may result in unexpected behavior of the calendar.</p>`;
+	if (
+		globals.action.preventDefault &&
+		globals.action.category !== 'event' &&
+		timeout
+	) {
 		confirmCallback();
 	} else {
 		cancelCallback();
 	}
 
 	setTimeout(function () {
-		utilities.showModal(
+		globals.utilities.showModal(
 			errorTitle,
 			errorMessage,
 			null,
