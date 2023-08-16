@@ -1,9 +1,9 @@
 // Set CSS by User v1.0
 
 // Purpose:
-// Adds a CSS class to the calendar container tag based on
+// Adds a CSS class to the calendar container based on
 // a specific logged in user, or the logged in user's 
-// resource tag
+// matching resource tag
 
 // Action Type: After Calendar Rendered
 // Prevent Default Action: No
