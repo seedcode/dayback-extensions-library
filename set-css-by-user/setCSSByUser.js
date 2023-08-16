@@ -18,7 +18,10 @@
 // @ts-ignore
 const globals = { action, dbk, seedcodeCalendar, utilities };
 
+// @ts-ignore
 const options = {};
+
+// @ts-ignore
 const inputs = {};
 
 try {
@@ -150,7 +153,7 @@ try {
     /**
      * By defauly DayBack will look for Resource tags starting with dbkCSS. You can
      * change this if you need to, but in most cases this should not be necessary
-     * @type {boolean}
+     * @type {string}
      */
     inputs.resourceTagGroup = 'dbkCSS';
 
@@ -234,6 +237,7 @@ function run() {
  */
 
 // Variables used for helper functions below
+// @ts-ignore
 let timeout;
 
 // Execute the run function as defined above
