@@ -18,10 +18,7 @@
 // @ts-ignore
 const globals = { action, dbk, seedcodeCalendar, utilities };
 
-// @ts-ignore
 const options = {};
-
-// @ts-ignore
 const inputs = {};
 
 try {
@@ -203,7 +200,7 @@ function run() {
 
                     if (calendar !== null && !calendar.classList.contains(tagClassSelector)) {
                         calendar.classList.add(tagClassSelector);
-                        calendar.setAttribute('customCSS', 'true');
+                        calendar.dataset.customStylesheet = true;
                     }
                 }
             });
@@ -222,7 +219,7 @@ function run() {
 
         if (calendar !== null && !calendar.classList.contains(accountClassSelector)) {
             calendar.classList.add(accountClassSelector);
-            calendar.setAttribute('customCSS', 'true');
+            calendar.dataset.customStylesheet = true;
         }
     }
 }
@@ -237,7 +234,6 @@ function run() {
  */
 
 // Variables used for helper functions below
-// @ts-ignore
 let timeout;
 
 // Execute the run function as defined above
