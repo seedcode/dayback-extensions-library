@@ -164,14 +164,10 @@ try {
 // Action code goes inside this function
 function run() {
 	// Get the calendar container
-
+	/**
+	 * @type {HTMLElement | null}
+	 */
 	let calendar = document.querySelector('calendar');
-
-	let calendarDataset;
-
-	if (calendar instanceof HTMLElement) {
-		calendarDataset = calendar.dataset;
-	}
 
 	// If we are using Tags, match the user's Account Name against the Resource List
 	// and extract the Tags that match resourceTagGroup and add that group to the
@@ -218,9 +214,7 @@ function run() {
 						!calendar.classList.contains(tagClassSelector)
 					) {
 						calendar.classList.add(tagClassSelector);
-						if (calendarDataset !== null) {
-							calendarDataset.customStylesheet = true;
-						}
+						calendar.dataset.customStylesheet = 'true';
 					}
 				}
 			});
@@ -244,10 +238,7 @@ function run() {
 			!calendar.classList.contains(accountClassSelector)
 		) {
 			calendar.classList.add(accountClassSelector);
-
-			if (calendarDataset !== null && calendarDataset !== undefined) {
-				calendarDataset.customStylesheet = 'true';
-			}
+			calendar.dataset.customStylesheet = 'true';
 		}
 	}
 }
