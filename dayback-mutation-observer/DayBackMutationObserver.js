@@ -1,4 +1,4 @@
-// DayBack Mutation Observer Library - v1.0
+// DayBack Mutation Observer Library - v1.01
 
 // Purpose:
 // Installs a mutation observer library for
@@ -389,45 +389,54 @@ function run() {
 		return _observers[params.name];
 
 		// ------------------ Observer Functions ------------------
-
 		function start() {
-			if (observerObj.checkStopConditionOnStart) {
-				if (observerObj.debug)
-					console.log('O: Check Condition on Stat');
+			resolveWatch();
 
-				observerObj.checkStopConditionOnStart = false;
+			if (
+				typeof observerObj.watch !== 'string' &&
+				observerObj.watch &&
+				observerObj.watch !== undefined
+			) {
+				if (observerObj.checkStopConditionOnStart) {
+					if (observerObj.debug)
+						console.log('O: Check Condition on Stat');
 
-				if (
-					typeof observerObj.until !== 'function' &&
-					document.querySelector(observerObj.until) !== null
-				) {
-					observerObj.foundNode = document.querySelector(
-						observerObj.until
-					);
-					observerObj.foundOnStart = true;
-					observerObj.then(observerObj);
-				} else if (
-					typeof observerObj.until === 'function' &&
-					observerObj.until(observerObj)
-				) {
-					observerObj.foundOnStart = true;
-					observerObj.then(observerObj);
+					observerObj.checkStopConditionOnStart = false;
+
+					if (
+						typeof observerObj.until !== 'function' &&
+						document.querySelector(observerObj.until) !== null
+					) {
+						observerObj.foundNode = document.querySelector(
+							observerObj.until
+						);
+						observerObj.foundOnStart = true;
+						observerObj.then(observerObj);
+					} else if (
+						typeof observerObj.until === 'function' &&
+						observerObj.until(observerObj)
+					) {
+						observerObj.foundOnStart = true;
+						observerObj.then(observerObj);
+					}
 				}
+
+				if (observerObj.hasOwnProperty('observer')) {
+					return;
+				}
+
+				if (observerObj.debug)
+					console.log('O: Creating New MutationObserver Object');
+
+				observerObj.observer = new MutationObserver(
+					observerObj.callback
+				);
+				observerObj.observer.observe(
+					observerObj.watch,
+					observerObj.options
+				);
+				observerObj.running = true;
 			}
-
-			if (observerObj.hasOwnProperty('observer')) {
-				return;
-			}
-
-			if (observerObj.debug)
-				console.log('O: Creating New MutationObserver Object');
-
-			observerObj.observer = new MutationObserver(observerObj.callback);
-			observerObj.observer.observe(
-				observerObj.watch,
-				observerObj.options
-			);
-			observerObj.running = true;
 		}
 
 		function restart() {
@@ -462,6 +471,28 @@ function run() {
 				observerObj.running = false;
 			}
 			if (observerObj.debug) console.log('O: Stopped Observer');
+		}
+
+		function resolveWatch() {
+			if (typeof observerObj.watch === 'string') {
+				let watch = document.querySelector(observerObj.watch);
+				if (watch) {
+					observerObj.watch = watch;
+					restart();
+				} else {
+					observerObj.definedWatch = observerObj.watch;
+					observerObj.watch = document;
+					observerObj.definedUntil = observerObj.until;
+					observerObj.until = observerObj.definedWatch;
+					observerObj.definedThen = observerObj.then;
+					observerObj.then = function () {
+						observerObj.watch = observerObj.definedWatch;
+						observerObj.until = observerObj.definedUntil;
+						observerObj.then = observerObj.definedThen;
+						resolveWatch();
+					};
+				}
+			}
 		}
 	}
 }
