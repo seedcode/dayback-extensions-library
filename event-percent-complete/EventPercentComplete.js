@@ -132,7 +132,7 @@ function run() {
         if (eventList.length > -1) {
             for (let i = 0; i < eventList.length; i++) {
                 let cell = document.querySelector('.fc-event[data-id="' + eventList[i]['_id'] + '"]');
-                if (cell) {
+                if (cell && !cell.dataset.hasGradient) {
                     // Calculate percent complete
                     let percentComplete = filter.percentComplete(eventList[i]);
 
@@ -157,6 +157,8 @@ function run() {
                     } else if (rgb) {
                         cell.style.background = 'linear-gradient(90deg,rgba(' + rgb[0] +',' + rgb[1] + ',' + rgb[2] + ',1) ' + percentComplete + '%, rgba(' + rgb[0] +',' + rgb[1] + ',' + rgb[2] + ',0.1) ' + percentComplete + '%)';
                     }
+                    
+                    cell.dataset.hasGradient = true;
                 }
             }
         }
@@ -228,7 +230,7 @@ function cancelTimeoutCheck() {
 function reportError(error) {
     var errorTitle = 'Error Running Custom Action';
     var errorMessage = '<p>There was a problem running the action "<span style="white-space: nowrap">' + action.name + '</span>"</p><p>Error: ' + error.message + '.</p><p>This may result in unexpected behavior of the calendar.</p>';
-    if (action.preventDefault && timeout) {
+    if (action.preventDefault && action.category !== event && timeout) {
         confirmCallback();
     }
     else {

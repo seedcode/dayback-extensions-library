@@ -194,7 +194,7 @@ function reportError(error) {
         '</span>"</p><p>Error: ' +
         error.message +
         ".</p><p>This may result in unexpected behavior of the calendar.</p>";
-    if (action.preventDefault && timeout) {
+    if (action.preventDefault && action.category !== event && timeout) {
         confirmCallback();
     } else {
         cancelCallback();
