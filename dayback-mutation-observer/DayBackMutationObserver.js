@@ -419,6 +419,15 @@ function run() {
 				return;
 			}
 
+			if (observerObj.foundOnStart) {
+				if (observerObj.debug)
+					console.log(
+						'O: Found Condition on Start. No need to observe.'
+					);
+
+				return;
+			}
+
 			if (observerObj.debug)
 				console.log('O: Creating New MutationObserver Object');
 
