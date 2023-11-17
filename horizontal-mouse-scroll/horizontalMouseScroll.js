@@ -1,3 +1,5 @@
+
+
 //Horizontal mouse scroll to page change
 
 //Purpose:
@@ -11,11 +13,9 @@
 
 var config = {
 	delay: 1000,
-};
+}
 
-setTimeout(function () {
-	Initialize(seedcodeCalendar);
-}, 1000);
+setTimeout(function () { Initialize(seedcodeCalendar); }, 1000);
 
 function Initialize(seedcodeCalendar) {
 	console.log('initializing Horizontal Scroll to Date Change');
@@ -24,43 +24,35 @@ function Initialize(seedcodeCalendar) {
 	var backTimeout;
 	var fwdTimeout;
 	var lastScrollDirection;
-	var clickTimeout;
-
-	let navButtonLeft = document.querySelector('.dbk_icon_arrow_left');
-	let navButtonRight = document.querySelector('.dbk_icon_arrow_right');
+	var focusDate;
 
 	if (scroll) {
 		scroll.onwheel = function (e) {
 			view = seedcodeCalendar.get('view');
-			if (
-				e.deltaX < 0 &&
-				e.deltaY == 0 &&
-				!clickTimeout &&
-				(!backTimeout || lastScrollDirection === 'fwd')
-			) {
+			if (e.deltaX < 0 && (!backTimeout || lastScrollDirection === 'fwd')) {
 				lastScrollDirection = 'back';
+				if (view.name === 'month' || view.name === 'agendaResourceVert') {
+					focusDate = moment(view.title).subtract(1, 'months');
+				}
+				else {
+					focusDate = view.start.clone().subtract(view.end.clone().diff(view.start.clone(), 'days'), 'days');
+				}
+				location.hash = "/?date=" + focusDate.toISOString();
 				backTimeout = true;
-				clickTimeout = true;
-				navButtonLeft.click();
-				setTimeout(function () {
-					backTimeout = false;
-					clickTimeout = false;
-				}, config.delay);
-			} else if (
-				e.deltaX > 0 &&
-				e.deltaY == 0 &&
-				!clickTimeout &&
-				(!fwdTimeout || lastScrollDirection === 'back')
-			) {
-				lastScrollDirection = 'fwd';
-				fwdTimeout = true;
-				clickTimeout = true;
-				navButtonRight.click();
-				setTimeout(function () {
-					fwdTimeout = false;
-					clickTimeout = false;
-				}, config.delay);
+				setTimeout(function () { backTimeout = false; }, config.delay);
 			}
-		};
+			else if (e.deltaX > 0 && (!fwdTimeout || lastScrollDirection === 'back')) {
+				lastScrollDirection = 'fwd';
+				if (view.name === 'month' || view.name === 'agendaResourceVert') {
+					focusDate = moment(view.title).add(1, 'months');
+				}
+				else {
+					focusDate = view.end.clone();
+				}
+				location.hash = "/?date=" + focusDate.toISOString();
+				fwdTimeout = true;
+				setTimeout(function () { fwdTimeout = false; }, config.delay);
+			}
+		}
 	}
 }
