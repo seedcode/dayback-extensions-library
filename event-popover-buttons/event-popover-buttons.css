@@ -1,0 +1,32 @@
+/* Event Custom Buttons CSS v1.0  */
+
+.popoverButtonStyles .dbk_button_text_danger {
+    min-width: 40px;
+    padding: 2px 10px;
+    float: left;
+}
+.popoverButtonStyles .dbk_button_success {
+    min-width: 40px;
+    padding: 2px 10px;
+    float: left;
+    margin-left: 5px;
+}
+
+.popoverButtonStyles .dbk_button_default {
+    min-width: 40px;
+    padding: 2px 10px;
+    float: left;
+    margin-left: 5px;
+}
+
+.popoverButtonStyles .btn-icon {
+    min-width: 30px;
+    padding: 2px 0px;
+    margin-right: 5px;
+    border-color: rgb(66, 139, 202);
+    background-color: rgb(66, 139, 202);
+}
+
+.popoverButtonStyles .btn-icon:hover {
+	filter: saturate(0.8);
+}
