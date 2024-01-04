@@ -57,7 +57,7 @@ try {
     //
     // buttonTooltip
     //		This text will appear when you hover over the button.
-    //		There is a half second delay before the tooltip will
+    //		There is a 3/4 second delay before the tooltip will
     //		appear.
     //
     // buttonClass
@@ -131,7 +131,7 @@ try {
     // a tooltip description of the button when a user hovers over the
     // button.
 
-    inputs.tooltipHoverDelay = 500;
+    inputs.tooltipHoverDelay = 750;
 
     //----------- End Configuration -------------------
 
@@ -181,9 +181,18 @@ function run() {
             }
         }
 
+        // Get Root class to assign active color variables
+
+        let root = document.querySelector(':root');
+        let rootStyle = getComputedStyle(root);
+        let btnNumber = 0;
+
         // Add buttons to button bar
 
         inputs.buttons.forEach((b) => {
+
+            btnNumber++;
+
             // Check if the button is applicable to this event
             if (b.checkIfApplicable && !b.checkIfApplicable()) {
                 return;
@@ -210,6 +219,7 @@ function run() {
             }
 
             if (b.buttonColor && b.buttonColor != "") {
+                root.style.setProperty('--popoverButtonStyles' + btnNumber, b.buttonColor);
                 btn.style.borderColor = b.buttonColor;
                 btn.style.backgroundColor = b.buttonColor;
             }
