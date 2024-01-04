@@ -5,6 +5,7 @@
     padding: 2px 10px;
     float: left;
 }
+
 .popoverButtonStyles .dbk_button_success {
     min-width: 40px;
     padding: 2px 10px;
@@ -25,6 +26,20 @@
     margin-right: 5px;
     border-color: rgb(66, 139, 202);
     background-color: rgb(66, 139, 202);
+}
+
+.popoverButtonStyles .btn-icon:last-of-type {
+  margin-right: 13px;
+}
+
+.popoverButtonStyles .btn-icon {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+}
+
+.popoverButtonStyles .btn-icon span {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
 }
 
 .popoverButtonStyles .btn-icon:hover {
