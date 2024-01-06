@@ -57,19 +57,50 @@ try {
     //
     // buttonTooltip
     //		This text will appear when you hover over the button.
-    //		There is a 3/4 second delay before the tooltip will
+    //		There is a half second delay before the tooltip will
     //		appear.
     //
     // buttonClass
     //		An optional CSS class name to apply to the button.
     //
     // buttonIcon
-    //		Specify which icon you want to use for your button.
-    // 		Please use an fa-button-code-name from the FontAwesome
-    //		version 4 icon list: https://fontawesome.com/v4/icons/
+    //      If you'd like to use native Salesforce icons, you can 
+    //      use any of the following icon codes:
+    //
+    //          sf_icon_calendar
+    //          sf_icon_list
+    //          sf_icon_merge
+    //          sf_icon_email
+    //          sf_icon_users
+    //          sf_icon_building
+    //
+    //		If you'd like to use DayBack's native icons and HEX, or
+    //      RGB colors, please specify which icon you want to use for
+    //      button, using the FontAwesome icon code name which looks
+    //      like fa-button-code-name. See the FontAwesome version 4
+    //		icon list for reference: https://fontawesome.com/v4/icons/
+    //
+    //      FontAwesome Icon & Color Example:
+    //
+    //          buttonIcon: 'fa-list',
+    //          buttonColor: 'green'
+    //
+    //      Salesforce Icon & Color Example:
+    //
+    //          buttonIcon: 'sf_icon_',
+    //          buttonColor: 'green'
     //
     // buttonColor
     //		Specify a HEX or RGB color code to apply to the button.
+    //      Alternative, you may use native Salesforce colors. Available
+    //      colors are configurable in the CSS.
+    //
+    //          sf_color_pink
+    //          sf_color_green
+    //          sf_color_orange
+    //          sf_color_gray
+    //          sf_color_purple
+    //          sf_color_salmon
     //
     // buttonText
     //		Specify if the button should contain text next to, or
@@ -102,10 +133,10 @@ try {
 
     inputs.buttons = [
         {
-            buttonTooltip: "Open Record",
+            buttonTooltip: "Open Zoom",
             buttonClass: "openRecord",
-            buttonIcon: "fa-list",
-            buttonColor: "darkblue",
+            buttonIcon: "sf_icon_calendar",
+            buttonColor: "sf_color_pink",
             buttonText: "",
 
             checkIfApplicable: function () {
@@ -131,7 +162,26 @@ try {
     // a tooltip description of the button when a user hovers over the
     // button.
 
-    inputs.tooltipHoverDelay = 750;
+    inputs.tooltipHoverDelay = 500;
+
+    // Below are Salesforce icons you may user in your button definitions. 
+    // To use Salesforce-specific definitions, you will need to install
+    // the optional salesforce_icons.css in the DayBack CSS configuration
+
+    inputs.salesforceIcons = {
+
+        sf_icon_calendar: '<svg focusable="false" data-key="event" aria-hidden="true" viewBox="0 0 100 100" part="icon"><g><path d="M76 42H24c-1.1 0-2 .9-2 2v30c0 3.3 2.7 6 6 6h44c3.3 0 6-2.7 6-6V44c0-1.1-.9-2-2-2zM40 70c0 1.1-.9 2-2 2h-4c-1.1 0-2-.9-2-2v-4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v4zm0-14c0 1.1-.9 2-2 2h-4c-1.1 0-2-.9-2-2v-4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v4zm14 14c0 1.1-.9 2-2 2h-4c-1.1 0-2-.9-2-2v-4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v4zm0-14c0 1.1-.9 2-2 2h-4c-1.1 0-2-.9-2-2v-4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v4zm14 14c0 1.1-.9 2-2 2h-4c-1.1 0-2-.9-2-2v-4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v4zm0-14c0 1.1-.9 2-2 2h-4c-1.1 0-2-.9-2-2v-4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v4zM72 26h-5v-2c0-2.2-1.8-4-4-4s-4 1.8-4 4v2H41v-2c0-2.2-1.8-4-4-4s-4 1.8-4 4v2h-5c-3.3 0-6 2.7-6 6v2c0 1.1.9 2 2 2h52c1.1 0 2-.9 2-2v-2c0-3.3-2.7-6-6-6z"></path></g></svg>',
+
+        sf_icon_list: '<svg focusable="false" data-key="task" aria-hidden="true" viewBox="0 0 100 100" part="icon"><g><path d="M46.6 23.7l-2.1-2.1c-.6-.6-1.5-.6-2.1 0L29.2 34.8l-5.3-5.3c-.6-.6-1.5-.6-2.1 0l-2.1 2.1c-.6.6-.6 1.5 0 2.1l7.4 7.4c.6.6 1.4.9 2.1.9.8 0 1.5-.3 2.1-.9l15.3-15.3c.5-.5.5-1.5 0-2.1zM77 38H51c-1.1 0-2-.9-2-2v-4c0-1.1.9-2 2-2h26c1.1 0 2 .9 2 2v4c0 1.1-.9 2-2 2zM77 56H45c-1.1 0-2-.9-2-2v-4c0-1.1.9-2 2-2h32c1.1 0 2 .9 2 2v4c0 1.1-.9 2-2 2zM33 56h-4c-1.1 0-2-.9-2-2v-4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v4c0 1.1-.9 2-2 2zM33 74h-4c-1.1 0-2-.9-2-2v-4c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v4c0 1.1-.9 2-2 2zM77 74H45c-1.1 0-2-.9-2-2v-4c0-1.1.9-2 2-2h32c1.1 0 2 .9 2 2v4c0 1.1-.9 2-2 2z"></path></g></svg>',
+
+        sf_icon_merge: '<svg focusable="false" data-key="merge" aria-hidden="true" viewBox="0 0 100 100" part="icon"><g><path d="M70.5 72.5c-7-3.4-12-9.4-14.5-16.3-1-2.6-1.6-5.3-1.9-7.9v-4.4h13.6c1.1 0 1.7-1.2 1-2.2L51 20.5c-.6-.8-2-.8-2.5 0L31.2 41.7c-.6.8 0 2.2 1 2.2h13.7V48.3c-.3 2.7-1 5.5-1.9 7.9-2.6 6.8-7.5 12.9-14.5 16.3-1 .4-1.4 1.6-1 2.6l1.6 3.8c.5 1.1 1.6 1.4 2.7.8 7.6-3.6 13.5-9.4 17.2-16.2 3.7 6.9 9.6 12.6 17.3 16.2 1.1.5 2.2.4 2.7-.8l1.6-3.8c.4-1-.1-2.2-1.1-2.6z"></path></g></svg>',
+
+        sf_icon_email: '<svg focusable="false" data-key="email" aria-hidden="true" viewBox="0 0 100 100" part="icon"><g><path d="M48.7 55c.8.7 1.9.7 2.7 0l28.3-26.2c.5-1 .4-2.6-1.6-2.6l-56 .1c-1.5 0-2.7 1.4-1.6 2.6L48.7 55z"></path><path d="M80 40c0-1.3-1.6-2-2.5-1.1l-22 20.4c-1.5 1.4-3.4 2.1-5.4 2.1s-3.9-.7-5.4-2.1L22.6 38.9c-1-.9-2.5-.2-2.5 1.1v26c0 3.3 2.7 6 6 6h48c3.3 0 6-2.7 6-6-.1 0-.1-18-.1-26z"></path></g></svg>',
+
+        sf_icon_users: '<div class="sf_icon_users"></div>',
+
+        sf_icon_building: '<div class="sf_icon_building"></div>'
+    };
 
     //----------- End Configuration -------------------
 
@@ -144,7 +194,7 @@ try {
 // Action code goes inside this function
 function run() {
 
-    seedcodeCalendar.get("dbkObserver").new({
+    utilities.observe({
         name: "addPopoverButton" + event._id,
         watch: document.getElementById("calendar"),
         until: ".edit.dbk_popover.dbk_editEvent",
@@ -162,6 +212,15 @@ function run() {
         if (!container) {
             container = document.querySelector('[ng-if="!edit.editable"]');
         }
+
+        container.parentElement.classList.add("popoverButtonStyles");
+
+        // Add button tray
+
+        let buttonTray = document.createElement('DIV');
+        buttonTray.classList = 'popoverButtonTray';
+
+        container.appendChild(buttonTray);
 
         // Shorten Save Button
 
@@ -198,18 +257,32 @@ function run() {
                 return;
             }
 
-            container.parentElement.classList.add("popoverButtonStyles");
-            let btn = document.createElement("BUTTON");
-            btn.classList = "btn btn-xs btn-success btn-icon";
+
+
+            let isSalesforceIcon = b.buttonIcon && b.buttonIcon != "" && b.buttonIcon.includes('sf_icon') ? true : false;
+            let isSalesforceColor = b.buttonColor && b.buttonColor != "" && b.buttonColor.includes('sf_color') ? true : false;
+            let btn = document.createElement(isSalesforceIcon ? "DIV" : "BUTTON");
+
+            btn.classList = isSalesforceIcon ? 'sf_icon_wrapper' : 'btn btn-xs btn-success btn-icon';
 
             if (b.buttonClass && b.buttonClass != "") {
                 btn.classList.add(b.buttonClass);
             }
 
+            let icon;
+
             if (b.buttonIcon && b.buttonIcon != "") {
-                let icon = document.createElement("I");
-                icon.classList = "fa fa-fw " + b.buttonIcon;
-                btn.appendChild(icon);
+
+                if (isSalesforceIcon) {
+                    icon = document.createElement("DIV");
+                    icon.classList = "sf_icon";
+                    icon.innerHTML = inputs.salesforceIcons[b.buttonIcon];
+                    btn.appendChild(icon);
+                } else {
+                    icon = document.createElement("I");
+                    icon.classList = "fa fa-fw " + b.buttonIcon;
+                    btn.appendChild(icon);
+                }
             }
 
             if (b.buttonText && b.buttonText != "") {
@@ -219,9 +292,14 @@ function run() {
             }
 
             if (b.buttonColor && b.buttonColor != "") {
-                root.style.setProperty('--popoverButtonStyles' + btnNumber, b.buttonColor);
-                btn.style.borderColor = b.buttonColor;
-                btn.style.backgroundColor = b.buttonColor;
+
+                if (isSalesforceColor) {
+                    icon.classList.add(b.buttonColor);
+                } else {
+                    root.style.setProperty('--popoverButtonStyles' + btnNumber, b.buttonColor);
+                    btn.style.borderColor = b.buttonColor;
+                    btn.style.backgroundColor = b.buttonColor;
+                }
             }
 
             // Add tooltips
@@ -233,7 +311,7 @@ function run() {
                     targetElement: btn,
                 };
 
-                container.appendChild(btn);
+                buttonTray.appendChild(btn);
 
                 // Add custome handelers, as tooltip has to be
                 // reconstructed given z-index changes post
