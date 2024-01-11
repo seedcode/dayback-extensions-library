@@ -52,7 +52,7 @@ try {
     // modifications to this app action to accomodate a large quantity of
     // buttons.
     //
-    // All button configuration fields are optional, unless designatedas
+    // All button configuration fields are optional, unless designated as
     // required with a '*'.
     //
     // buttonTooltip
@@ -87,7 +87,7 @@ try {
     //
     //      Salesforce Icon & Color Example:
     //
-    //          buttonIcon: 'sf_icon_',
+    //          buttonIcon: 'sf_icon_calendar',
     //          buttonColor: 'green'
     //
     // buttonColor
@@ -164,7 +164,7 @@ try {
 
     inputs.tooltipHoverDelay = 500;
 
-    // Below are Salesforce icons you may user in your button definitions. 
+    // Below are Salesforce icons you may use in your button definitions. 
     // To use Salesforce-specific definitions, you will need to install
     // the optional salesforce_icons.css in the DayBack CSS configuration
 
