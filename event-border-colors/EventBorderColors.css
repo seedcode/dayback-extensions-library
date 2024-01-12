@@ -8,23 +8,19 @@
  * that is distinct for each reminder type.
  */
  
- .reminderType_checkin_class {
-    border-left-color: rgb(0, 204, 255) !important;
-    border-left-width: 5px !important;
+.reminderType_checkin_class {
+    border-left: 5px solid rgb(0, 204, 255) !important;
   }
   
-.reminderType_estimate_class {
-    border-left-color: green !important;
-    border-left-width: 5px !important;
+.reminderType_ee_class {
+    border-left: 5px solid green !important;
 }
 
-.reminderType_troubleshoot_class {
-    border-left-color: orange !important;
-    border-left-width: 5px !important;
+.reminderType_tshoot_class {
+    border-left: 5px solid orange !important;
 }
 
-.reminderType_other_class {
-    border-left-color: darkblue !important;
-    border-left-width: 5px !important;
+.reminderType_olass {
+    border-left: 5px solid darkblue !important;
 }
   
