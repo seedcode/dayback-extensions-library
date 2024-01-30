@@ -437,7 +437,6 @@ function run() {
                 button = b;
             }
         });
-        console.log(button);
         return button;
     }
 
@@ -464,7 +463,7 @@ function run() {
         // Get Button row
 
         let footer = document.querySelector('.utility-drawer.active .panel-switch.panel-' + leftright + ' .select-list.with-footer');
-        let buttonContainer = document.querySelector('.utility-drawer.active .panel-switch.panel-' + leftright + ' .select-list-footer');
+        let buttonContainer = document.querySelector('.utility-drawer.active .panel-switch.panel-right .select-list-footer');
 
         if (!footer) {
             footer = document.querySelector('.utility-drawer.active .select-list.with-footer');
