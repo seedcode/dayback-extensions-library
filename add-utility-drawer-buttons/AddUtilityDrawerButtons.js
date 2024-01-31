@@ -339,7 +339,7 @@ function run() {
                     dbk.observe({
                         name: event._id + "_ud_" + drawerName,
                         watch: document.querySelector('.ng-popover'),
-                        until: '.select-list.with-footer',
+                        until: '.utility-drawer.active .select-list-footer',
                         then: function (o) { o.destroy(); addCustomButtons(o, drawerName); }
                     });
                 }
@@ -369,7 +369,7 @@ function run() {
                         dbk.observe({
                             name: event._id + "_ud_" + drawerName,
                             watch: document.querySelector('.ng-popover'),
-                            until: '.select-list.with-footer',
+                            until: '.utility-drawer.active .select-list-footer',
                             then: function (o) { o.destroy(); addCustomButtons(o, drawerName); }
                         });
                     }
