@@ -311,7 +311,7 @@ function run() {
         name: 'eventOpener',
         watch: document.getElementById('calendar'),
         until: '.dbk_popover .panel-selector',
-        then: function (o) { o.destroy(); setTimeout(function () { addClickHandlers(); }, 500); }
+        then: function (o) { o.destroy(); setTimeout(function () { addClickHandlers(); }, 100); }
     });
 
     function addClickHandlers() {
@@ -330,6 +330,21 @@ function run() {
 
             let drawerName = p.getAttribute('name');
 
+            // If panel active, add button immediately
+
+            if (p.classList.contains('panelActivate')) {
+
+                if (drawerName != 'dateEnd' && drawerName != 'dateStart' && utilityDrawers.hasOwnProperty(drawerName)) {
+
+                    dbk.observe({
+                        name: event._id + "_ud_" + drawerName,
+                        watch: document.querySelector('.ng-popover'),
+                        until: '.select-list.with-footer',
+                        then: function (o) { o.destroy(); addCustomButtons(o, drawerName); }
+                    });
+                }
+            }
+
             // Attach panel click handler
 
             p.addEventListener('click', function () {
@@ -345,11 +360,11 @@ function run() {
 
                 if (!p.classList.contains('panelActive') && p.classList.contains('panelActivate-add')) {
 
-                    if (drawerName != 'dateEnd' && drawerName != 'dateStart' && utilityDrawers.hasOwnProperty(drawerName)) {
+                    if (options.discoverDrawerNames) {
+                        console.log("Draw Name: " + p.getAttribute('name'));
+                    }
 
-                        if (options.discoverDrawerNames) {
-                            console.log("Draw Name: " + p.getAttribute('name'));
-                        }
+                    if (drawerName != 'dateEnd' && drawerName != 'dateStart' && utilityDrawers.hasOwnProperty(drawerName)) {
 
                         dbk.observe({
                             name: event._id + "_ud_" + drawerName,
@@ -404,9 +419,11 @@ function run() {
 
         // Remove prior footer classe big button definitions if any where added
 
-        let footer = document.querySelector('.select-list.with-footer');
-        if (footer && drawerName != 'customFields' && drawerName != 'buttonActions') {
-            footer.classList.remove('additional');
+        let footers = document.querySelectorAll('.select-list.with-footer');
+        if (footers && drawerName != 'customFields' && drawerName != 'buttonActions') {
+            footers.forEach((f) => {
+                f.classList.remove('additional');
+            });
         }
 
         // Delete old buttons
@@ -465,20 +482,14 @@ function run() {
         let footer = document.querySelector('.utility-drawer.active .panel-switch.panel-' + leftright + ' .select-list.with-footer');
         let buttonContainer = document.querySelector('.utility-drawer.active .panel-switch.panel-right .select-list-footer');
 
+        if (drawerName == 'customFields') {
+            footer = document.querySelector('.utility-drawer.active .panel-switch.panel-left .select-list.with-footer');
+            buttonContainer = document.querySelector('.utility-drawer.active .panel-switch.panel-left .select-list-footer');
+        }
+
         if (!footer) {
             footer = document.querySelector('.utility-drawer.active .select-list.with-footer');
             buttonContainer = document.querySelector('.utility-drawer.active .select-list-footer');
-        }
-
-        // Check if the type of panel we are modifying already has a button
-
-        let hasButton = buttonContainer && buttonContainer.querySelector('button.add-additional-field');
-
-        // Delete old buttons
-
-        let previousButton = document.querySelector('button.utilityPanelLargeButton');
-        if (previousButton) {
-            previousButton.parentElement.removeChild(previousButton);
         }
 
         // Add Large Text buttons if we have them for this panel, and if they apply.
@@ -492,7 +503,7 @@ function run() {
             // Only allow drawing of Text Buttons if we don't already have one. This
             // includes custom fields, button actions, and dates
 
-            if (buttonContainer && !hasButton && drawerName != 'dateEnd' && drawerName != 'dateStart' && drawerName != 'buttonActions' && drawerName != 'customFields') {
+            if (buttonContainer && drawerName != 'dateEnd' && drawerName != 'dateStart' && drawerName != 'buttonActions' && drawerName != 'customFields') {
 
                 // Add new text button and attach click handler
 
@@ -540,7 +551,7 @@ function run() {
         container.parentElement.classList.add("utilityButtonStyles");
 
         // Check if container has help icon element which requires we shift buttons left
-        let helpIcon = container.querySelector('.utility-drawer.active button.btn-help');
+        let helpIcon = document.querySelector('.utility-drawer.active button.btn-help');
 
         // Add button tray
         let buttonTray = document.createElement('DIV');
