@@ -92,8 +92,10 @@ try {
     //
     // buttonColor
     //		Specify a HEX or RGB color code to apply to the button.
-    //      Alternative, you may use native Salesforce colors. Available
-    //      colors are configurable in the CSS.
+    //      Alternatively, if you are using Salesforce buttons, you can
+    //      specify a Salesforce color. The following Salesforce color 
+    //      color short codes are available, but will only work with 
+    //      Salesforce buttons.
     //
     //          sf_color_pink
     //          sf_color_green
@@ -101,6 +103,9 @@ try {
     //          sf_color_gray
     //          sf_color_purple
     //          sf_color_salmon
+    //
+    //      If you want to use these colors in a regular button, you can
+    //      copy the HEX code values from the accompanying CSS file.
     //
     // buttonText
     //		Specify if the button should contain text next to, or
