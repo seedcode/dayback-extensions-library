@@ -26,11 +26,11 @@ try {
     // Example Configuration:
     // ----------------------
     //
-    // Below is an example data structure that configures a Text Button in the
-    // Contacts drawer, and Icon buttons in the Projects and Resouirces utility 
-    // drawerers.
+    // Below is an example data structure that configures a Text button in the
+    // Contacts drawer, and Icon buttons in the Projects and Resources utility 
+    // drawers.
     //
-    // You can modify this basic example according the configuration instructions 
+    // You can modify this basic example according to the configuration instructions 
     // provided below this data structure.
 
     inputs.buttons = [
@@ -46,7 +46,7 @@ try {
                 return true;
             },
             buttonAction: function () {
-                // Code that let you add a contact lives here
+                // Code that lets you add a contact lives here
                 alert("...");
             },
         },
@@ -66,7 +66,7 @@ try {
                 return true;
             },
             buttonAction: function () {
-                // Code that let you add a record lives here
+                // Code that lets you add a record lives here
                 alert("...");
             },
         },
@@ -86,7 +86,7 @@ try {
                 return true;
             },
             buttonAction: function () {
-                // Code that let you add a resource lives here
+                // Code that lets you add a resource lives here
                 alert("...");
             },
         },
@@ -105,7 +105,7 @@ try {
     // -----------------------------------
     //
     // You may add one or more buttons to one or more utility drawers.
-    // There are two supported button layout:
+    // There are two supported button styles: text and icon.
     //
     // Option 1: Text Button
     //
@@ -139,7 +139,7 @@ try {
     //
     //          resource, status, contact, project, customFields, buttonActions
     //
-    //      The related to records are typically under the project utility
+    //      The "related to" records are typically under the project utility
     //      drawer
     //
     // checkIfApplicable: function() { ... }
@@ -167,7 +167,7 @@ try {
     // Configuring Icon Buttons:
     // -------------------------
     //
-    // The following parameters are requires to configure an icon button
+    // The following parameters are required to configure an icon button
     // that  will appear next to the close button in the specified
     // utility drawer.
     //
@@ -218,7 +218,7 @@ try {
     //
     //      Salesforce Icon & Color Example:
     //
-    //          buttonIcon: 'sf_icon_',
+    //          buttonIcon: 'sf_icon_list',
     //          buttonColor: 'green'
     //
     // buttonColor
@@ -353,7 +353,7 @@ function run() {
                 cleanUpRenderedButtons(drawerName);
 
                 // If we are opening a new panel, rather than closing one
-                // add have defined buttons for thgat drawer, modify that
+                // add have defined buttons for that drawer, modify that
                 // panel when the drawer is open. We don't include date 
                 // and time panels to reduce CPU cycles as these are
                 // not likely to be modified by users.
@@ -403,7 +403,7 @@ function run() {
         }
     }
 
-    // Utility function is used to clean prior applies CSS classes whether we are 
+    // Utility function is used to clean prior applied CSS classes whether we are 
     // loading or unloading a button drawer
 
     function cleanUpRenderedButtons(drawerName) {
@@ -417,7 +417,7 @@ function run() {
             });
         }
 
-        // Remove prior footer classe big button definitions if any where added
+        // Remove prior footer class big button definitions if any were added
 
         let footers = document.querySelectorAll('.select-list.with-footer');
         if (footers && drawerName != 'customFields' && drawerName != 'buttonActions') {
