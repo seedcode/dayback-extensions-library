@@ -1,0 +1,27 @@
+/* Pie Chart Analytics - v1.0 */
+
+.breakout-footer-total-container.pieChartButton {
+    line-height: 35px;
+    vertical-align: center;
+    font-size: 28px;
+    cursor: pointer;
+    opacity: 0;
+    transition: all .3s ease-in-out;
+}
+
+.breakout-footer-total-container.pieChartButton i {
+    vertical-align: -6px;
+}
+
+.breakout-footer-total-container.pieChartButton.active {
+    opacity: 1;
+    transition: all .3s ease-in-out;
+}
+
+#pieChart svg {
+    filter: drop-shadow(3px 3px 10px rgb(0 0 0 / 0.4));
+}
+
+#pieChart svg .ct-label {
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+}
