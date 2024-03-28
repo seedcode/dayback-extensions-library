@@ -26,8 +26,9 @@ try {
 
         inputs.reminderCalendar = [ 'SeedCode Shared' ];
 
-        // Define the Custom Field name that contains information 
-        // that can be used to style an Event
+        // Set the Custom Field that contains information 
+        // that can be used to style an Event. Set this to the
+        // "Store in Field" name of your Custom Field
 
         inputs.customFieldName = 'reminderType';
             
