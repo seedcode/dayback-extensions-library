@@ -1,0 +1,29 @@
+/* Drag to Sort Unscheduled Events v1.0 CSS */
+
+.unscheduledDropFade {
+    background: rgb(93,107,130);
+    background: linear-gradient(-45deg, rgba(93,107,130,1) 10%, rgba(133,147,170,1) 20%, rgba(93,107,130,1) 50%);
+	background-size: 400% 400%;
+	animation: gradient 0.5s ease-in-out;
+}
+
+.unscheduledSaveFade {
+    filter: grayscale(1);
+    opacity: 0.5;
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+        scale: 1.1;
+	}
+	50% {
+		background-position: 50% 50%;
+	}
+	100% {
+		background-position: 100% 100%;
+        scale: 1;
+	}	
+}
+
+/* END - Drag to Sort Unscheduled Events v1.0 CSS */
