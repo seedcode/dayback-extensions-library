@@ -25,7 +25,7 @@ try {
     // Define whether newly-added unscheduled events appear at the top, or on
     // bottom of the unscheduled event drawer
 
-    inputs.newEventsOnTop = true;
+    inputs.newEventsOnTop = false;
 
     // You must also have at least one Calendar Source with Unscheduled 
     // Events enabled. Additionally, this app action requires the definition 
@@ -52,7 +52,7 @@ try {
 
     inputs.isSortableEvent = function (event) {
         let sequenceFieldName = dbk.getCustomFieldIdByName(inputs.sequenceFieldName, event.schedule);
-        return event.unscheduled && sequenceFieldName && event.hasOwnProperty(sequenceFieldName) ? true : false;
+        return event.unscheduled && event.schedule.editable && sequenceFieldName && event.hasOwnProperty(sequenceFieldName) ? true : false;
     }
 
     //----------- End Configuration -------------------        
@@ -207,7 +207,7 @@ function run() {
 
                 // Add drag and mouseenter handlers
 
-                if (ddmo.isSortableEvent(event) || !cell.classList.contains('sortableUnscheduledEvent')) {
+                if (ddmo.isSortableEvent(event) || (event.schedule.editable && !cell.classList.contains('sortableUnscheduledEvent'))) {
                     cell.draggable = true;
                     cell.classList.add('sortableUnscheduledEvent');
                     cell.ondragstart = function (ev) { dragStartHandler(ev, cell, event); };
