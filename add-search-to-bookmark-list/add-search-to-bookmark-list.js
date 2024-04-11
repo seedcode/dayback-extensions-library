@@ -143,15 +143,38 @@ function run() {
                     filterInput.setAttribute('type', 'text');
                     filterInput.classList = 'pull-right';
                     filterInput.style.color = 'black';
-                    filterInput.style.marginTop = '13px';
+                    filterInput.style.marginTop = '12px';
                     filterInput.style.marginRight = '13px';
-                    filterInput.style.height = '1em';
+                    filterInput.style.height = '22px';
+                    filterInput.style.fontSize = '13px';
+                    filterInput.style.paddingLeft = '10px';
+                    filterInput.style.border = '1px solid rgba(155,155,155)';
+					filterInput.style.borderRadius = '8px';
                     filterInput.placeholder = 'Search';
+
+                    let closeIcon = document.createElement('i');
+                    closeIcon.onclick = () => {
+                        filterInput.value = '';
+                        filterBookmarks();
+                        filterInput.focus();
+                    };
+
+                    closeIcon.classList = 'fa fa-fw fa-times';
+                    closeIcon.style.float = 'right';
+                    closeIcon.style.position = 'absolute';
+                    closeIcon.style.top = '18px';
+                    closeIcon.style.right = '17px';
+                    closeIcon.style.fontSize = '13px';
+                    closeIcon.style.color = 'rgba(155,155,155)';
+
                     header.appendChild(filterInput);
+                    header.appendChild(closeIcon);
 
                     setTimeout(() => { filterInput.focus(); }, 200);
 
-                    filterInput.onkeyup = function (ev) {
+                    filterInput.onkeyup = filterBookmarks;
+                    
+                    function filterBookmarks (ev) {
                         var bookmarkElements = document.querySelectorAll(
                             '[ng-repeat="item in share.list"]'
                         );
@@ -159,7 +182,7 @@ function run() {
                             var title = bookmark.querySelector(
                                 '.modal-select-list-title'
                             ).innerText;
-                            if (
+                            if (!ev || 
                                 title
                                     .toLowerCase()
                                     .includes(ev.target.value.toLowerCase())
