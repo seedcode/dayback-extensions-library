@@ -1,0 +1,259 @@
+/* To Do Events v1.0 CSS */
+
+.unscheduledDropFade {
+    background: rgb(93,107,130);
+    background: linear-gradient(-45deg, rgba(93,107,130,1) 10%, rgba(133,147,170,1) 20%, rgba(93,107,130,1) 50%);
+	background-size: 400% 400%;
+	animation: gradient 0.5s ease-in-out;
+}
+
+.unscheduledSaveFade {
+    filter: grayscale(1);
+    opacity: 0.5;
+}
+
+.unscheduledHideOnDrag {
+    opacity: 0;
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+        scale: 1.1;
+	}
+	50% {
+		background-position: 50% 50%;
+	}
+	100% {
+		background-position: 100% 100%;
+        scale: 1;
+	}	
+}
+
+.unscheduled.unscheduled-container.dbk_todo .nano-content {
+    padding-bottom: 50px;
+}
+
+.unscheduled.unscheduled-container.dbk_notodo .color-swatch {
+    visibility: hidden;
+    opacity: 0;
+}
+
+.unscheduled.unscheduled-container.dbk_todo .color-swatch {
+    visibility: visible;
+    opacity: 1;
+}
+
+.unscheduled.unscheduled-container .color-swatch {
+    margin-left: 25px;
+    margin-right: 9px;
+}
+
+.unscheduled.unscheduled-container [role="button"].unscheduledToDoItem .color-swatch {
+    display: none;
+}
+.unscheduled.unscheduled-container [role="button"].unscheduledToDoItem .color-swatch-container i {
+    display: block;
+    font-size: 2.5rem;
+    padding-left: 15px;    
+}
+.unscheduled.unscheduled-container [role="button"]:not(.unscheduledToDoItem) .color-swatch {
+    display: block;
+}
+.unscheduled.unscheduled-container [role="button"]:not(.unscheduledToDoItem) .color-swatch-container i {
+    display: none;
+}
+
+.unscheduledToDoItem.toDoItemComplete .color-swatch-container i:before {
+    content: '\f046';
+}
+
+.unscheduledToDoItem:not(.toDoItemComplete) .color-swatch-container i:before {
+    content: '\f096';
+}
+
+.unscheduled.no-clone .color-swatch-container i {
+    display: none;
+}
+
+.unscheduled.no-clone .color-swatch {
+    display: block;
+}
+
+.unscheduled.unscheduledToDoItem.no-clone .color-swatch {
+    display: none;
+}
+
+.unscheduled.unscheduledToDoItem.no-clone .color-swatch-container i {
+    display: block;
+    font-size: 2.5rem;
+    padding-left: 15px;       
+}
+
+.unscheduled.unscheduledToDoItem.no-clone .list-item-content {
+    opacity: 1;
+}
+
+.unscheduled.unscheduledToDoItem.toDoItemComplete.no-clone .list-item-content {
+    text-decoration: line-through !important;
+    opacity: 1;
+}
+
+.unscheduled.toDoItemComplete .list-item-content {
+    text-decoration: line-through;
+    opacity: 0.5;
+}
+
+.unscheduled .addTodoButton {
+    float: right;
+    color: white;
+    cursor: pointer;
+}
+
+.unscheduled .addTodoButton span {
+    padding-right: 5px;
+}
+.unscheduled .nano-content {
+    box-shadow: unset;
+    transition: all 0.3s ease;
+}
+
+.unscheduled .nano-content.scrollShadow {
+    border-radius: 15px;
+    box-shadow: inset 0 7px 10px -7px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+}
+
+.unscheduled .addTodoContainer {
+    display: block;
+    padding-left: 18px;
+    padding-right: 18px;
+    height: 180px;
+}
+
+.unscheduled .addTodoContainer .addTodoTitle {
+    width: 200px;
+    max-height: 14px;
+    border: 1px solid rgba(155,155,155,0.8);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    margin-right: 20px;
+    padding: 5px;
+    padding-right: 0px;
+    color: white;
+    background-color: rgba(40,40,40,0.2);
+    font-size: 13px;
+    box-shadow: inset 1px 2px 5px 0px rgba(0,0,0,0.2);
+    padding: 10px !important;
+    line-height: 14px;
+    transition: all 0.3s ease;
+}
+
+.unscheduled .addTodoContainer .addTodoTitle::placeholder {
+    color: rgba(255,255,255,0.8);
+}
+
+.unscheduled .addTodoContainer .addTodoDescription::placeholder {
+    color: rgba(255,255,255,0.8);
+}
+
+.unscheduled .addTodoContainer .addTodoDescription {
+    width: 200px;
+    min-height: 54px;
+    border: 1px solid rgba(155,155,155,0.8);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    margin-right: 20px;
+    padding: 5px;
+    padding-right: 0px;
+    color: white;
+    background-color: rgba(40,40,40,0.2);
+    font-size: 13px;
+    box-shadow: inset 1px 2px 5px 0px rgba(0,0,0,0.2);
+    padding: 10px !important;
+    line-height: 14px;
+    transition: all 0.3s ease;
+}
+
+.unscheduled .addTodoContainer button { 
+    border: 1px solid rgba(155,155,155,0.8);
+    border-radius: 5px;
+    background-color: rgba(40,40,40,0.7);
+    color: white;
+    font-size: 0.9em;
+    float: right;
+    padding: 3px 15px 3px 15px;
+    margin-left: 10px;
+}
+
+.unscheduled .addTodoContainer button:active { 
+    background-color: rgba(40,40,40,0.4);
+    border-color: lightblue;
+    color: lightblue;
+}
+
+.unscheduled .addTodoContainer.itemAdded textarea {
+    animation: itemadded 0.3s ease-in-out;
+}
+
+@keyframes itemadded {
+	0% {
+        border-color: rgba(155,155,155,0.8);
+	}
+    20% {
+        border-color: lightblue;
+    }
+	60% {
+		border-color: rgba(155,155,155,0.8);
+	}
+	80% {
+        border-color: lightblue;
+	}
+    100% {
+		border-color: rgba(155,155,155,0.8);
+	}
+}
+
+.unscheduled .addTodoContainer .iconContainer {
+    display: inline;
+    float: right;
+}
+
+.unscheduled .addTodoContainer .iconContainer .statusIcon { 
+    border: 2px solid rgba(255,255,255,0);
+    display: inline-block;
+    height: 18px;
+    width: 18px;
+    border-radius: 50px;
+    margin: 3px;
+    transition: all 0.2s ease;
+    
+}
+.unscheduled .addTodoContainer .iconContainer .statusIcon span {
+    display: inline-block;
+    height: 14px;
+    width: 14px;
+    margin-left: 2px;
+    margin-top: 2px;
+    display: inline-block;
+    border-radius: 50px;
+}
+
+.unscheduled .addTodoContainer .iconContainer .statusIcon.selectedStatus {
+    border: 2px solid rgba(255,255,255,0.4);
+    transition: all 0.2s ease;
+}
+
+.blackTooltip .tooltip-inner{
+    background: black !important;
+    width: unset;
+    padding: 6px 10px 6px 10px;
+    text-align: center;
+    border-top: 0px;
+}
+
+.blackTooltip .tooltip-arrow {
+    border-top-color: black !important;
+}
+
+/* END - To Do Events v1.0 CSS */
