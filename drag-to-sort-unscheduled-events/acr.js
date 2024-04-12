@@ -246,7 +246,6 @@ function run() {
 
         function dragStartHandler(ev, cell, event) {
 
-            //cell.style.borderTop = '0px';
             cell.classList = ev.currentTarget.classList;
 
             ddmo.set('mouseReleased', false);
