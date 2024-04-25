@@ -51,16 +51,16 @@ try {
 
     inputs.unscheduledSortableFlag = true;
 
-    // Define whether newly-added unscheduled and ToDo events appear at the top, or on
+    // Define whether newly-added unscheduled and To Do events appear at the top, or on
     // bottom of the unscheduled event drawer
 
     inputs.newEventsOnTop = false;
 
     // This app action requires the definition of at 3 custom fields:
     //
-    //    sortSequence   - stores the sort order of an unscheduled event or todo event
-    //    todoItemFlag   - a checkbox field indicating whether an item is a todo item
-    //    todoItemStatus - a checkbox field indicating whether a todo item is complete
+    //    sortSequence   - stores the sort order of an unscheduled event or To Do event
+    //    todoItemFlag   - a checkbox field indicating whether an event is a To Do event
+    //    todoItemStatus - a checkbox field indicating whether a To Do event is complete
     //
     // You must have at least one Calendar Source with Unscheduled events enabled.
 
@@ -74,9 +74,13 @@ try {
 
     inputs.playSounds = true;
 
-    // Show "Todo +" button and form for adding new To Do items?
+    // Show "To Do +" button and form for adding new To Do items?
 
     inputs.showAddToDoForm = true;
+
+    // Should these items be referred to as a "To Do" List or a "Task" List?
+
+    inputs.listName = 'To-Do';
 
     // Please define the default Calendar Source, and default Event duration and
     // Event status for your To Do events. When a To Do event is dragged and dropped
@@ -92,9 +96,9 @@ try {
 
     // To Do items gain their color from the Status of the underlying Event record. When 
     // users create To Do items, they will be able to pick a status from the list of
-    // status codes that you specifyf. If you only supply a single status code, the list 
-    // of options will not be offered and the default status for new To Do Default will
-    // be used instead.
+    // status codes that you specify. If you only supply a single status code, the list 
+    // of options will not be offered and the default status for new To Do Default (specified 
+    // above) will be used instead.
 
     inputs.availableToDoStatuses = ['Hot', 'Not Started', 'Planned', 'Deferred'];
 
@@ -128,16 +132,16 @@ try {
         return event.unscheduled && toDoItemFlag && event.hasOwnProperty(toDoItemFlag) && event[toDoItemFlag] == true ? true : false;
     }
 
-    // Define what makes this To Do Event applicable to the currently-logged in session
-    // By default, we only want to display Events that are applicable to our account, and let
+    // Define what makes this To Do items applicable to the currently-logged in session
+    // By default, we only want to display To Dos that are applicable to our account, and let
     // others manage their own To Do lists. You can, however, crease a To Do item for another
-    // user by changing the Event's Resource allocation. 
+    // user by changing the Event's Resource field. 
 
     inputs.isToDoApplicable = function (event) {
         return event.resource.includes(inputs.account);
     }
 
-    // By defauly, all users can create To Dos. This helper function
+    // By default, all users can create To Dos. This helper function
     // will restrict To Do Creation to only some users.
 
     inputs.accountAllowedToCreateToDos = function () {
@@ -189,7 +193,9 @@ function run() {
                 return todo.stateVariables[item];
             },
 
-            // Muti-time delay helper function
+            // Multi-time delay helper function starts multiple
+            // setTimeout events given an object of timeouts and
+            // and functions to call.
 
             delay: (items) => {
 
@@ -236,7 +242,8 @@ function run() {
             }, 1000);
         }
 
-        // Adds a Mouse Up listener to detect when native drag drop event concludes  
+        // Adds a MouseUp listener to detect when native drag drop event concludes  
+
         document.addEventListener("mouseup", mouseUpListener);
 
         setTimeout(function () {
@@ -302,7 +309,7 @@ function run() {
     }
 
     // Helper function plays audio tracks, while shutting down
-    // previously playing loops and restating playback cursor
+    // previously-playing loops and restating playback cursor
     // at zero seconds. This prevents users initiating two or
     // more idential playback events simultanously if a long
     // track is running.
@@ -319,7 +326,7 @@ function run() {
     }
 
     // Main Helper Functon called from After Events Rendered.
-    // Function adds the "Add To Do" scheduling form and adds
+    // Function adds the "Add To-Do" scheduling form and adds
     // state change listeners for filtering events that trigger
     // a repopulation of the event list.
 
@@ -424,7 +431,7 @@ function run() {
         input.placeholder = 'Title';
         textarea.classList = 'addTodoDescription';
         textarea.placeholder = 'Optional Description';
-        button.innerText = 'Add Item';
+        button.innerHTML = 'Add';
         button.onclick = addNewItem;
 
         addToDoContainer.appendChild(input);
@@ -463,7 +470,7 @@ function run() {
                     className: 'blackTooltip'
                 };
 
-                // Add custome handelers, as tooltip has to be
+                // Add custome handlers as tooltip has to be
                 // reconstructed given z-index changes post
                 // first render
 
@@ -489,7 +496,6 @@ function run() {
 
                     icon.classList.add('selectedStatus');
                 };
-
             });
         }
 
@@ -502,7 +508,7 @@ function run() {
         let div = document.createElement('DIV');
         let i = document.createElement('I');
         let span = document.createElement('SPAN');
-        span.innerText = 'Todo';
+        span.innerText = inputs.listName;
         i.classList = 'fa fa-fw fa-plus';
 
         let iopen = document.createElement('I');
@@ -615,7 +621,7 @@ function run() {
                 i.style.color = event.color;
                 iconContainer?.appendChild(i);
 
-                // For To Do items, add the cell, and drag handlers
+                // For To Do items, add the cell click, and drag handlers
 
                 if (todo.isSortableEvent(event) || (event.schedule.editable && !cell.classList.contains('sortableUnscheduledEvent'))) {
 
@@ -627,7 +633,9 @@ function run() {
                         cell.classList.add('sortableUnscheduledEvent');
                         cell.ondragstart = function (ev) { dragStartHandler(ev, cell, event); };
                         cell.addEventListener("mouseenter", mouseEnterHandler);
-                        iconContainer.onclick = clickLock;
+                        if (todo.isToDoEvent(event)) {
+                            iconContainer.onclick = clickLock;
+                        }
                     }
 
                     if (todo.isToDoEvent(event) && !cell.classList.contains('unscheduledToDoItem')) {
@@ -650,9 +658,11 @@ function run() {
                 function clickLock(ev) {
                     ev?.stopPropagation();
                     todo.set('eventClickLock', true);
+                    cell.style.pointerEvents = 'none';
                     toggleToDoStatus(cell, event, false);
                     setTimeout(function () {
                         todo.set('eventClickLock', false);
+                        cell.style.pointerEvents = 'auto';
                     }, 250);
                     return true;
                 }
@@ -670,7 +680,7 @@ function run() {
                         if (textarea.value == '') {
                             moveEvents();
                         } else {
-                            alert("Cannot sort a filtered list");
+                            utilities.showModal("Can't Change " + inputs.listName + " Item Sort Order", "You cannot sort a filtered list. Please remove filters before sorting.", null, null, "OK", null);
                         }
                     }
                 }
@@ -678,14 +688,18 @@ function run() {
         });
 
         // Helper function sets the checkbox state based on the To Do status
-        // and attaches listeners that modify this state.
+        // and attaches listeners that modify this state. If initialSet is
+        // set to true, the function simply set the current checkbox state.
+        // If set initialSet is ommitted, the function swaps the checkbox
+        // state and updates the event.
 
-        function toggleToDoStatus(cell, event, initialChange = false) {
+        function toggleToDoStatus(cell, event, initialSet = false) {
 
             let toDoStatusField = dbk.getCustomFieldIdByName(inputs.toDoStatusFieldName, event.schedule);
             let toDoStatus = event[toDoStatusField] != true ? false : true;
 
-            if (!initialChange) {
+
+            if (!initialSet) {
                 toDoStatus = toDoStatus == true ? false : true;
 
                 let changesObject = {};
@@ -711,7 +725,7 @@ function run() {
 
         // Helper function sets variables that track which events
         // are being dragged and dropped. Function also removes the
-        // No events found modal, and Drop Target Cover if the dragged
+        // No events found modal and Drop Target Cover if the dragged
         // event is an Unscheduled event. This allows the Drag drop
         // to initiate a sorting function when the mouse is released.
 
@@ -794,6 +808,7 @@ function run() {
             if (Object.keys(multiUpdate).length > 0) {
 
                 // Clear no-events popover
+
                 const noEventsModal = document.querySelector('.no-events-modal');
                 if (noEventsModal) {
                     noEventsModal.style.display = 'none';
@@ -1066,6 +1081,7 @@ function run() {
         }
 
         // Function for clearing modal window
+
         function clearUpdatingModal() {
 
             // Remove the updating modal div
@@ -1117,7 +1133,7 @@ function run() {
         let description = document.querySelector('.unscheduled .addTodoDescription');
 
         if (title.value == '') {
-            return alert("Please specify a To Do title");
+            return utilities.showModal(inputs.listName + " Item Error", "Please specify a " + inputs.listName + " title", null, null, "OK", null);
         }
 
         container.classList.add('itemAdded');
@@ -1134,9 +1150,11 @@ function run() {
         });
 
         // Get Event defaults
+
         let defaults = todo.get('newToDoDefaults');
 
         // Get all schedules and find default schedule
+
         let schedules = seedcodeCalendar.get('schedules');
         let schedule;
 
@@ -1149,7 +1167,7 @@ function run() {
         // Alert if error
 
         if (!schedule) {
-            return alert("Default Schedule not found");
+            return utilities.showModal(inputs.listName + " List Error", "Please set default a Calendar for " + inputs.listName + " items", null, null, "OK", null);
         }
 
         // Get max sequence value
@@ -1216,14 +1234,12 @@ function run() {
             isUnscheduled: true,
             callback: function (result, e) {
                 if (result.error) {
-                    alert(result.error);
+                    utilities.showModal("Error Creating " + inputs.listName, result.error, null, null, "OK", null);
                 } else {
                     $rootScope.$broadcast('closePopovers');
                     setTimeout(function () {
                         todo.set('eventClickLock', false);
                     }, 250);
-                    // dbk.addEvents([result.event]);
-                    // events.push(result.event);
 
                     seedcodeCalendar.get('element').fullCalendar('rerenderUnscheduledEvents');
                     todo.attachEventListeners();
