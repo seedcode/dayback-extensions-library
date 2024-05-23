@@ -130,11 +130,12 @@
     padding-left: 18px;
     padding-right: 18px;
     height: 180px;
+    max-width: 500px;
+    text-align: right;
+    margin: auto;    
 }
 
 .unscheduled .addTodoContainer .addTodoTitle {
-    width: 200px;
-    max-height: 14px;
     border: 1px solid rgba(155,155,155,0.8);
     border-radius: 8px;
     margin-bottom: 10px;
@@ -148,6 +149,10 @@
     padding: 10px !important;
     line-height: 14px;
     transition: all 0.3s ease;
+    box-sizing: border-box;
+    display: block;
+    min-height: 35px;
+    width: 100%;    
 }
 
 .unscheduled .addTodoContainer .addTodoTitle::placeholder {
@@ -159,7 +164,6 @@
 }
 
 .unscheduled .addTodoContainer .addTodoDescription {
-    width: 200px;
     min-height: 54px;
     border: 1px solid rgba(155,155,155,0.8);
     border-radius: 8px;
@@ -174,6 +178,9 @@
     padding: 10px !important;
     line-height: 14px;
     transition: all 0.3s ease;
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
 }
 
 .unscheduled .addTodoContainer button { 
@@ -218,6 +225,7 @@
 .unscheduled .addTodoContainer .iconContainer {
     display: inline;
     float: right;
+    text-align: left;
 }
 
 .unscheduled .addTodoContainer .iconContainer .statusIcon { 
