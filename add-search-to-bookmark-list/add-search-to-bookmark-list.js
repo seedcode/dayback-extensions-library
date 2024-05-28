@@ -120,7 +120,16 @@ function run() {
         if (e[inputs.modifierKey] && e.key.toLowerCase() === inputs.shortCutKey) {
 
             // Skip input elements and input textareas if in focus
-            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.tagName === 'SELECT' || document.activeElement.tagName === 'RADIO' || document.activeElement.tagName === 'CHECKBOX') {
+                return;
+            }
+
+            let isModalOpen = document.querySelector('.modal-dialog');
+            let isPopoverOpen = document.querySelector('.edit-container');
+            let isNoEvents = document.querySelector('.no-events-modal');
+            let isBookmarkList = document.getElementById('shares-manage');
+
+            if ((isModalOpen || isPopoverOpen || isBookmarkList) && !isNoEvents) {
                 return;
             }
 
