@@ -1,9 +1,7 @@
 /*  Multi Update Popup Menu CSS v1.0 */
 
-.modal-content {
-    background: #333;
-}
 .multiUpdatePopup {
+    background: #333;
     color: white;
 }
 .multiUpdatePopup .popoverCloseButton {
