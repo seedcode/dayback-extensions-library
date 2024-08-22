@@ -315,7 +315,11 @@ function run() {
         return;
     } else {
         globals.seedcodeCalendar.init('dbkKeySortcutsLoaded', true);
-        addEventListener('keydown', keyListener);
+        let appContainer = document.getElementById('app-container');
+        if (!appContainer.dataset.hasAttachedKeyboardListener) {
+            addEventListener('keydown', keyListener);
+            appContainer.dataset.hasAttachedKeyboardListener = true;
+        }
     }
 
     function keyListener(e) {
