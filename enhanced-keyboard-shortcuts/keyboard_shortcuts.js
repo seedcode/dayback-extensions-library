@@ -291,12 +291,6 @@ try {
         },
     ];
 
-
-    /**
-     * Specify the keyboard modifier key itself (in lowercase). 
-     * @type {string}
-     */
-
     //----------- End Configuration -------------------
 } catch (error) {
     reportError(error);
