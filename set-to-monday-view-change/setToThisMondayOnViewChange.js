@@ -52,7 +52,7 @@ function run() {
 		var dif = 1 - today.day();
 		var target = moment().add(dif, 'days');
 		var parameter = target.format('YYYY-MM-DD');
-		location.hash += '&date=' + parameter;
+		location.hash += location.hash == '#/' ? '?date=' + parameter : '&date=' + parameter;
 	}
 }
 
