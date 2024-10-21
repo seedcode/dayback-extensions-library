@@ -1,17 +1,11 @@
-// Advanced Resource Filters - v1.0
+// Advanced Resource Filters - v1.1
 
 // Purpose:
 
 // Creates toggle buttons and multi-select boxes
 // of grouped resource tag attributes. Relies on
 // the Mutation Observer Code Library to modify
-// the sidebar. Please download and install
-// this library before use.
-
-// Co-requisite: Mutation Observer Library
-
-// Please download and install:
-// https://github.com/seedcode/dayback-extensions-library/blob/main/dayback-mutation-observer/
+// the sidebar.
 
 // Action Type: Before Calendar Rendered
 // Prevent Default Action: No
@@ -19,10 +13,10 @@
 // More info on custom actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
 
-// Declare globals
+const globals = {action, dbk, seedcodeCalendar, utilities, fbk};
 
-var options = {};
-var inputs = {};
+const options = {};
+const inputs = {};
 
 try {
 	//----------- Configuration -------------------
@@ -206,46 +200,35 @@ try {
 
 // Action code goes inside this function
 function run() {
-	var fullTagList = [];
-
-	var calendarDiv = document.querySelector('.calendar');
+	const fullTagList = [];
 
 	// Start New Observer
 
-	var observer = seedcodeCalendar.get('dbkObserver');
-
-	if (!observer) {
-		reportError({
-			message:
-				"<span style='color: red'>This App Action Requires that you install the Mutation Observer Module. Please see App Action comments for further detail.</span>",
-		});
-		return confirmCallback();
-	}
-
-	observer.new({
+	globals.dbk.observe({
 		name: 'modifySidebar',
-		watch: document.getElementById('sidebar'),
-		until: '#sidebar .filters-popover-container resources-filter .filters-resource .header-block',
+		watch: '#sidebar',
+		until: '.filters-popover-container resources-filter .filters-resource .header-block',
 		then: injectCustomCode,
 	});
 
 	if (inputs.noMatchFadesCalendar) {
-		observer.new({
+		globals.dbk.observe({
 			name: 'calendarGrayscaler',
-			watch: document.getElementById('sidebar'),
-			until: '#sidebar .filters-popover-container resources-filter .filters-resource',
+			watch: '#sidebar',
+			until: '.filters-popover-container resources-filter .filters-resource',
 			then: function (observer) {
-				let recList = document.querySelector(
+				const calendarDiv = document.querySelector('.calendar');
+				const recList = document.querySelector(
 					'.calendarList.resource-list'
 				);
-				let msg = document.querySelector(
+				const msg = document.querySelector(
 					'.message-dialog.message-show'
 				);
 
 				if (!recList || !recList.hasChildNodes()) {
 					calendarDiv.classList.add('grayscale');
 					if (!msg) {
-						helpers.showMessage(
+						globals.dbk.showMessage(
 							'No Resources Match Your Filter',
 							0,
 							1000000
@@ -275,7 +258,7 @@ function run() {
 
 			// Switch resource filters menu position if true
 			if (inputs.resourceFiltersOnTop) {
-				let menubar = document.querySelector(
+				const menubar = document.querySelector(
 					'.filters-popover-container'
 				);
 				if (menubar && !menubar.classList.contains('reordered')) {
@@ -290,13 +273,13 @@ function run() {
 	//--------- Function Moves Resource Filters above Status Filters ----------
 
 	function switchMenu(menubar) {
-		let mkids = menubar.childNodes;
+		const mkids = menubar.childNodes;
 		menubar.classList.add('reordered');
 
 		moveElementTo(mkids[7], 1);
 
 		function moveElementTo(selected_element, direction) {
-			var element_to_move = selected_element,
+			const element_to_move = selected_element,
 				td = element_to_move.parentNode;
 			if (direction === -1 && element_to_move.previousElementSibling) {
 				td.insertBefore(
@@ -315,10 +298,10 @@ function run() {
 	//--------- Function Inserts Tag filters ----------
 
 	function injectTagFilters(container) {
-		var filterBox = document.querySelector(
-			".filters-resource [ng-model='filterText']"
-		);
-		var xtimes = document.querySelector(
+		const /** @type HTMLInputElement */ filterBox = document.querySelector(
+				".filters-resource [ng-model='filterText']"
+			);
+		const xtimes = document.querySelector(
 			'.filters-resource .dbk_icon_times'
 		);
 
@@ -331,7 +314,7 @@ function run() {
 		// Add Container classes and garbage collection function for filter multi-select boxes
 
 		container.onclick = function () {
-			if (seedcodeCalendar.get('customBoxOpen') != 1) {
+			if (globals.seedcodeCalendar.get('customBoxOpen') != 1) {
 				let openBoxes = document.querySelectorAll('.select-items');
 				if (openBoxes && openBoxes.length > 0) {
 					openBoxes.forEach((box) => {
@@ -355,11 +338,11 @@ function run() {
 
 		// Define div that stores filters by tag
 
-		let div = document.createElement('DIV');
-		div.classList = 'header-block-content filters filters-by-tag';
+		const div = document.createElement('DIV');
+		div.className = 'header-block-content filters filters-by-tag';
 
-		let tagContainer = document.createElement('DIV');
-		tagContainer.classList = 'tagContainer';
+		const tagContainer = document.createElement('DIV');
+		tagContainer.className = 'tagContainer';
 
 		// Add individual Tag Pills
 
@@ -367,16 +350,16 @@ function run() {
 			Object.keys(inputs.tagFilters).forEach((tag) => {
 				fullTagList.push(tag);
 
-				let filter = inputs.tagFilters[tag];
-				let tagSpan = document.createElement('SPAN');
-				let tagContent = document.createElement('SPAN');
+				const filter = inputs.tagFilters[tag];
+				const tagSpan = document.createElement('SPAN');
+				const tagContent = document.createElement('SPAN');
 
-				tagSpan.classList = 'tag tag-' + filter.class;
+				tagSpan.className = 'tag tag-' + filter.class;
 				tagSpan.style.backgroundColor = filter.color;
-				tagSpan.dataset.tagfilter = 1;
+				tagSpan.dataset.tagfilter = '1';
 				tagSpan.dataset.tagfiltername = tag;
-				tagSpan.dataset.tagfilterstatus = 0;
-				tagContent.classList = 'tag-content';
+				tagSpan.dataset.tagfilterstatus = '0';
+				tagContent.className = 'tag-content';
 
 				if (filter.hasOwnProperty('icon')) {
 					let i;
@@ -385,13 +368,13 @@ function run() {
 						i.src = filter.icon;
 					} else {
 						i = document.createElement('I');
-						i.classList = 'fa ' + filter.icon;
+						i.className = 'fa ' + filter.icon;
 						i.style.color = filter.iconColor;
 					}
 					tagContent.appendChild(i);
 				}
 
-				let tn = document.createTextNode(' ' + tag);
+				const tn = document.createTextNode(' ' + tag);
 				tagContent.appendChild(tn);
 				tagSpan.appendChild(tagContent);
 				tagSpan.onclick = function () {
@@ -410,37 +393,43 @@ function run() {
 
 		if (inputs.tagGroups) {
 			Object.keys(inputs.tagGroups).forEach((tagGroupName) => {
-				let group = inputs.tagGroups[tagGroupName];
+				const group = inputs.tagGroups[tagGroupName];
 
-				let tagGroupDiv = document.createElement('DIV');
-				let label = document.createElement('DIV');
-				let inputGroupDiv = document.createElement('DIV');
-				let selectWrapperDiv = document.createElement('DIV');
-				let selectBox = document.createElement('SELECT');
+				const tagGroupDiv = document.createElement('DIV');
+				const label = document.createElement('DIV');
+				const inputGroupDiv = document.createElement('DIV');
+				const selectWrapperDiv = document.createElement('DIV');
+				// @ts-ignore
+				const /** @type HTMLSelectElement */ selectBox =
+						document.createElement('SELECT');
 
-				tagGroupDiv.classList = 'tagGroup';
-				label.classList = 'tagGroupLabel';
+				tagGroupDiv.className = 'tagGroup';
+				label.className = 'tagGroupLabel';
 				label.innerText = group.groupname;
-				inputGroupDiv.classList = 'input-group';
-				selectWrapperDiv.classList = 'custom-select';
+				inputGroupDiv.className = 'input-group';
+				selectWrapperDiv.className = 'custom-select';
 
 				selectBox.dataset.tagfiltergroup = tagGroupName;
 				selectBox.multiple = true;
 
-				let oOption = document.createElement('OPTION');
+				// @ts-ignore
+				const /** @type HTMLOptionElement */ oOption =
+						document.createElement('OPTION');
 				oOption.value = '';
 				oOption.innerText = group.boxtitle;
 				selectBox.appendChild(oOption);
 
 				Object.keys(group.tags).forEach((tagName) => {
 					fullTagList.push(tagName);
-					let filter = group.tags[tagName];
-					let oOption = document.createElement('OPTION');
+					const filter = group.tags[tagName];
+					// @ts-ignore
+					const /** @type HTMLOptionElement */ oOption =
+							document.createElement('OPTION');
 					oOption.value = tagName;
 					oOption.innerText = filter.name ? filter.name : tagName;
-					oOption.dataset.tagfilter = 1;
+					oOption.dataset.tagfilter = '1';
 					oOption.dataset.tagfiltername = tagName;
-					oOption.dataset.tagfilterstatus = 0;
+					oOption.dataset.tagfilterstatus = '0';
 					oOption.dataset.tagfiltergroup = tagGroupName;
 					selectBox.appendChild(oOption);
 				});
@@ -459,18 +448,18 @@ function run() {
 
 		// ------ Multi Select Creation
 
-		let customSelects = document.getElementsByClassName('custom-select');
+		const customSelects = document.getElementsByClassName('custom-select');
 
 		for (let i = 0; i < customSelects.length; i++) {
-			let selectedItem =
+			const selectedItem =
 				customSelects[i].getElementsByTagName('select')[0];
 
 			// Create container for the selected item list
 
-			let selectContainer = document.createElement('DIV');
-			selectContainer.classList = 'select-selected';
-			let selectItemsList = document.createElement('DIV');
-			selectItemsList.classList = 'selectedItemsList';
+			const selectContainer = document.createElement('DIV');
+			selectContainer.className = 'select-selected';
+			const selectItemsList = document.createElement('DIV');
+			selectItemsList.className = 'selectedItemsList';
 			selectItemsList.dataset.sbtagfiltergroup =
 				selectedItem.dataset.tagfiltergroup;
 			selectItemsList.innerText = selectedItem.options[0].innerText;
@@ -480,20 +469,20 @@ function run() {
 			// Create container for list items and attach event handlers
 			// to detect when mouse goes out of context
 
-			let itemListContainer = document.createElement('DIV');
+			const itemListContainer = document.createElement('DIV');
 			itemListContainer.setAttribute('class', 'select-items select-hide');
 			itemListContainer.addEventListener('mouseenter', function () {
-				seedcodeCalendar.init('customBoxOpen', 1);
+				globals.seedcodeCalendar.init('customBoxOpen', 1);
 			});
 			itemListContainer.addEventListener('mouseleave', function () {
-				seedcodeCalendar.init('customBoxOpen', 0);
+				globals.seedcodeCalendar.init('customBoxOpen', 0);
 			});
 
 			// For each option in the original select element, create a new DIV
 			// which will act as an option item
 
 			for (let j = 1; j < selectedItem.length; j++) {
-				let optionDiv = document.createElement('DIV');
+				const optionDiv = document.createElement('DIV');
 				optionDiv.innerText = selectedItem.options[j].innerText;
 				optionDiv.dataset.sbtagfiltername =
 					selectedItem.options[j].value;
@@ -502,8 +491,8 @@ function run() {
 				// while toggling the selected item
 
 				optionDiv.addEventListener('click', function (e) {
-					let selectBox =
-						this.parentNode.parentNode.getElementsByTagName(
+					const selectBox =
+						this.parentNode.parentElement.getElementsByTagName(
 							'select'
 						)[0];
 
@@ -519,7 +508,7 @@ function run() {
 						}
 					}
 
-					seedcodeCalendar.init('customBoxOpen', 1);
+					globals.seedcodeCalendar.init('customBoxOpen', 1);
 				});
 
 				itemListContainer.appendChild(optionDiv);
@@ -530,22 +519,22 @@ function run() {
 			selectContainer.addEventListener('click', function (e) {
 				e.stopPropagation();
 				closeAllSelect(this);
-				seedcodeCalendar.init('customBoxOpen', 1);
-				this.nextSibling.classList.toggle('select-hide');
+				globals.seedcodeCalendar.init('customBoxOpen', 1);
+				this.nextElementSibling.classList.toggle('select-hide');
 				this.classList.toggle('select-arrow-active');
 
 				itemListContainer.scrollTop = 0;
-				this.parentNode.parentNode.parentNode.classList.toggle(
+				this.parentNode.parentNode.parentElement.classList.toggle(
 					'expanded'
 				);
 			});
 
 			// Add event handlers to monitor mouse movement out of select box
 			selectContainer.addEventListener('mouseenter', function () {
-				seedcodeCalendar.init('customBoxOpen', 1);
+				globals.seedcodeCalendar.init('customBoxOpen', 1);
 			});
 			selectContainer.addEventListener('mouseleave', function () {
-				seedcodeCalendar.init('customBoxOpen', 0);
+				globals.seedcodeCalendar.init('customBoxOpen', 0);
 			});
 		}
 
@@ -559,9 +548,10 @@ function run() {
 
 		// Function closes all select boxes that are currently open
 		function closeAllSelect(elmnt) {
-			let selectArray = [];
-			let sItems = document.getElementsByClassName('select-items');
-			let sSelected = document.getElementsByClassName('select-selected');
+			const selectArray = [];
+			const sItems = document.getElementsByClassName('select-items');
+			const sSelected =
+				document.getElementsByClassName('select-selected');
 
 			for (let i = 0; i < sSelected.length; i++) {
 				if (elmnt == sSelected[i]) {
@@ -573,7 +563,7 @@ function run() {
 			for (let i = 0; i < sItems.length; i++) {
 				if (selectArray.indexOf(i)) {
 					sItems[i].classList.add('select-hide');
-					var pNode = sItems[i].parentNode.parentNode.parentNode;
+					const pNode = sItems[i].parentNode.parentNode.parentElement;
 					pNode.classList.remove('expanded');
 				}
 			}
@@ -581,14 +571,14 @@ function run() {
 
 		// Function toggles filters on and off in response to contents of filter box query
 		function toggleFilter(tag) {
-			var newquery = [];
-			var filterText = filterBox ? filterBox.value.toLowerCase() : '';
+			const newquery = [];
+			let filterText = filterBox ? filterBox.value.toLowerCase() : '';
 			filterText = filterText
 				.replace(/\s+$/, '')
 				.replace(/^\s+/, '')
 				.replace(/\(|\)/, '');
-			var query = filterText.split(/\s+(and|or)\s+/i);
-			let tagName = tag.dataset.tagfiltername;
+			let query = filterText.split(/\s+(and|or)\s+/i);
+			const tagName = tag.dataset.tagfiltername;
 
 			if (query.includes(tagName.toLowerCase())) {
 				query = query.filter((e) => e !== tagName.toLowerCase());
@@ -626,29 +616,31 @@ function run() {
 				.replace(/ or or /i, ' or ');
 			filterBox.value = queryText;
 			filterBox.focus();
-			$(filterBox).trigger('change');
-			$(filterBox).trigger('keyup');
+			filterBox.dispatchEvent(new Event('change'));
+			filterBox.dispatchEvent(new Event('keyup'));
 
 			toggleTagStyles();
 		}
 
 		// Function repaints all tags based on the contents of query
 		function toggleTagStyles() {
-			var filterText = filterBox ? filterBox.value.toLowerCase() : '';
+			let filterText = filterBox ? filterBox.value.toLowerCase() : '';
 			filterText = filterText
 				.replace(/\s+$/, '')
 				.replace(/^\s+/, '')
 				.replace(/\(|\)/, '');
-			var query = filterText.split(/\s+(and|or)\s+/i);
-			var tagElements = document.querySelectorAll('[data-tagfilter="1"]');
+			const query = filterText.split(/\s+(and|or)\s+/i);
+			const tagElements = document.querySelectorAll(
+				'[data-tagfilter="1"]'
+			);
 
 			// Grab all filter tags
-			tagElements.forEach((tag) => {
-				let tagName = tag.dataset.tagfiltername;
+			tagElements.forEach((/** @type HTMLInputElement */ tag) => {
+				const tagName = tag.dataset.tagfiltername;
 
 				// If the query includes the tag, set the filter status
 				if (query.includes(tagName.toLowerCase())) {
-					tag.dataset.tagfilterstatus = 1;
+					tag.dataset.tagfilterstatus = '1';
 					if (inputs.tagFilters.hasOwnProperty(tagName)) {
 						tag.classList.add('active');
 						tag.classList.remove('inactive');
@@ -658,8 +650,9 @@ function run() {
 
 					// Handle filter group select boxes
 					if (tag.hasAttribute('data-tagfiltergroup')) {
+						// @ts-ignore
 						tag.selected = true;
-						let divList = document.querySelectorAll(
+						const divList = document.querySelectorAll(
 							'[data-sbtagfiltername="' + tagName + '"]'
 						);
 						if (divList && divList.length > 0) {
@@ -669,7 +662,7 @@ function run() {
 						}
 					}
 				} else {
-					tag.dataset.tagfilterstatus = 0;
+					tag.dataset.tagfilterstatus = '0';
 					if (inputs.tagFilters.hasOwnProperty(tagName)) {
 						tag.style.borderColor = 'transparent';
 						tag.classList.remove('active');
@@ -680,8 +673,9 @@ function run() {
 
 					// Handle filter group select boxes
 					if (tag.hasAttribute('data-tagfiltergroup')) {
+						// @ts-ignore
 						tag.selected = false;
-						let divList = document.querySelectorAll(
+						const divList = document.querySelectorAll(
 							'[data-sbtagfiltername="' + tagName + '"]'
 						);
 						if (divList && divList.length > 0) {
@@ -696,44 +690,49 @@ function run() {
 			// Summarize select box lists and change first list item so
 			// at it lists all filters which apply to that select box
 
-			let selectBoxes = document.querySelectorAll(
+			const selectBoxes = document.querySelectorAll(
 				'select[data-tagfiltergroup]'
 			);
 
 			if (selectBoxes && selectBoxes.length > 0) {
-				selectBoxes.forEach((selectBox) => {
-					selectBox.dataset.tagfiltergroup;
+				selectBoxes.forEach(
+					(/** @type HTMLSelectElement */ selectBox) => {
+						selectBox.dataset.tagfiltergroup;
 
-					let optionsList = [];
+						const optionsList = [];
 
-					for (let i = 0; i < selectBox.length; i++) {
-						if (selectBox.options[i].selected) {
-							optionsList.push(selectBox.options[i].innerText);
+						for (let i = 0; i < selectBox.length; i++) {
+							if (selectBox.options[i].selected) {
+								optionsList.push(
+									selectBox.options[i].innerText
+								);
+							}
 						}
-					}
 
-					let selectedItems = optionsList.join(', ');
-					let selectedItemsList = document.querySelector(
-						'div.selectedItemsList[data-sbtagfiltergroup="' +
-							selectBox.dataset.tagfiltergroup +
-							'"]'
-					);
+						const selectedItems = optionsList.join(', ');
+						const /** @type HTMLSelectElement */ selectedItemsList =
+								document.querySelector(
+									'div.selectedItemsList[data-sbtagfiltergroup="' +
+										selectBox.dataset.tagfiltergroup +
+										'"]'
+								);
 
-					if (selectedItemsList) {
-						selectedItemsList.innerText = selectedItems;
-
-						if (selectedItems == '') {
-							selectedItemsList.classList.add('empty');
-							selectedItemsList.innerText =
-								inputs.tagGroups[
-									selectBox.dataset.tagfiltergroup
-								].boxtitle;
-						} else {
-							selectedItemsList.classList.remove('empty');
+						if (selectedItemsList) {
 							selectedItemsList.innerText = selectedItems;
+
+							if (selectedItems == '') {
+								selectedItemsList.classList.add('empty');
+								selectedItemsList.innerText =
+									inputs.tagGroups[
+										selectBox.dataset.tagfiltergroup
+									].boxtitle;
+							} else {
+								selectedItemsList.classList.remove('empty');
+								selectedItemsList.innerText = selectedItems;
+							}
 						}
 					}
-				});
+				);
 			}
 		} // End Toogle styles
 	} // End Tag filters injection
@@ -742,7 +741,7 @@ function run() {
 //----------- Run function wrapper and helpers - you shouldn't need to edit below this line. -------------------
 
 // Variables used for helper functions below
-var timeout;
+let timeout;
 
 // Execute the run function as defined above
 try {
@@ -752,11 +751,11 @@ try {
 		(options.restrictedToAccounts &&
 			options.restrictedToAccounts.indexOf(inputs.account) > -1)
 	) {
-		if (action.preventDefault && options.runTimeout) {
+		if (globals.action.preventDefault && options.runTimeout) {
 			timeoutCheck();
 		}
 		run();
-	} else if (action.preventDefault) {
+	} else if (globals.action.preventDefault) {
 		confirmCallback();
 	}
 } catch (error) {
@@ -766,16 +765,16 @@ try {
 // Run confirm callback when preventDefault is true. Used for async actions
 function confirmCallback() {
 	cancelTimeoutCheck();
-	if (action.callbacks.confirm) {
-		action.callbacks.confirm();
+	if (globals.action.callbacks.confirm) {
+		globals.action.callbacks.confirm();
 	}
 }
 
 // Run cancel callback when preventDefault is true. Used for async actions
 function cancelCallback() {
 	cancelTimeoutCheck();
-	if (action.callbacks.cancel) {
-		action.callbacks.cancel();
+	if (globals.action.callbacks.cancel) {
+		globals.action.callbacks.cancel();
 	}
 }
 
@@ -783,12 +782,12 @@ function cancelCallback() {
 function timeoutCheck() {
 	timeout = setTimeout(
 		function () {
-			var error = {
+			const error = {
 				name: 'Timeout',
 				message:
 					'The action was unable to execute within the allotted time and has been stopped',
 			};
-			reportError(error, true);
+			reportError(error);
 		},
 		options && options.runTimeout ? options.runTimeout * 1000 : 0
 	);
@@ -803,21 +802,25 @@ function cancelTimeoutCheck() {
 // Function to report any errors that occur when running this action
 // Follows standard javascript error reporter format of an object with name and message properties
 function reportError(error) {
-	var errorTitle = 'Error Running Custom Action';
-	var errorMessage =
+	const errorTitle = 'Error Running Custom Action';
+	const errorMessage =
 		'<p>There was a problem running the action "<span style="white-space: nowrap">' +
-		action.name +
+		globals.action.name +
 		'</span>"</p><p>Error: ' +
 		error.message +
 		'.</p><p>This may result in unexpected behavior of the calendar.</p>';
-	if (action.preventDefault && action.category !== event && timeout) {
+	if (
+		globals.action.preventDefault &&
+		globals.action.category !== event &&
+		timeout
+	) {
 		confirmCallback();
 	} else {
 		cancelCallback();
 	}
 
 	setTimeout(function () {
-		utilities.showModal(
+		globals.utilities.showModal(
 			errorTitle,
 			errorMessage,
 			null,
