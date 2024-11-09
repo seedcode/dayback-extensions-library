@@ -1,0 +1,18 @@
+/* Interactive Analytics Totals: Click to Highlight Resource - CSS v1.0 */
+
+.breakout-footer-total { cursor: pointer; } 
+
+#calendar.analyticsHighlighting .breakout-footer-total:not(.activeHighlight) { opacity: 0.6; }
+
+#calendar.analyticsHighlighting .breakout-footer-total.activeHighlight { box-shadow: 0px 0px 8px rgba(255,255,255,0.5); }
+
+.ct-area.ct-dim { fill-opacity: 0; }
+.ct-area.ct-highlight { fill-opacity: 0.3; }
+
+.ct-line.ct-dim { stroke-width: 2px; opacity: 0.3 !important;}
+.ct-line.ct-highlight { stroke-width: 3px;}
+
+.ct-point.ct-dim { stroke-width: 8px; opacity: 0.3 !important;}
+.ct-point.ct-highlight { opacity: 1; stroke-width: 12px; }
+
+.ct-area.ct-threshold-above.ct-dim { fill: transparent !important; fill-opacity: 0 !important; }
