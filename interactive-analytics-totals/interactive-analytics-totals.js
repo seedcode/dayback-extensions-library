@@ -138,7 +138,7 @@ function run() {
             let rec = resources.filter((r) => r.name === resource || r.nameSave === resource);
             if (rec.length && rec[0].tags && rec[0].tags.length > 0) {
                 for (let t of rec[0].tags) {
-                    const tmatch = t.name.match(/^(\d+) hour/);
+                    const tmatch = t.name.match(/^(\d+) hours?/);
                     if (tmatch) {
                         threshold = tmatch[1];
                         break;
@@ -257,6 +257,13 @@ function run() {
         state.analyticsPrevious = 0;
         state.analyticsItem = 0;
         state.analyticsResource = '';
+
+        seedcodeCalendar.get('config').measureThreshold = '';
+        seedcodeCalendar.get('config').showMeasureThreshold = false;
+
+        $timeout(() => {
+            $rootScope.$broadcast('eventsRendered');
+        }, 0);
     }
 }
 
