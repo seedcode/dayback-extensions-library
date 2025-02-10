@@ -1,0 +1,58 @@
+/* SeedCode Maps and Distances v1.0.0 */
+.dbk-resource-distance-container {
+	margin: 8px 0;
+	transition: all 0.5s ease;
+	color: rgb(66, 139, 202);
+	display: inline-flex;
+	align-items: center;
+	min-height: 30px;
+	width: 30px;
+	background: rgba(0, 0, 0, 0.9);
+	background: rgb(66, 139, 202);
+	overflow: hidden;
+	color: white;
+	border-radius: 50%;
+}
+
+.dbk-resource-distance-container.dbk-has-content {
+	border-radius: 8px;
+}
+
+.dbk-resource-distance-container .dbk-distance-value {
+	opacity: 0; /* Start hidden */
+	transition: all 0.5s ease 0.3s;
+	margin-right: 8px;
+	white-space: nowrap;
+}
+
+.dbk-resource-distance-container .dbk-show-value {
+	opacity: 1;
+}
+
+.dbk-resource-distance-container > * {
+	display: inline-block;
+}
+
+.dbk-resource-distance-container i {
+	transition: all 0.5s ease;
+}
+
+.dbk-resource-distance-container button {
+	all: unset;
+	cursor: pointer;
+	padding: 6px 8px;
+}
+
+.dbk-resource-distance-content {
+	display: flex;
+	align-items: center;
+}
+
+.dbk-no-transition {
+	transition: none !important;
+}
+
+.dbk-resource-distance-container .dbk-close-btn {
+	display: flex;
+	opacity: 0.75;
+}
