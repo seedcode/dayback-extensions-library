@@ -3,7 +3,7 @@
 // Purpose: Registers all of the functionality needed for calculating distances and routing
 // Action Type: On Sources Fetched
 // Prevent Default Action: No
-// Version: v1.0.1
+// Version: v1.1.0
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -21,11 +21,10 @@
 
 	// Map options
 	options.travelMode = 'drive'; // Mode of travel for distance and route calculations: 'drive', 'bicycle', 'walk', 'transit'
-	options.units = 'imperial';
 	options.distanceUnit = 'miles'; // How to display the distance: 'miles', 'feet', 'kilometers', 'meters'
 	options.realtimeTraffic = true; // API calls are twice as much with this enabled, but without traffic will not be considered in drive times or routes
 	options.roundDistanceValues = false; // Will round distance and duration values to whole numbers if true
-	options.vehicleStopover = true;
+	options.vehicleStopover = true; // Specifies whether the vehicle will need to stop at each route destination. For example a route could put you over a bridge rather than under if stopover is false
 
 	inputs.resourceDistanceContainerClass = 'dbk-resource-distance-container';
 	inputs.resourceDistanceContentClass = 'dbk-resource-distance-content';
@@ -80,20 +79,24 @@
 
 		const distanceTypes = {
 			miles: {
-				conversionFactor: 0.00062137,
+				conversionFactor: 0.00062137, // Converts from meters
 				label: 'mi',
+				apiUnit: 'IMPERIAL',
 			},
 			feet: {
-				conversionFactor: 3.28084,
+				conversionFactor: 3.28084, // Converts from meters
 				label: 'ft',
+				apiUnit: 'IMPERIAL',
 			},
 			kilometers: {
-				conversionFactor: 0.001,
+				conversionFactor: 0.001, // Converts from meters
 				label: 'km',
+				apiUnit: 'METRIC',
 			},
 			meters: {
-				conversionFactor: 1,
+				conversionFactor: 1, // Converts from meters
 				label: 'm',
+				apiUnit: 'METRIC',
 			},
 		};
 
@@ -354,7 +357,10 @@
 						travelMode: travelMode,
 						unitSystem:
 							globals.google.maps.UnitSystem[
-								(options.units || 'imperial').toUpperCase()
+								(
+									distanceTypes[options.distanceUnit]
+										.apiUnit || 'imperial'
+								).toUpperCase()
 							],
 					};
 
@@ -538,11 +544,24 @@
 			const events = [];
 			const noGeoCode = [];
 
-			for (const event of globals.seedcodeCalendar
+			const multiSelect = globals.seedcodeCalendar.get('multiSelect');
+			const hasMultiSelect =
+				multiSelect && typeof multiSelect === 'object';
+			const clientEvents = globals.seedcodeCalendar
 				.get('element')
-				.fullCalendar('clientEvents')) {
+				.fullCalendar('clientEvents');
+			const eventsToRoute = hasMultiSelect
+				? clientEvents.filter((event) => {
+						return !!multiSelect[
+							`${event.eventID}-${event.schedule.id}`
+						];
+					})
+				: clientEvents;
+
+			for (const event of eventsToRoute) {
 				if (
-					!event.resource.includes(targetResource.name) ||
+					(!event.resource.includes(targetResource.name) &&
+						!hasMultiSelect) ||
 					!globals.dbk.isEventShown(event)
 				) {
 					continue;
@@ -592,7 +611,6 @@
 			const origin = {
 				address: targetResource.location,
 			};
-			// const destination = waypoints.pop();
 			const destination = origin;
 
 			waypoints.unshift(origin);
@@ -769,7 +787,9 @@
 					avoidFerries: false,
 				},
 				languageCode: 'en-US',
-				units: (options.units || 'imperial').toUpperCase(),
+				units: (
+					distanceTypes[options.distanceUnit].apiUnit || 'imperial'
+				).toUpperCase(),
 			};
 
 			try {
@@ -1263,28 +1283,6 @@
 			};
 		}
 
-		function showLoader() {
-			const existingLoader = document.querySelector('.distances-loader');
-			if (existingLoader) {
-				return;
-			}
-
-			const loader = document.createElement('div');
-			loader.classList.add('spinner');
-			loader.classList.add('spinner-dark');
-			loader.classList.add('distances-loader');
-			loader.innerHTML =
-				'<div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div>';
-			document.body.appendChild(loader);
-		}
-
-		function hideLoader() {
-			const loader = document.querySelector('.distances-loader');
-			if (loader) {
-				loader.remove();
-			}
-		}
-
 		/** @typedef {{name: string}} Tag */
 		/** @type {(tags: Array<Tag>, target: string) => any} */
 		function getValueFromTag(tags, target) {
@@ -1323,6 +1321,28 @@
 			// Calculate brightness using the luminance formula
 			const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
 			return brightness > 200; // Adjust this threshold as needed
+		}
+
+		function showLoader() {
+			const existingLoader = document.querySelector('.distances-loader');
+			if (existingLoader) {
+				return;
+			}
+
+			const loader = document.createElement('div');
+			loader.classList.add('spinner');
+			loader.classList.add('spinner-dark');
+			loader.classList.add('distances-loader');
+			loader.innerHTML =
+				'<div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div>';
+			document.body.appendChild(loader);
+		}
+
+		function hideLoader() {
+			const loader = document.querySelector('.distances-loader');
+			if (loader) {
+				loader.remove();
+			}
 		}
 	}
 
