@@ -2,7 +2,7 @@
 // Action Type: Before Event Save, Button Action
 // Prevent Default Action: No
 // Requires: Map core functions
-// Version: v1.0.0
+// Version: v1.0.1
 
 // @ts-ignore
 const globals = {dbk, seedcodeCalendar, utilities, editEvent};
@@ -20,6 +20,11 @@ const geocodeLocation = globals.seedcodeCalendar.get(
 geocodeLocation(globals.editEvent.location)
 	.then((/** @type {Geocode} */ geocode) => {
 		globals.editEvent.geocode = geocode;
+		globals.dbk.showMessage(
+			'Geocode created successfully. Save event to apply changes.',
+			0,
+			6000
+		);
 	})
 	.catch((/** @type {Error} */ err) => {
 		globals.utilities.showModal('Error Geocoding Location', err, 'OK');
