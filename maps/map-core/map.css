@@ -1,4 +1,4 @@
-/* SeedCode Maps and Distances v1.0.0 */
+/* SeedCode Maps and Distances v1.0.1 */
 .dbk-resource-distance-container {
 	margin: 8px 0;
 	transition: all 0.5s ease;
@@ -55,4 +55,56 @@
 .dbk-resource-distance-container .dbk-close-btn {
 	display: flex;
 	opacity: 0.75;
+}
+
+.dbk-resource-distance-container button :not(.button-loader) {
+	display: block;
+}
+
+.dbk-resource-distance-container.loading button :not(.button-loader) {
+	display: none;
+}
+
+.dbk-resource-distance-container .button-loader {
+	--width: 13.6px;
+	--height: 12px;
+	width: var(--width);
+	height: var(--height);
+	display: none;
+	position: relative;
+}
+
+.dbk-resource-distance-container.loading .button-loader {
+	display: block;
+}
+
+.dbk-resource-distance-container .button-loader::after,
+.dbk-resource-distance-container .button-loader::before {
+	content: '';
+	box-sizing: border-box;
+	width: var(--width);
+	height: var(--height);
+	border-radius: 50%;
+	background: #fff;
+	position: absolute;
+	left: 0;
+	top: 0;
+	opacity: 0.5;
+	transform: scale(0.5);
+	animation: buttonLoaderAnim 1s linear infinite;
+}
+
+.dbk-resource-distance-container .button-loader::after {
+	animation-delay: 0.2s;
+}
+
+@keyframes buttonLoaderAnim {
+	0% {
+		transform: scale(0);
+		opacity: var(1);
+	}
+	100% {
+		transform: scale(1);
+		opacity: 0;
+	}
 }

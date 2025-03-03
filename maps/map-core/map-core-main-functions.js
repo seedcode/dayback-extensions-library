@@ -3,7 +3,7 @@
 // Purpose: Registers all of the functionality needed for calculating distances and routing
 // Action Type: On Sources Fetched
 // Prevent Default Action: No
-// Version: v1.1.0
+// Version: v1.1.1
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -165,7 +165,6 @@
 		let geometry;
 
 		let routes = {};
-		let dynamicMarkers = [];
 		let wasDestroyed = false;
 
 		initialize();
@@ -478,12 +477,22 @@
 
 		/** @type {(resourceId: string, ev: MouseEvent) => Promise<void>} */
 		async function routeButtonClick(resourceId, ev) {
-			showRouteForResource(resourceId, !!ev?.shiftKey);
+			await showRouteForResource(resourceId, !!ev?.shiftKey);
 		}
 
-		/** @type {(resourceId: string, compareRoute?: boolean) => Promise<void>} */
-		async function showRouteForResource(resourceId, compareRoute) {
+		/** @type {(resourceId: string, compareRoute?: boolean, fromReroute?: boolean) => Promise<void>} */
+		async function showRouteForResource(
+			resourceId,
+			compareRoute,
+			fromReroute
+		) {
 			wasDestroyed = false; // wasDestroyed tracks if the map was previously destroyed so we know to rerender. If show routes is explicitely selected we don't need to rerender
+
+			// Check if this resource is currently already loading a route
+			if (routes[resourceId]?.loading) {
+				return;
+			}
+
 			// Start by focusing the map tab and error if it isn't enabled
 			try {
 				await focusMapTab();
@@ -512,25 +521,7 @@
 				resetAll(resourceId);
 			}
 
-			// Initialize route for this resource
-			routes[resourceId] = {
-				eventMarkersChanged: [],
-				waypoints: [],
-				segments: [],
-				homePosition: {},
-				dynamicMarkers: [],
-			};
-
-			const resources = globals.seedcodeCalendar.get('resources');
-			const targetResource = resources.find(
-				/** @type {(resource: Object) => boolean} */ (resource) => {
-					return resource.id === resourceId;
-				}
-			);
-
-			const routeColor = targetResource.routeColor;
-			const borderColor = globals.utilities.generateTextColor(routeColor);
-
+			const targetResource = getResource(resourceId);
 			if (!targetResource?.location) {
 				globals.utilities.showModal(
 					'Missing Location',
@@ -541,73 +532,60 @@
 				);
 				return;
 			}
-			const events = [];
-			const noGeoCode = [];
 
-			const multiSelect = globals.seedcodeCalendar.get('multiSelect');
-			const hasMultiSelect =
-				multiSelect && typeof multiSelect === 'object';
-			const clientEvents = globals.seedcodeCalendar
-				.get('element')
-				.fullCalendar('clientEvents');
-			const eventsToRoute = hasMultiSelect
-				? clientEvents.filter((event) => {
-						return !!multiSelect[
-							`${event.eventID}-${event.schedule.id}`
-						];
-					})
-				: clientEvents;
+			const {routableEvents, unroutableEvents} = getEventsToRoute(
+				targetResource.name
+			);
 
-			for (const event of eventsToRoute) {
-				if (
-					(!event.resource.includes(targetResource.name) &&
-						!hasMultiSelect) ||
-					!globals.dbk.isEventShown(event)
-				) {
-					continue;
-				}
-				if (event.geocode) {
-					events.push(event);
-				} else if (event.location) {
-					noGeoCode.push(event);
-				}
-			}
-			events.sort(sortRoutedEvents);
-
-			let waypoints = [];
-			let count = 0;
-			for (const event of events) {
-				count++;
-
-				// Backup event marker info
-				routes[resourceId].eventMarkersChanged.push(
-					createEventMarkerBackup(event)
+			if (!routableEvents.length && !fromReroute) {
+				globals.utilities.showModal(
+					'Routing Failed',
+					'There are no events available to route',
+					null,
+					null,
+					'OK'
 				);
+				return;
+			} else if (unroutableEvents.length && !fromReroute) {
+				globals.utilities.showModal(
+					'Missing Geocode',
+					'Some selected events have not yet been geocoded and can’t be mapped',
+					null,
+					null,
+					'OK'
+				);
+			}
 
-				// Set new temporary marker options
-				if (!event.map.markerOptions) {
-					event.map.markerOptions = {};
-				}
+			/** @type {HTMLElement | null} */
+			const resourceDistanceContainer = document.querySelector(
+				`.${inputs.resourceDistanceContainerClass}[resource="${resourceId}"]`
+			);
 
-				const pinColor = new pinElement({
-					background: routeColor,
-					borderColor: borderColor,
-					glyphColor: borderColor,
-					glyph: count.toString(),
-				});
+			// Show button loader
+			if (resourceDistanceContainer) {
+				resourceDistanceContainer.classList.add('loading');
+			}
+			await asyncDelay(0);
 
-				// Assign properties to new marker
-				pinColor.element.classList.add('dbk-map-marker');
-				pinColor.element.dataset.id = event._id;
+			// Initialize route for this resource
+			routes[resourceId] = {
+				loading: true,
+				eventMarkersChanged: [],
+				waypoints: [],
+				segments: [],
+				homePosition: {},
+				dynamicMarkers: [],
+			};
 
-				event.map.markerOptions.content = pinColor.element;
-				event.map.markerOptions.zIndex = 9999;
-				event.map.marker.content = pinColor.element;
-				event.map.marker.zIndex = 9999;
+			const routeColor = targetResource.routeColor;
+			const borderColor = globals.utilities.generateTextColor(routeColor);
 
-				// Update marker for route
+			// Create waypoints
+			let waypoints = [];
+			for (const event of routableEvents) {
 				waypoints.push(dbkGeocodeToGoogleGeocode(event.geocode));
 			}
+
 			const origin = {
 				address: targetResource.location,
 			};
@@ -622,12 +600,53 @@
 					waypoints,
 					routeColor
 				);
-				// Add distance to button
-				/** @type {HTMLElement | null} */
-				const resourceDistanceContainer = document.querySelector(
-					`.${inputs.resourceDistanceContainerClass}[resource="${resourceId}"]`
-				);
 
+				if (!routeResults.length) {
+					// Clear loading state
+					clearRouteLoading(resourceId, resourceDistanceContainer);
+					// The route has been cleared so no need to go further
+					if (routes[resourceId]) {
+						resetRoute(resourceId);
+					}
+					return;
+				}
+
+				// Assign map markers
+				let count = 0;
+				for (const event of routableEvents) {
+					count++;
+
+					// Backup event marker info
+					routes[resourceId].eventMarkersChanged.push(
+						createEventMarkerBackup(event)
+					);
+
+					// Set new temporary marker options
+					if (!event.map.markerOptions) {
+						event.map.markerOptions = {};
+					}
+
+					const pinColor = new pinElement({
+						background: routeColor,
+						borderColor: borderColor,
+						glyphColor: borderColor,
+						glyph: count.toString(),
+					});
+
+					// Assign properties to new marker
+					pinColor.element.classList.add('dbk-map-marker');
+					pinColor.element.dataset.id = event._id;
+
+					event.map.markerOptions.content = pinColor.element;
+					event.map.markerOptions.zIndex = 9999;
+					event.map.marker.content = pinColor.element;
+					event.map.marker.zIndex = 9999;
+				}
+
+				// Clear loading state
+				clearRouteLoading(resourceId, resourceDistanceContainer);
+
+				// Add distance to button
 				if (resourceDistanceContainer) {
 					resourceDistanceContainer.style.backgroundColor =
 						routeColor;
@@ -644,24 +663,6 @@
 					resourceDistanceContainer,
 					resourceId
 				);
-				if (!events.length) {
-					globals.utilities.showModal(
-						'Routing Failed',
-						'There are no events available to route',
-						null,
-						null,
-						'OK'
-					);
-					return;
-				} else if (noGeoCode.length) {
-					globals.utilities.showModal(
-						'Missing Geocode',
-						'Some selected events have not yet been geocoded and can’t be mapped',
-						null,
-						null,
-						'OK'
-					);
-				}
 
 				// Add home marker
 				const homePosition = routes[resourceId].segments[0]
@@ -684,6 +685,10 @@
 				const bounds = new globals.google.maps.LatLngBounds();
 
 				for (const property in routes) {
+					// If a route no longer exists or it's still loading then don't try and center on it
+					if (!routes[property] || routes[property].loading) {
+						continue;
+					}
 					for (const waypoint of routes[property].waypoints) {
 						if (waypoint.location) {
 							bounds.extend({
@@ -692,11 +697,18 @@
 							});
 						}
 					}
+
 					bounds.extend(routes[property].homePosition);
 				}
 				map.fitBounds(bounds);
+				// Clear loading state
+				routes[resourceId].loading = false;
 			} catch (err) {
+				// Clear loading state
+				clearRouteLoading(resourceId, resourceDistanceContainer);
+
 				resetAll();
+
 				globals.utilities.showModal(
 					'Failed to Create Route',
 					err?.message ? err.message : err,
@@ -710,6 +722,16 @@
 					null,
 					true
 				);
+			}
+		}
+
+		/** @type {(resourceId: string, resourceDistanceContainer: HTMLElement | null) => void} */
+		function clearRouteLoading(resourceId, resourceDistanceContainer) {
+			if (routes[resourceId]?.loading) {
+				routes[resourceId].loading = false;
+			}
+			if (resourceDistanceContainer) {
+				resourceDistanceContainer.classList.remove('loading');
 			}
 		}
 
@@ -743,6 +765,11 @@
 				Promise.all(requestPromises)
 					.then((result) => {
 						const dataArray = result.flat();
+						// If the route no longer exists resolve with empry array as there is nothing todo anymore
+						if (!routes[resourceId]) {
+							resolve([]);
+							return;
+						}
 						routes[resourceId].segments = [];
 						for (const data of dataArray) {
 							const polyline =
@@ -843,13 +870,25 @@
 
 		/** @type {() => Promise<void>} */
 		async function reRouteResource() {
+			const wasLoading = new Set();
 			const routeKeys = Object.keys(routes);
 			if (!routeKeys.length) {
 				return;
 			}
-			resetAll();
+			// Reset any routes that aren't actively loading
 			for (const resourceId of routeKeys) {
-				await showRouteForResource(resourceId, true);
+				if (routes[resourceId].loading) {
+					wasLoading.add(resourceId);
+					continue;
+				}
+				resetAll(resourceId);
+			}
+			// Load any routes that weren't already loading
+			for (const resourceId of routeKeys) {
+				if (wasLoading.has(resourceId)) {
+					continue;
+				}
+				showRouteForResource(resourceId, true, true);
 			}
 		}
 
@@ -870,6 +909,44 @@
 				segment.setMap(null);
 			}
 			route.segments = [];
+		}
+
+		/** @type {(resourceName: string) => {routableEvents: Object[], unroutableEvents: Object[]}} */
+		function getEventsToRoute(resourceName) {
+			const routableEvents = [];
+			const unroutableEvents = [];
+			const multiSelect = globals.seedcodeCalendar.get('multiSelect');
+			const hasMultiSelect =
+				multiSelect && typeof multiSelect === 'object';
+			const clientEvents = globals.seedcodeCalendar
+				.get('element')
+				.fullCalendar('clientEvents');
+			const eventsToRoute = hasMultiSelect
+				? clientEvents.filter((event) => {
+						return !!multiSelect[
+							`${event.eventID}-${event.schedule.id}`
+						];
+					})
+				: clientEvents;
+
+			for (const event of eventsToRoute) {
+				if (
+					(!event.resource.includes(resourceName) &&
+						!hasMultiSelect) ||
+					!globals.dbk.isEventShown(event)
+				) {
+					continue;
+				}
+				if (event.geocode) {
+					routableEvents.push(event);
+				} else if (event.location) {
+					unroutableEvents.push(event);
+				}
+			}
+			return {
+				routableEvents: routableEvents.sort(sortRoutedEvents),
+				unroutableEvents: unroutableEvents.sort(sortRoutedEvents),
+			};
 		}
 
 		/** @type {(aEvent: Object, bEvent: Object) => number} */
@@ -1013,7 +1090,9 @@
 				'onclick',
 				`${globalPrefix}routeButtonClick("${resourceId}", event)`
 			);
-			button.innerHTML = icon;
+			// Add map button and loader
+			button.innerHTML = `${icon}<span class="button-loader"></span>`;
+
 			container.appendChild(button);
 			return container.outerHTML;
 		}
@@ -1249,7 +1328,28 @@
 			}
 		}
 
+		// =============================== Resources ===============================
+
+		/** @type {(resourceId: string) => Object | undefined} */
+		function getResource(resourceId) {
+			const resources = globals.seedcodeCalendar.get('resources');
+			return resources.find(
+				/** @type {(resource: Object) => boolean} */ (resource) => {
+					return resource.id === resourceId;
+				}
+			);
+		}
+
 		// =============================== Utilities ===============================
+
+		/** @type {(delay: number) => Promise<void>} */
+		async function asyncDelay(delay) {
+			return new Promise((resolve) => {
+				setTimeout(() => {
+					resolve();
+				}, delay);
+			});
+		}
 
 		/** @type {(mode: string, isDistanceService: boolean) => string} */
 		function getTravelMode(mode, isDistanceService) {
