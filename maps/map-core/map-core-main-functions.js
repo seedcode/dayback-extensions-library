@@ -3,7 +3,7 @@
 // Purpose: Registers all of the functionality needed for calculating distances and routing
 // Action Type: On Sources Fetched
 // Prevent Default Action: No
-// Version: v1.1.1
+// Version: v1.1.2
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -72,7 +72,7 @@
 		/** @typedef {{toDate: Function}} Moment */
 		/** @typedef {{lat: string, lng: string}} Geocode */
 		/** @typedef {{distance: number, duration: number}} Distance */
-		/** @typedef {{status: string, distance: {value: number, label: string}, duration: {value: number, label: string}, duration_in_traffic: {value: number, label: string}}} GoogleDistanceResult*/
+		/** @typedef {{distanceMeters: number, duration: number, destinationIndex: number, condition: string}} GoogleDistanceResult*/
 		/** @typedef {{id: string, status: string, distance: number, duration: number, durationInTraffic?: number}} ResourceDistance */
 		/** @typedef {{_id: string, title: string, titleEdit: string, start: Object, end: Object, resource: Array<string>, allDay?: boolean, location?: string, geocode?: Geocode}} Event */
 		/** @typedef {{distance: number, event: Event}} EventDistance */
@@ -159,8 +159,6 @@
 		let mapApiKey = '';
 		let advancedMarkerElement;
 		let pinElement;
-		/** @type {{getDistanceMatrix: Function}} */
-		let DistanceMatrixService;
 		/** @type {{encoding: {decodePath: Function}}} */
 		let geometry;
 
@@ -207,11 +205,6 @@
 			pinElement = PinElement;
 			// Geometry library utlities
 			geometry = await globals.google.maps.importLibrary('geometry');
-			//initialize Distance Service
-			if (!DistanceMatrixService) {
-				DistanceMatrixService =
-					new globals.google.maps.DistanceMatrixService();
-			}
 		}
 
 		/** @type {(resourceId?: string) => void} */
@@ -246,10 +239,7 @@
 						id: resource.id,
 						distance: 0,
 						duration: 0,
-						durationInTraffic: 0,
-						status: '',
 					});
-					// originArray.push(origin);
 					destinationArray.push(destination);
 				}
 			}
@@ -269,18 +259,14 @@
 			}
 
 			for (let i = 0; i < resourcesCalculated.length; i++) {
-				const dataElement = distancesResult[i];
-				resourcesCalculated[i].status = dataElement.status;
-				if (dataElement.status === 'OK') {
-					resourcesCalculated[i].distance +=
-						dataElement.distance.value;
-					resourcesCalculated[i].duration +=
-						dataElement.duration.value;
-					if (dataElement.duration_in_traffic) {
-						resourcesCalculated[i].durationInTraffic +=
-							dataElement.duration_in_traffic.value;
-					}
+				const dataElement = distancesResult.find((resultItem) => {
+					return resultItem.destinationIndex === i;
+				});
+				if (dataElement?.condition !== 'ROUTE_EXISTS') {
+					continue;
 				}
+				resourcesCalculated[i].distance = dataElement.distanceMeters;
+				resourcesCalculated[i].duration = dataElement.duration;
 			}
 
 			return resourcesCalculated;
@@ -335,64 +321,74 @@
 						return;
 					}
 				}
-				const travelMode = getTravelMode(options.travelMode, true);
-				const travelOptions = {};
-
-				if (
-					options.realtimeTraffic &&
-					travelMode === 'DRIVING' &&
-					departureTime &&
-					departureTime > new Date()
-				) {
-					travelOptions.departureTime = departureTime;
-					travelOptions.trafficModel = 'bestguess';
-				}
 
 				for (const destinationPage of destinationPages) {
-					/** @type {{origins: string | Object[], destinations: Object[], travelMode: string, unitSystem: string, drivingOptions?: {departureTime: Date, trafficModel: string}}} */
-					const requestOptions = {
-						origins: originsRequest,
-						destinations: destinationPage,
-						travelMode: travelMode,
-						unitSystem:
-							globals.google.maps.UnitSystem[
-								(
-									distanceTypes[options.distanceUnit]
-										.apiUnit || 'imperial'
-								).toUpperCase()
-							],
-					};
-
-					if (Object.keys(travelOptions).length) {
-						requestOptions.drivingOptions = travelOptions;
-					}
-
 					requestPromises.push(
-						new Promise((resolve, reject) => {
-							DistanceMatrixService.getDistanceMatrix(
-								requestOptions,
-								(response, status) => {
-									if (status === 'OK') {
-										resolve(response.rows[0].elements);
-									} else {
-										reject(
-											`Failed to get directions: ${status}`
-										);
-									}
-								}
-							);
-						})
+						fetchDistances(
+							originsRequest,
+							destinationPage,
+							departureTime
+						)
 					);
 				}
 
 				Promise.all(requestPromises)
 					.then((/** @type {GoogleDistanceResult[][]} */ result) => {
-						resolve(result.flat());
+						const flattenedResult = result.flat();
+						for (const item of flattenedResult) {
+							item.duration = parseInt(item.duration.toString());
+						}
+						resolve(flattenedResult);
 					})
 					.catch((err) => {
 						reject(err);
 					});
 			});
+		}
+
+		/** @type {(origins: Object[], destinations: Object[], departureTime: Date) => Promise<GoogleDistanceResult[]>} */
+		async function fetchDistances(origins, destinations, departureTime) {
+			const apiUrl =
+				'https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix/';
+			const payload = {
+				origins: origins,
+				destinations: destinations,
+				travelMode: getTravelMode(options.travelMode, false),
+				routingPreference: options.realtimeTraffic
+					? 'TRAFFIC_AWARE_OPTIMAL'
+					: 'TRAFFIC_UNAWARE',
+				languageCode: 'en-US',
+				units: (
+					distanceTypes[options.distanceUnit].apiUnit || 'imperial'
+				).toUpperCase(),
+			};
+
+			if (
+				departureTime &&
+				departureTime.getTime() > new Date().getTime()
+			) {
+				payload.departureTime = departureTime;
+			}
+
+			try {
+				const response = await fetch(apiUrl, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'X-Goog-Api-Key': mapApiKey,
+						'X-Goog-FieldMask':
+							'originIndex,destinationIndex,duration,distanceMeters,status,condition',
+					},
+					body: JSON.stringify(payload),
+				});
+				if (!response.ok) {
+					throw new Error(`Error: ${response.status}`);
+				}
+				const data = await response.json();
+				return data;
+			} catch (err) {
+				throw err;
+			}
 		}
 
 		/** @type {(distancePayload: Array<ResourceDistance>) => void} */
@@ -466,8 +462,8 @@
 		function locationToDistanceLocation(location) {
 			try {
 				return typeof location === 'string'
-					? location
-					: geocodeToGoogle(location);
+					? {waypoint: dbkLocationToGoogleAddress(location)}
+					: {waypoint: dbkGeocodeToGoogleGeocode(location)};
 			} catch (err) {
 				throw err;
 			}
@@ -1305,17 +1301,16 @@
 					targetEvent.start.toDate()
 				);
 
-				for (let i = 0; i < distanceResult.length; i++) {
-					if (distanceResult[i].status !== 'OK') {
+				for (let i = 0; i < destinations.length; i++) {
+					const dataElement = distanceResult.find((resultItem) => {
+						return resultItem.destinationIndex === i;
+					});
+					if (dataElement?.condition !== 'ROUTE_EXISTS') {
 						continue;
 					}
 					const placement = matchKey[i];
 					const event = surroundingEvents[placement];
-					const duration = distanceResult[i].duration_in_traffic
-						? Math.round(
-								distanceResult[i].duration_in_traffic.value / 60
-							)
-						: Math.round(distanceResult[i].duration.value / 60); // Google returns duration in seconds so convert to minutes
+					const duration = Math.round(dataElement.duration / 60); // Google returns duration in seconds so convert to minutes
 
 					driveTimeResult[matchKey[i]] = {
 						event: event,
@@ -1370,7 +1365,7 @@
 				: mode.toUpperCase();
 		}
 
-		/** @type {(dbkGeocode: {lat: number, lng: number}) => Object} */
+		/** @type {(dbkGeocode: Geocode) => Object} */
 		function dbkGeocodeToGoogleGeocode(dbkGeocode) {
 			return {
 				location: {
@@ -1379,6 +1374,14 @@
 						longitude: dbkGeocode.lng,
 					},
 				},
+				vehicleStopover: options.vehicleStopover,
+			};
+		}
+
+		/** @type {(dbkLocation: string) => Object} */
+		function dbkLocationToGoogleAddress(dbkLocation) {
+			return {
+				address: dbkLocation,
 				vehicleStopover: options.vehicleStopover,
 			};
 		}
