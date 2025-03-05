@@ -30,7 +30,7 @@ try {
         Define a list of applicable tooltip cards
         -----------------------------------------
 
-        You may default multiple tooltip cards, and set a restriction 
+        You may define multiple tooltip cards, and set a restriction 
         function that will show the card only for a given user
         or if certain information about the event is true.
         
