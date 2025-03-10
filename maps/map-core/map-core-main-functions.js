@@ -3,7 +3,7 @@
 // Purpose: Registers all of the functionality needed for calculating distances and routing
 // Action Type: On Sources Fetched
 // Prevent Default Action: No
-// Version: v1.1.2
+// Version: v1.1.3
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -336,7 +336,9 @@
 					.then((/** @type {GoogleDistanceResult[][]} */ result) => {
 						const flattenedResult = result.flat();
 						for (const item of flattenedResult) {
-							item.duration = parseInt(item.duration.toString());
+							item.duration = !item.duration
+								? 0
+								: parseInt(item.duration.toString());
 						}
 						resolve(flattenedResult);
 					})
