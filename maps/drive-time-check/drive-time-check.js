@@ -2,10 +2,17 @@
 // Action Type: On Event Save, Button Action
 // Prevent Default Action: No
 // Requires: Map core functions
-// Version: v1.0.0
+// Version: v1.0.2
 
 // @ts-ignore
-const globals = {dbk, seedcodeCalendar, utilities, editEvent, event};
+const globals = {
+	dbk,
+	seedcodeCalendar,
+	utilities,
+	editEvent,
+	event,
+	changesObject,
+};
 
 const globalPrefix = 'dbk_maps_';
 
@@ -17,13 +24,31 @@ const surroundingEventDriveTimes = globals.seedcodeCalendar.get(
 /** @typedef {{format: Function, diff: Function}} Moment */
 /** @typedef {{event: Event}} EditEvent */
 /** @typedef {{start: Moment, end: Moment, unscheduled: boolean, schedule: {isMapOnly: boolean}}} Event */
-/** @typedef {{distance: number, duration: number, event: Event}} EventDistance */
+/** @typedef {{distance: number, duration: number, event: Event} || {}} EventDistance */
 
 checkDriveTimes(globals.editEvent.event || globals.event);
 
 /** @type {(event: Event) => void} */
 function checkDriveTimes(event) {
-	if (event.unscheduled || event.schedule.isMapOnly) {
+	if (event.unscheduled || event.schedule.isMapOnly || !event.location) {
+		if (!changesObject) {
+			let message = '';
+			if (event.unscheduled) {
+				message = 'Drive times are not checked on unscheduled events';
+			} else if (event.isMapOnly) {
+				message = 'Drive times are not checked on map only events';
+			} else if (!event.location) {
+				message =
+					'This event is missing a location. A valid location is neccessary to check drive times.';
+			}
+			globals.utilities.showModal(
+				'Cannot Check Drive Times',
+				message,
+				null,
+				null,
+				'OK'
+			);
+		}
 		return;
 	}
 
@@ -83,6 +108,17 @@ function checkDriveTimes(event) {
 					null,
 					'OK'
 				);
+			} else {
+				// Only show no conflict dialog if this is not from an on save (assumes button)
+				if (!changesObject) {
+					globals.utilities.showModal(
+						'No Drive Time Conflict',
+						'This event does not have any drive time conflicts',
+						null,
+						null,
+						'OK'
+					);
+				}
 			}
 		})
 		.catch((/** @type {Error} */ err) => {
