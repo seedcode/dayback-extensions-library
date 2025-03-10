@@ -1,5 +1,5 @@
 // Purpose: Creates and sets a geocode value in the event based on location
-// Action Type: Before Event Save, Button Action
+// Action Type: Button Action
 // Prevent Default Action: No
 // Requires: Map core functions
 // Version: v1.0.1
