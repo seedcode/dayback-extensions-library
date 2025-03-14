@@ -3,7 +3,7 @@
 // Purpose: Registers all of the functionality needed for calculating distances and routing
 // Action Type: On Sources Fetched
 // Prevent Default Action: No
-// Version: v1.1.3
+// Version: v1.1.4
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -70,7 +70,7 @@
 	// Action code goes inside this function
 	function run() {
 		/** @typedef {{toDate: Function}} Moment */
-		/** @typedef {{lat: string, lng: string}} Geocode */
+		/** @typedef {{lat: number, lng: number}} Geocode */
 		/** @typedef {{distance: number, duration: number}} Distance */
 		/** @typedef {{distanceMeters: number, duration: number, destinationIndex: number, condition: string}} GoogleDistanceResult*/
 		/** @typedef {{id: string, status: string, distance: number, duration: number, durationInTraffic?: number}} ResourceDistance */
@@ -705,7 +705,10 @@
 				// Clear loading state
 				clearRouteLoading(resourceId, resourceDistanceContainer);
 
-				resetAll();
+				// Wrap in a timeout so this commits css transition changes properly
+				setTimeout(() => {
+					resetAll();
+				}, 0);
 
 				globals.utilities.showModal(
 					'Failed to Create Route',
