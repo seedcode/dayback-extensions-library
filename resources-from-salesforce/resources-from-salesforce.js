@@ -43,7 +43,7 @@
 		 * The currently signed in account email
 		 * @type {string}
 		 */
-		inputs.account = globals.globals.seedcodeCalendar.get('config').account;
+		inputs.account = globals.seedcodeCalendar.get('config').account;
 
 		//define object and fields for resource folders
 		//multiple objects can be defined by adding to the array
@@ -554,7 +554,7 @@
 		}
 
 		setTimeout(function () {
-			globals.globals.utilities.showModal(
+			globals.utilities.showModal(
 				errorTitle,
 				errorMessage,
 				null,
