@@ -1,0 +1,5 @@
+<apex:page standardController="Technician_Assignment__c" title="Technician Assignment Chatter Feed">
+	<apex:pageMessages />
+	<!-- Renders the Chatter feed and publisher for the custom object record -->
+	<chatter:feedWithFollowers entityId="{!Technician_Assignment__c.Id}" />
+</apex:page>

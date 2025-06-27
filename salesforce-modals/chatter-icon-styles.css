@@ -1,0 +1,17 @@
+/* Hide icon for events with no Chatter */
+.fc-event:not(.hasChatter) .chatterIcon {
+  display: none !important;
+}
+
+/* Style events with Chatter activity */
+.fc-event.hasChatter {
+  box-shadow: 0px 0px 10px #ec03fc;
+  border: 1px solid #ec03fc !important;
+}
+
+/* Style the comment icon */
+.fc-event.hasChatter .chatterIcon {
+  color: #ec03fc;
+  text-shadow: 0px 0px 3px white;
+  float: right;
+}

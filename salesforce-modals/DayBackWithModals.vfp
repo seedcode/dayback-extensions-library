@@ -1,0 +1,106 @@
+<apex:page title="DayBack" standardStylesheets="false" sideBar="false" controller="DayBackResource" >
+
+    <style>
+      body{padding:0 !important;overflow-y:hidden !important;}
+    </style>
+
+    <apex:stylesheet value="{!URLFOR($Resource.style_resources,'styles/styles.css')}"/>
+    
+    <apex:includeScript value="/support/console/44.0/integration.js"/>
+    <apex:includeLightning /> 
+  
+    <apex:outputPanel rendered="{! $User.UIThemeDisplayed == 'Theme4d' || $User.UIThemeDisplayed == 'Theme4u' }">
+        <apex:stylesheet value="{!URLFOR($Resource.style_resources,'styles/lightning.css')}"/>
+    </apex:outputPanel>
+
+    <apex:includeScript value="/canvas/sdk/js/57.0/controller.js"/>
+    
+    <!-- DayBack with Modals Custom JS - Name your Static resource DayBackWithModalsJS -->
+    <apex:includeScript value="{!$Resource.DayBackWithModalsJS}"/>
+
+    <script type="text/javascript">
+        DayBack.subscribe();
+    </script>
+  
+    <apex:canvasApp canvasId="dbk" developerName="DayBack" width="100%"/>
+    
+    <script type="text/javascript">
+        setTimeout(function() {
+           DayBack.init({
+               theme: "{! $User.UIThemeDisplayed}"
+           });
+        },0);
+    </script>
+    
+    <!-- Default DayBack Container -->
+    <div id="lightning" />
+
+    <!-- Custom Modal Container -->
+    <div id="internalModal" onclick="DayBack.closeModal()">
+        <div id="modalContent">
+            <div id="modalTitleContainer">
+                <div id="modalTitle"></div>
+                <a onclick="DayBack.closeModal()">
+                    <svg id="modalCloseSvg" focusable="false" viewBox="0 0 520 520" part="icon">
+                    <g lwc-3bq099ugqsh="">
+                        <path d="M310 254l130-131c6-6 6-15 0-21l-20-21c-6-6-15-6-21 0L268 212a10 10 0 01-14 0L123 80c-6-6-15-6-21 0l-21 21c-6 6-6 15 0 21l131 131c4 4 4 10 0 14L80 399c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l131-131a10 10 0 0114 0l131 131c6 6 15 6 21 0l21-21c6-6 6-15 0-21L310 268a10 10 0 010-14z" lwc-3bq099ugqsh=""></path>
+                    </g>
+                    </svg>
+                </a>
+            </div>
+            <div id="modalFrameWrapper"></div>
+        </div>
+    </div>
+  
+    <!-- Custom Modal Style -->
+    <style>
+        #internalModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #modalContent {
+            border-radius: 8px;
+            max-width: 90%;
+            max-height: 90%;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+            overflow: auto;
+            border: 1px solid rgba(0,0,0,0.3)
+        }
+
+        #modalTitleContainer {
+            padding: 15px;
+            font-family: var(--lwc-fontFamily, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol');
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        #modalTitle {
+            display: inline-block;
+        }
+
+        #modalTitleContainer a {
+            float: right;
+            cursor: pointer;
+        }
+
+        #modalTitleContainer a svg {
+            height: 20px;
+            width: 20px;
+            cursor: pointer;
+        }
+
+        #modalFrameWrapper {
+            background: white;
+            padding: 15px;
+        }
+    </style>
+</apex:page>
