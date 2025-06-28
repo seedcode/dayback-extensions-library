@@ -61,10 +61,4 @@ This project contains a complete working example of how to extend the [DayBack C
 - Display audit logs or activity history for a record.
 - Use modal callbacks to refresh calendar data in real time.
 
----
 
-## 📬 Feedback & Contributions
-
-Feel free to fork this repo, open issues, or submit improvements. For questions related to DayBack integrations, visit [https://dayback.com/help/](https://dayback.com/help/)
-
----
