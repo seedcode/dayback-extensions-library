@@ -34,7 +34,7 @@ try {
 
     // The currently signed in account email
     
-	inputs.account = seedcodeCalendar.get('config').account;
+    inputs.account = seedcodeCalendar.get('config').account;
 
     //----------- End Configuration -------------------
 } catch (error) {
