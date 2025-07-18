@@ -4,7 +4,7 @@
 // This button action will copy the details of an event and post
 // them to a Slack Channel. You will need to modify the configuraiton
 //
-// Action Type: Buitton Action
+// Action Type: Button Action
 // Open In New Window: Yes
 
 // More info on custom App Actions here:
@@ -31,6 +31,10 @@ try {
     // Configure your API key
 
     inputs.apiUrl = 'YourSlackWebHookURL';
+
+    // The currently signed in account email
+    
+	inputs.account = seedcodeCalendar.get('config').account;
 
     //----------- End Configuration -------------------
 } catch (error) {
