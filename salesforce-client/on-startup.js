@@ -164,21 +164,17 @@
 
             const text = `${status}${code} ${err.message}${details}`;
 
-            if (typeof utilities !== "undefined") {
-                if (err.httpStatus >= 400 && err.httpStatus < 500) {
-                    // Soft toast for client errors (e.g., 400 malformed, field errors)
-                    const html = '<span class="message-icon-separator error">'
-                        + '<i class="fa fa-exclamation-triangle" style="color: red;"></i></span>'
-                        + `<span style="color: red;">Salesforce Error: </span> ${utilities.escapeHtml ? utilities.escapeHtml(text) : text}</span>`;
-                    // 6s toast, adjust as you like
-                    console.error(`Salesforce Error: ${text}`);
-                    utilities.showMessage(html, 0, 6000, null, null);
-                } else {
-                    // Modal for server/auth issues
-                    utilities.showModal("Salesforce Error", text, "OK", null);
-                }
+            if (err.httpStatus >= 400 && err.httpStatus < 500) {
+                // Soft toast for client errors (e.g., 400 malformed, field errors)
+                const html = '<span class="message-icon-separator error">'
+                    + '<i class="fa fa-exclamation-triangle" style="color: red;"></i></span>'
+                    + `<span style="color: red;">Salesforce Error: </span> ${utilities.escapeHtml ? utilities.escapeHtml(text) : text}</span>`;
+                // 6s toast, adjust as you like
+                console.error(`Salesforce Error: ${text}`);
+                utilities.showMessage(html, 0, 6000, null, null);
             } else {
-                console.error(text, err);
+                // Modal for server/auth issues
+                utilities.showModal("Salesforce Error", text, "OK", null);
             }
         }
 
@@ -187,7 +183,7 @@
          */
         function makeEndpointsFromCanvas(context, apiVersion) {
             const version = apiVersion || context.version || "v61.0";
-            const base = context.instanceUrl || ""; // e.g., https://yourInstance.my.salesforce.com
+            const base = context.instanceUrl || "";
             return {
                 base,
                 version,
@@ -223,13 +219,6 @@
                 payload,
                 method, url, source,
             };
-        }
-
-        // Handle an error according to shouldThrow
-        function handleError(errLike) {
-            // errLike shape: { httpStatus, message, code, payload, method, url, source }
-            if (shouldThrow) throw makeSfError(errLike);
-            return asResult(errLike);
         }
 
         // -------------------------
@@ -284,18 +273,17 @@
             // Canvas transport
             // =========================
             if (useCanvas) {
-                // Use the provided context (stable), but fetch a FRESH client per request (token can rotate)
+                // Use a stable context, but fetch a FRESH client per call (token can rotate)
                 const context = canvasContext || (fbk && fbk.context && fbk.context());
                 if (!context) throw new Error("Canvas mode requires fbk.context().");
-
                 endpoints = makeEndpointsFromCanvas(context, apiVersion);
 
-                const getCanvasClient = () => fbk.client();
+                const getCanvasClient = () => (canvasClient || (fbk && fbk.client && fbk.client()));
 
-                // Canvas transport: fresh client per call, no method override, no headers by default, 401 retry
+                // Low-level ajax using Sfdc.canvas.client.ajax with retries for auth and method override
                 const canvasAjax = (url, { method = "GET", params, data } = {}, attempt = 0, overrideStep = 0) =>
                     new Promise((resolve, reject) => {
-                        // URL + params
+                        // Build URL + query params
                         let u = url;
                         if (params && typeof params === "object") {
                             const qs = Object.keys(params)
@@ -304,7 +292,7 @@
                             u += (u.indexOf("?") === -1 ? "?" : "&") + qs;
                         }
 
-                        // Try native verb; fallback once to method override via URL param only
+                        // Try native verb first; on 405 fallback to POST + _HttpMethod
                         const sendMethod = (overrideStep === 0) ? method.toUpperCase() : "POST";
                         if (overrideStep === 1) {
                             u += (u.indexOf("?") === -1 ? "?" : "&") + `_HttpMethod=${method.toUpperCase()}`;
@@ -313,62 +301,62 @@
                         const hasBody = sendMethod !== "GET" && sendMethod !== "HEAD";
                         const payload = hasBody ? (data != null ? JSON.stringify(data) : "") : undefined;
 
-                        const canvasAjax = (url, { method = "GET", params, data } = {}, attempt = 0, overrideStep = 0) =>
-                            new Promise((resolve, reject) => {
-                                // ... build u, sendMethod, payload, ajaxOptions as you already do ...
+                        const ajaxOptions = {
+                            client: getCanvasClient(),
+                            method: sendMethod,
+                            ...(hasBody ? { contentType: "application/json" } : {}),
+                            data: payload,
+                            success: (res) => {
+                                // Canvas sometimes returns non-2xx on the "success" path
+                                if (res && typeof res.status === "number" && res.status >= 400) {
+                                    const parsed = parseSfErrorPayload(res.payload);
+                                    const e = {
+                                        httpStatus: res.status,
+                                        message: parsed.message,
+                                        code: parsed.code,
+                                        payload: res.payload,
+                                        method: method.toUpperCase(),
+                                        url: u,
+                                        source: "canvas",
+                                    };
+                                    return shouldThrow ? reject(makeSfError(e)) : resolve(asResult(e));
+                                }
+                                if (res && res.status === 401 && attempt === 0) {
+                                    return canvasAjax(url, { method, params, data }, 1, overrideStep).then(resolve, reject);
+                                }
+                                const status = res?.status ?? 200;
+                                resolve({ ok: true, status, payload: res?.payload, method: method.toUpperCase(), url: u, source: "canvas" });
+                            },
+                            error: (err) => {
+                                try {
+                                    const code = err?.status || err?.payload?.[0]?.errorCode;
+                                    const message = err?.payload?.[0]?.message || err?.message || "Salesforce Error";
 
-                                ajaxOptions.success = (res) => {
-                                    // Canvas often returns { status, payload }
-                                    if (res && typeof res.status === "number" && res.status >= 400) {
-                                        const parsed = parseSfErrorPayload(res.payload);
-                                        const e = {
-                                            httpStatus: res.status,
-                                            message: parsed.message,
-                                            code: parsed.code,
-                                            payload: res.payload,
-                                            method: method.toUpperCase(),
-                                            url: u,
-                                            source: "canvas",
-                                        };
-                                        return shouldThrow ? reject(makeSfError(e)) : resolve(asResult(e));
-                                    }
-                                    if (res && res.status === 401 && attempt === 0) {
+                                    // Retry once on auth
+                                    if ((code === 401 || code === "INVALID_SESSION_ID") && attempt === 0) {
                                         return canvasAjax(url, { method, params, data }, 1, overrideStep).then(resolve, reject);
                                     }
-                                    // Normalize successes
-                                    const status = res?.status ?? 200;
-                                    resolve({ ok: true, status, payload: res?.payload, method: method.toUpperCase(), url: u, source: "canvas" });
-                                };
-
-                                ajaxOptions.error = (err) => {
-                                    try {
-                                        const code = err?.status || err?.payload?.[0]?.errorCode;
-                                        const message = err?.payload?.[0]?.message || err?.message || "Salesforce Error";
-                                        if ((code === 401 || code === "INVALID_SESSION_ID") && attempt === 0) {
-                                            return canvasAjax(url, { method, params, data }, 1, overrideStep).then(resolve, reject);
-                                        }
-                                        if ((code === 405 || /method not allowed/i.test(message)) && overrideStep === 0) {
-                                            return canvasAjax(url, { method, params, data }, attempt, 1).then(resolve, reject);
-                                        }
-                                        const e = {
-                                            httpStatus: err?.status,
-                                            message,
-                                            code: typeof code === "number" ? undefined : code,
-                                            payload: err?.payload || err,
-                                            method: method.toUpperCase(),
-                                            url: u,
-                                            source: "canvas",
-                                        };
-                                        return shouldThrow ? reject(makeSfError(e)) : resolve(asResult(e));
-                                    } catch (_) {
-                                        const e = { httpStatus: 0, message: String(err), payload: err, method: method.toUpperCase(), url: u, source: "canvas" };
-                                        return shouldThrow ? reject(makeSfError(e)) : resolve(asResult(e));
+                                    // Fallback once to method override if verb not allowed
+                                    if ((code === 405 || /method not allowed/i.test(message)) && overrideStep === 0) {
+                                        return canvasAjax(url, { method, params, data }, attempt, 1).then(resolve, reject);
                                     }
-                                };
 
-                                Sfdc.canvas.client.ajax(u, ajaxOptions);
-                            });
-
+                                    const e = {
+                                        httpStatus: err?.status,
+                                        message,
+                                        code: typeof code === "number" ? undefined : code,
+                                        payload: err?.payload || err,
+                                        method: method.toUpperCase(),
+                                        url: u,
+                                        source: "canvas",
+                                    };
+                                    return shouldThrow ? reject(makeSfError(e)) : resolve(asResult(e));
+                                } catch (_) {
+                                    const e = { httpStatus: 0, message: String(err), payload: err, method: method.toUpperCase(), url: u, source: "canvas" };
+                                    return shouldThrow ? reject(makeSfError(e)) : resolve(asResult(e));
+                                }
+                            }
+                        };
 
                         Sfdc.canvas.client.ajax(u, ajaxOptions);
                     });
@@ -524,7 +512,7 @@
                     ? await ajax("GET", `${endpoints.queryUrl}?q=${encodeURIComponent(soql)}`)
                     : await ajax("GET", `${endpoints.queryUrl}/`, { params: { q: soql } });
 
-                if (!res.ok) return [res, []];            // <- error-as-data path
+                if (!res.ok) return [res, []];
                 let all = (res.payload?.records) || [];
                 // ... follow nextRecordsUrl if pageAll ...
                 return [res, all];
