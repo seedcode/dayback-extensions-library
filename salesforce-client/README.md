@@ -1,6 +1,6 @@
 # Salesforce Client Library (for Canvas Apps & Salesforce Connect)
 
-When building on top of the **DayBack Salesforce Canvas App**, or **Salesforce Connect**, this helper library lets you work with Salesforce records with a unified client that speaks SOQL and Apex in both environments. Drop it into an `On Startup` app action and you're good to go: the library auto-detects where it's running, handles Salesforce authentication when needed, and gives you consistent responses and errors so you can focus on building your app, not DayBack's internal plumbing.
+This helper library lets you work with Salesforce records with a unified client that speaks SOQL and Apex in both the **DayBack Canvas App** and **Salesforce Connect** environments. Drop it into an `On Startup` app action and you're good to go: the library auto-detects where it's running, handles Salesforce Connect authentication when needed, and gives you consistent responses and errors so you can focus on building your app, not DayBack's internal plumbing.
 
 ### Benefits of this Library
 
