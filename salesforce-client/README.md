@@ -116,7 +116,7 @@ const sf = SalesforceClient({
 
 All methods return a tuple: **`[rawResponse, data]`**. On error, a rich `Error` is thrown.
 
-### `query(soql: string, options?: { pageAll?: boolean })`
+###### `query(soql: string, options?: { pageAll?: boolean })`
 Run a SOQL query. If `pageAll` is `true` (default), it follows `nextRecordsUrl` to collect all rows.
 
 ```js
@@ -127,21 +127,21 @@ const [resp, rows] = await sf.query(`
 `, { pageAll: true });
 ```
 
-### `retrieve(sobject: string, id: string, fields?: string[])`
+###### `retrieve(sobject: string, id: string, fields?: string[])`
 Get a record by Id, optionally limiting returned fields.
 
 ```js
 const [r, account] = await sf.retrieve("Account", "001xx000000123A", ["Id","Name"]);
 ```
 
-### `create(sobject: string, body: object)`
+###### `create(sobject: string, body: object)`
 Create a record. Returns `{ id, success, errors }` as `data`.
 
 ```js
 const [r, contact] = await sf.create("Contact", { FirstName: "Ada", LastName: "Lovelace" });
 ```
 
-### `update(sobject: string, id: string, body: object)`
+###### `update(sobject: string, id: string, body: object)`
 Update a record. `rawResponse.status` is typically **204**. You don't necessarily need to inspect the response if you are in a try catch structure. The try catch will automatically capture errors while ensuring normal flow control otherwise.
 
 ```js
@@ -156,21 +156,21 @@ try {
 }
 ```
 
-### `upsert(sobject: string, externalIdField: string, externalIdValue: string, body: object)`
+###### `upsert(sobject: string, externalIdField: string, externalIdValue: string, body: object)`
 Upsert by external Id. Status **201** (created) or **204** (updated).
 
 ```js
 await sf.upsert("Contact", "Email", "ada@example.com", { LastName: "Unknown" });
 ```
 
-### `delete(sobject: string, id: string)`
+###### `delete(sobject: string, id: string)`
 Delete a record. Status **204**.
 
 ```js
 await sf.delete("Contact", out.id);
 ```
 
-### `batch(requests: CompositeRequest[], options?: { allOrNone?: boolean, collateSubrequests?: boolean })`
+###### `batch(requests: CompositeRequest[], options?: { allOrNone?: boolean, collateSubrequests?: boolean })`
 Composite (up to 25 subrequests). Each request: `{ method, url, referenceId?, body? }`.
 **Note:** `url` must be relative to `/services/data/vXX.X`.
 
@@ -182,7 +182,7 @@ const [r, results] = await sf.batch([
 ], { allOrNone: false });
 ```
 
-### `createTree(sobject: string, records: object[], options?: { chunkSize?: number })`
+###### `createTree(sobject: string, records: object[], options?: { chunkSize?: number })`
 Composite Tree insert (default chunk 200).
 
 ```js
@@ -193,14 +193,14 @@ const records = [
 const [r, payloads] = await sf.createTree("Contact", records);
 ```
 
-### `apex(method: "GET"|"POST"|"PATCH"|"DELETE"|"PUT", path: string, init?: { params?: object, body?: object })`
+###### `apex(method: "GET"|"POST"|"PATCH"|"DELETE"|"PUT", path: string, init?: { params?: object, body?: object })`
 Call your Apex REST endpoints at `/services/apexrest`.
 
 ```js
 const [, data] = await sf.apex("POST", "/MyApexClass", { body: { contactId: "003xx000..." } });
 ```
 
-### `escapeSOQL(value: any)` / `sf.quote(value: any)`
+###### `escapeSOQL(value: any)` / `sf.quote(value: any)`
 Escape a string literal for SOQL: `O'Neil` → `'O\'Neil'`.
 
 ```js
@@ -210,7 +210,7 @@ await sf.query(`SELECT Id FROM Contact WHERE Email = ${email}`);
 await sf.query(`SELECT Id FROM Contact WHERE Email = ${sf.quote(email)}`);
 ```
 
-### `showError(err: Error)`
+###### `showError(err: Error)`
 Convenience presenter for DayBack/Canvas:
 - 4xx → `utilities.showMessage(...)` (toast)
 - others → `utilities.showModal(...)`
