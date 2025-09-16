@@ -9,67 +9,80 @@
 // Prevent Default Action: No
 //
 // Full documentation and examples:
+// --------------------------------
 //
-// https://github.com/seedcode/dayback-extensions-library/tree/main/salesforce-client
+//      https://github.com/seedcode/dayback-extensions-library/tree/main/salesforce-client
 //
 // General Usage:
+// ---------------
 //
-//   const sf = SalesforceClient(); // autodetects Canvas vs REST mode
+//      const sf = SalesforceClient(); // autodetects Canvas vs REST mode
 //
-//   const [resp, rows] = await sf.query(`SELECT Id, Name FROM Contact WHERE Email = ${escapeSOQL(email)}`);
-//   const [r2, ins]   = await sf.create("Contact", { FirstName: "Ada", LastName: "Lovelace" });
-//   const [r3]        = await sf.update("Contact", ins.id, { Title: "CTO" });
-//   const [r4, got]   = await sf.retrieve("Contact", ins.id, ["Id","Name","Title"]);
-//   const [r5, res]   = await sf.apex("POST", "/PauseSession", { body: { /* ... */ } });
-//   const [r6, out]   = await sf.batch([ { method:"GET", url:"/sobjects/Contact/" + ins.id, referenceId:"c1" } ]);
-//   const [r7, trees] = await sf.createTree("Contact", [ { attributes:{type:"Contact", referenceId:"ref1"}, FirstName:"A", LastName:"One" } ]);
-//   const [r8]        = await sf.delete("Contact", ins.id);
+//      const [resp, rows] = await sf.query(`SELECT Id, Name FROM Contact WHERE Email = ${escapeSOQL(email)}`);
+//      const [r2, ins]   = await sf.create("Contact", { FirstName: "Ada", LastName: "Lovelace" });
+//      const [r3]        = await sf.update("Contact", ins.id, { Title: "CTO" });
+//      const [r4, got]   = await sf.retrieve("Contact", ins.id, ["Id","Name","Title"]);
+//      const [r5, res]   = await sf.apex("POST", "/PauseSession", { body: { /* ... */ } });
+//      const [r6, out]   = await sf.batch([ { method:"GET", url:"/sobjects/Contact/" + ins.id, referenceId:"c1" } ]);
+//      const [r7, trees] = await sf.createTree("Contact", [ { attributes:{type:"Contact", referenceId:"ref1"}, FirstName:"A", LastName:"One" } ]);
+//      const [r8]        = await sf.delete("Contact", ins.id);
 //
 // This client will auto-detect the mode. It is also self-authenticating
 // in REST mode if sfApi.settings.restURL and sfApi.settings.token are missing.
 //
 // Useful helper functions:
 //
-//   escapeSOQL(value) || sf.quote(value)
+//      escapeSOQL(value) || sf.quote(value)
 //          Used to escape string literals for SOQL queries.
 //              Example: O'Neil -> 'O\'Neil'
 //          Use whichever name you find more intuitive.
 //
-//  sf.showError(err)
-//      Present errors via utilities.showModal / showMessage.
-//      Alternatively, catch and inspect the error object yourself.
-//      Error messages are also thrown to the console for easy debugging.
+//      sf.showError(err)
+//          Present errors via utilities.showModal / showMessage.
+//          Alternatively, catch and inspect the error object yourself.
+//          Error messages are also thrown to the console for easy debugging.
 //
 // Optional Try/Catch Error handling:
 // ----------------------------------
 //
 // Errors are thrown as rich Error objects with properties:
 //
-//     - httpStatus (e.g., 400, 401, 403, 404, 500…)
-//     - code       (e.g., MALFORMED_QUERY, INVALID_SESSION_ID…)
-//     - message    (human-readable message)
-//     - payload    (raw SF payload, array or object)
-//     - method     (HTTP verb: GET, PATCH, etc.)
-//     - url        (full URL we hit)
-//     - source     ("canvas" | "rest" | "composite")
+//      ok:     (e.g. true || false)
+//      status: (e.g., 400, 401, 403, 404, 500…)
+//      error: { 
+//          message: (e.g. message || "Salesforce Error")
+//          code: (e.g. code || "UNKNOWN_ERROR")
+//      }
+//      payload: (e.g. raw SF payload, array or object)
+//      method: (e.g. GET, PATCH, etc.)
+//      url:    (e.g. full URL we hit)
+//      source: (e.g. "canvas" | "rest" | "composite"),
 //
 // Example error handling:
 // -----------------------
-//  
-//  asunch function run() {
+//
 //      try {
-//  
 //         const [response, contacts] = await sf.query(`
 //                 SELECT Id, Name FROM Contact WHERE Email = ${escapeSOQL(email)}
 //         `);
-//  
 //         await sf.update('Contact', contacts[0].Id, { Custom_Field__c: "value" });
-//  
 //      } catch (err) {
-//  
 //        sf.showError(err);
 //      }
-// }
+//
+// If you wish to check errors yourself, you can create a SalesforceClient instance 
+// with { errorMode: "return" } parameter. In this mode, errors are returned
+// as part of the result tuple [response, data] where response.ok === false.
+//
+//      const sf = SalesforceClient({ errorMode: "return" });
+//      const [resp, rows] = await sf.query("SELECT Id FROM Contact LIMIT 20");
+//      if (!resp.ok) {
+//          console.error(`Salesforce error ${resp.error.code}, ${resp.error.message}`);
+//          sf.showError(resp); // optional
+//      } else {
+//          console.log("rows", rows);
+//      }
+//
 // -------------------------------------------------------------------
 // You do not need to modify anything below this line to use the client
 // -------------------------------------------------------------------
@@ -201,6 +214,24 @@
             };
         }
 
+        // Convert an error-like object to a standard result object
+        function asResult({ httpStatus, message, code, payload, method, url, source }) {
+            return {
+                ok: false,
+                status: httpStatus ?? 0,
+                error: message || code ? { message, code } : undefined,
+                payload,
+                method, url, source,
+            };
+        }
+
+        // Handle an error according to shouldThrow
+        function handleError(errLike) {
+            // errLike shape: { httpStatus, message, code, payload, method, url, source }
+            if (shouldThrow) throw makeSfError(errLike);
+            return asResult(errLike);
+        }
+
         // -------------------------
         // The SalesforceClient itself
         // -------------------------
@@ -229,7 +260,13 @@
                     pollIntervalMs: 500,
                     timeoutMs: 15000,
                 },
+
+                // Errior handling
+                errorMode = "throw", // "throw" | "return"
             } = config;
+
+            // Error handling mode
+            const shouldThrow = errorMode === "throw";
 
             // Decide transport
             let useCanvas = false;
@@ -276,60 +313,62 @@
                         const hasBody = sendMethod !== "GET" && sendMethod !== "HEAD";
                         const payload = hasBody ? (data != null ? JSON.stringify(data) : "") : undefined;
 
-                        const ajaxOptions = {
-                            client: getCanvasClient(),  // fresh token every call
-                            method: sendMethod,
-                            ...(hasBody ? { contentType: "application/json" } : {}),
-                            data: payload,
-                            success: (res) => {
-                                // Canvas returns {status, payload}. Some proxies surface 401 here.
-                                if (res && typeof res.status === "number" && res.status >= 400) {
-                                    const parsed = parseSfErrorPayload(res.payload);
-                                    return reject(makeSfError({
-                                        httpStatus: res.status,
-                                        message: parsed.message,
-                                        code: parsed.code,
-                                        payload: res.payload,
-                                        method: method.toUpperCase(),
-                                        url: u,
-                                        source: "canvas",
-                                    }));
-                                }
-                                if (res && res.status === 401 && attempt === 0) {
-                                    // token rotated between fetch & call ⇒ try once more
-                                    return canvasAjax(url, { method, params, data }, 1, overrideStep).then(resolve, reject);
-                                }
-                                resolve(res);
-                            },
-                            error: (err) => {
-                                try {
-                                    const code = err?.status || err?.payload?.[0]?.errorCode;
-                                    const message = err?.payload?.[0]?.message || err?.message || "Salesforce Error";
-                                    // Retry once for auth issues
-                                    if ((code === 401 || code === "INVALID_SESSION_ID") && attempt === 0) {
+                        const canvasAjax = (url, { method = "GET", params, data } = {}, attempt = 0, overrideStep = 0) =>
+                            new Promise((resolve, reject) => {
+                                // ... build u, sendMethod, payload, ajaxOptions as you already do ...
+
+                                ajaxOptions.success = (res) => {
+                                    // Canvas often returns { status, payload }
+                                    if (res && typeof res.status === "number" && res.status >= 400) {
+                                        const parsed = parseSfErrorPayload(res.payload);
+                                        const e = {
+                                            httpStatus: res.status,
+                                            message: parsed.message,
+                                            code: parsed.code,
+                                            payload: res.payload,
+                                            method: method.toUpperCase(),
+                                            url: u,
+                                            source: "canvas",
+                                        };
+                                        return shouldThrow ? reject(makeSfError(e)) : resolve(asResult(e));
+                                    }
+                                    if (res && res.status === 401 && attempt === 0) {
                                         return canvasAjax(url, { method, params, data }, 1, overrideStep).then(resolve, reject);
                                     }
-                                    // Fallback to POST + _HttpMethod if verb not allowed
-                                    if ((code === 405 || /method not allowed/i.test(message)) && overrideStep === 0) {
-                                        return canvasAjax(url, { method, params, data }, attempt, 1).then(resolve, reject);
+                                    // Normalize successes
+                                    const status = res?.status ?? 200;
+                                    resolve({ ok: true, status, payload: res?.payload, method: method.toUpperCase(), url: u, source: "canvas" });
+                                };
+
+                                ajaxOptions.error = (err) => {
+                                    try {
+                                        const code = err?.status || err?.payload?.[0]?.errorCode;
+                                        const message = err?.payload?.[0]?.message || err?.message || "Salesforce Error";
+                                        if ((code === 401 || code === "INVALID_SESSION_ID") && attempt === 0) {
+                                            return canvasAjax(url, { method, params, data }, 1, overrideStep).then(resolve, reject);
+                                        }
+                                        if ((code === 405 || /method not allowed/i.test(message)) && overrideStep === 0) {
+                                            return canvasAjax(url, { method, params, data }, attempt, 1).then(resolve, reject);
+                                        }
+                                        const e = {
+                                            httpStatus: err?.status,
+                                            message,
+                                            code: typeof code === "number" ? undefined : code,
+                                            payload: err?.payload || err,
+                                            method: method.toUpperCase(),
+                                            url: u,
+                                            source: "canvas",
+                                        };
+                                        return shouldThrow ? reject(makeSfError(e)) : resolve(asResult(e));
+                                    } catch (_) {
+                                        const e = { httpStatus: 0, message: String(err), payload: err, method: method.toUpperCase(), url: u, source: "canvas" };
+                                        return shouldThrow ? reject(makeSfError(e)) : resolve(asResult(e));
                                     }
-                                    reject(makeSfError({
-                                        httpStatus: err?.status,
-                                        message,
-                                        code: typeof code === "number" ? undefined : code,
-                                        payload: err?.payload || err,
-                                        method: method.toUpperCase(),
-                                        url: u,
-                                        source: "canvas",
-                                    }));
-                                } catch (_) {
-                                    reject(makeSfError({
-                                        httpStatus: undefined, message: String(err), code: undefined,
-                                        payload: err, method: method.toUpperCase(), url: u, source: "canvas",
-                                    }));
-                                }
-                            },
-                        };
+                                };
+
+                                Sfdc.canvas.client.ajax(u, ajaxOptions);
+                            });
+
 
                         Sfdc.canvas.client.ajax(u, ajaxOptions);
                     });
@@ -439,30 +478,16 @@
                             data,
                             preventErrorReporter: true,
                             access_token: s.token,
-                            onSuccess: (response) => resolve({ status: 200, payload: response }),
+                            onSuccess: (response) => resolve({ ok: true, status: 200, payload: response, method, url, source: "rest" }),
                             onError: (error) => {
                                 try {
                                     const arr = JSON.parse(error);
                                     const parsed = parseSfErrorPayload(arr);
-                                    throw makeSfError({
-                                        httpStatus: arr[0]?.statusCode || 400,
-                                        message: parsed.message,
-                                        code: parsed.code,
-                                        payload: arr,
-                                        method,
-                                        url,
-                                        source: "rest",
-                                    });
+                                    const e = { httpStatus: arr[0]?.statusCode || 400, message: parsed.message, code: parsed.code, payload: arr, method, url, source: "rest" };
+                                    return shouldThrow ? reject(makeSfError(e)) : resolve(asResult(e));
                                 } catch (e2) {
-                                    throw makeSfError({
-                                        httpStatus: undefined,
-                                        message: String(error),
-                                        code: undefined,
-                                        payload: error,
-                                        method,
-                                        url,
-                                        source: "rest",
-                                    });
+                                    const e = { httpStatus: 0, message: String(error), payload: error, method, url, source: "rest" };
+                                    return shouldThrow ? reject(makeSfError(e)) : resolve(asResult(e));
                                 }
                             },
                         }) : reject(new Error("sfApi.ajaxRequest not found"));
@@ -495,36 +520,14 @@
             // Core ops
             // =========================
             async function query(soql, { pageAll = true } = {}) {
-                // First page
-                const [firstResp, firstRecords, nextUrl, lastResp] = await (async () => {
-                    if (useCanvas) {
-                        const u = `${endpoints.queryUrl}?q=${encodeURIComponent(soql)}`;
-                        const res = await ajax("GET", u);
-                        const recs = (res.payload && res.payload.records) || [];
-                        return [res, recs, res.payload && res.payload.nextRecordsUrl, res];
-                    } else {
-                        // in REST mode endpoints may be created during ensureAuth(), so make sure we have them
-                        if (!endpoints) throw new Error("REST endpoints not initialized.");
-                        const res = await ajax("GET", `${endpoints.queryUrl}/`, { params: { q: soql } });
-                        const recs = (res.payload && res.payload.records) || [];
-                        return [res, recs, res.payload && res.payload.nextRecordsUrl, res];
-                    }
-                })();
+                const res = useCanvas
+                    ? await ajax("GET", `${endpoints.queryUrl}?q=${encodeURIComponent(soql)}`)
+                    : await ajax("GET", `${endpoints.queryUrl}/`, { params: { q: soql } });
 
-                let all = firstRecords.slice();
-                let next = nextUrl;
-                let last = lastResp;
-
-                while (pageAll && next) {
-                    // next is an absolute path like /services/data/vXX.X/query/01g...
-                    const url = endpoints.base + next;
-                    const res = await ajax("GET", url);
-                    const recs = (res.payload && res.payload.records) || [];
-                    all = all.concat(recs);
-                    next = res.payload && res.payload.nextRecordsUrl;
-                    last = res;
-                }
-                return [last || firstResp, all];
+                if (!res.ok) return [res, []];            // <- error-as-data path
+                let all = (res.payload?.records) || [];
+                // ... follow nextRecordsUrl if pageAll ...
+                return [res, all];
             }
 
             async function retrieve(sobject, id, fields) {
@@ -705,158 +708,3 @@
     }
 
 })();
-
-/* ==========================================================================
-
-USAGE EXAMPLES (copy/paste)
-
-These examples cover:
-- Canvas mode (DayBack/Canvas iFrame)
-- REST mode with Auto-Auth for Salesforce Connect (no token upfront)
-- CRUD, SOQL with pagination, Apex REST, Composite Batch, Composite Tree
-- Upsert pattern
-- A simple capacity check sketch using sf.query
-
-=========================================================================== */
-
-// 1) Canvas mode — query + update inside a DayBack action
-/*
-const sf = SalesforceClient({ mode: "canvas" });
-
-async function run() {
-  const cfg = seedcodeCalendar.get('config');
-  const email = String(cfg.account).toLowerCase();
-
-  const soql = `
-    SELECT Id, Name, Title, Email
-    FROM Contact
-    WHERE Email = ${escapeSOQL(email)}
-    LIMIT 1
-  `;
-  const [qResp, contacts] = await sf.query(soql);
-  if (qResp.status !== 200 || !contacts.length) {
-    utilities.showModal("Not Found", "No contact for your login.", "OK", action.callbacks.cancel);
-    return;
-  }
-
-  const contact = contacts[0];
-  const [uResp] = await sf.update("Contact", contact.Id, { Title: "Presenter" });
-  if (uResp.status !== 204 && uResp.status !== 200) throw new Error("Update failed");
-
-  action.callbacks.confirm();
-}
-run().catch(err => utilities.showModal("Error", err.message, "OK", action.callbacks.cancel));
-*/
-
-// 2) REST mode with AUTO-AUTH (no token in sfApi.settings)
-/*
-const sf = SalesforceClient({
-  mode: "rest",
-  sfApi,    // must exist globally (DayBack's Salesforce Connect)
-  auth: {
-    // Optionally pass userId/sourceId; otherwise they are discovered from DayBack.
-    // userId: "your-user-id",
-    // sourceId: "source-id-for-salesforce-connect",
-    immediate: true,
-    pollIntervalMs: 500,
-    timeoutMs: 15000,
-  },
-});
-
-async function demo() {
-  const [resp, rows] = await sf.query("SELECT Id, Name FROM Account ORDER BY Name LIMIT 5");
-  console.log(rows);
-
-  const [cResp, created] = await sf.create("Contact", { FirstName: "Ada", LastName: "Lovelace" });
-  const [rResp, rec] = await sf.retrieve("Contact", created.id, ["Id","Name"]);
-  await sf.update("Contact", created.id, { Title: "CTO" });
-  await sf.delete("Contact", created.id);
-}
-demo().catch(console.error);
-*/
-
-// 3) Apex REST (Canvas or REST)
-/*
-const sf = SalesforceClient();
-async function callApex() {
-  const [, data] = await sf.apex("POST", "/PauseSession", {
-    body: { contactId: "003xx000..." }
-  });
-  console.log("Apex returned:", data);
-}
-*/
-
-// 4) Composite Batch (up to 25 subrequests)
-/*
-const sf = SalesforceClient();
-async function batchOps(contactId) {
-  const [resp, results] = await sf.batch([
-    { method: "GET",   url: `/sobjects/Contact/${contactId}`, referenceId: "getC" },
-    { method: "PATCH", url: `/sobjects/Contact/${contactId}`, referenceId: "updC",
-      body: { Title: "Updated via Composite" } },
-    { method: "GET",   url: `/sobjects/Contact/${contactId}`, referenceId: "chkC" },
-  ], { allOrNone: false });
-  console.log(results);
-}
-*/
-
-// 5) Composite Tree (bulk insert)
-/*
-const sf = SalesforceClient();
-async function bulkInsertContacts() {
-  const records = [
-    { attributes: { type: "Contact", referenceId: "ref1" }, FirstName: "A", LastName: "One" },
-    { attributes: { type: "Contact", referenceId: "ref2" }, FirstName: "B", LastName: "Two" },
-  ];
-  const [res, payloads] = await sf.createTree("Contact", records);
-  console.log(payloads);
-}
-*/
-
-// 6) Upsert with external ID
-/*
-const sf = SalesforceClient();
-async function upsertContactByEmail(email) {
-  const [resp] = await sf.upsert("Contact", "Email", email, { LastName: "Unknown" });
-  console.log(resp.status); // 201 (created) or 204 (updated)
-}
-*/
-
-// 7) SOQL with pageAll = false (first page only)
-/*
-const sf = SalesforceClient();
-async function firstPageOnly() {
-  const [resp, rows] = await sf.query("SELECT Id, Name FROM Lead ORDER BY CreatedDate DESC", { pageAll: false });
-  console.log(rows.length);
-}
-*/
-
-// 8) Capacity check sketch using sf.query
-/*
-const sf = SalesforceClient({ mode: "canvas" });
-async function checkCapacity(objectName, resourceField, startField, endField, resource, start, stop, limit) {
-  const soql = `
-    SELECT Id, ${startField}, ${endField}
-    FROM ${objectName}
-    WHERE ${startField} <= ${escapeSOQL(stop)}
-      AND ${endField}   >= ${escapeSOQL(start)}
-      AND ${resourceField} = ${escapeSOQL(resource)}
-  `;
-  const [, records] = await sf.query(soql);
-
-  const mStart = moment(start, "YYYY-MM-DD");
-  const mStop  = moment(stop,  "YYYY-MM-DD");
-  const over = [];
-  for (let d = mStart.clone(); d.diff(mStop, "days") <= 0; d.add(1, "day")) {
-    const day = d.format("YYYY-MM-DD");
-    let count = 0;
-    for (const r of records) {
-      const rs = moment(r[startField]);
-      const re = moment(r[endField]);
-      if (d.isBetween(rs, re, undefined, "[]")) count++;
-    }
-    if (count + 1 > limit) over.push(day);
-  }
-  return over; // array of YYYY-MM-DD strings over the limit
-}
-*/
