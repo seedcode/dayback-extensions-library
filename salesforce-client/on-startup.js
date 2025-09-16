@@ -553,7 +553,26 @@
             async function batch(requests, { allOrNone = false, collateSubrequests = false } = {}) {
                 const path = `${endpoints.dataBase}/composite`;
                 // Ensure urls are relative to /services/data/<v> (composite requirement)
-                const norm = (u) => u.startsWith("/") ? u.replace(/^.*?\/services\/data\/v[\d.]+/, "") : u;
+                const norm = (u) => {
+                    const ver = endpoints.version; // e.g., "v61.0"
+                    if (!u) return `/services/data/${ver}/`;
+
+                    // Already correct (/services/data/vXX.X/...)
+                    if (/^\/services\/data\/v[\d.]+\//.test(u)) return u;
+
+                    // Starts with /vXX.X/...   -> prefix /services/data
+                    if (/^\/v[\d.]+\//.test(u)) return `/services/data${u}`;
+
+                    // Starts with vXX.X/... (no leading slash)
+                    if (/^v[\d.]+\//.test(u)) return `/services/data/${u}`;
+
+                    // Starts with "/" (e.g., /sobjects/..., /query/..., etc.)
+                    if (u.startsWith('/')) return `/services/data/${ver}${u}`;
+
+                    // Plain relative (e.g., sobjects/Account/...)
+                    return `/services/data/${ver}/${u}`;
+                };
+
                 const body = {
                     allOrNone,
                     collateSubrequests,
