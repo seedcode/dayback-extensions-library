@@ -33,14 +33,21 @@
         },
 
         // Optional: test an Apex REST endpoint
-        apex: {
+        apex1: {
             enabled: true,
             method: "GET",                                  // "GET" | "POST" | "PATCH" | "DELETE" | "PUT"
-            path: "/HelloWorld"                            // without /services/apexrest (library adds that)
+            path: "/HelloWorld"
+        },
+
+        apex2: {
+            enabled: true,
+            method: "POST",                                  // "GET" | "POST" | "PATCH" | "DELETE" | "PUT"
+            path: "/HelloWorld",
+            body: { name: "SalesforceClient" }
         },
 
         // Cleanup
-        keepCreatedRecords: true, // true = leave the test-created record behind
+        keepCreatedRecords: false, // true = leave the test-created record behind
     };
 
     // ---- HELPERS ----
@@ -232,17 +239,29 @@
         const per = composite?.compositeResponse || composite; // depends on SF version
         const texts = (per || []).map(p => `${p.referenceId}:${p.httpStatusCode}`).join(", ");
         log(`Composite OK: ${texts}`);
+        console.log("Composite response:", rH, composite);
 
         // I) OPTIONAL APEX
-        if (TEST_CONFIG.apex.enabled) {
-            log(`⚡ Apex ${TEST_CONFIG.apex.method} ${TEST_CONFIG.apex.path}`);
-            const [rI] = await sf.apex(TEST_CONFIG.apex.method, TEST_CONFIG.apex.path, { body: TEST_CONFIG.apex.body });
-            log(`Apex OK: ${rI.status}`);
+        if (TEST_CONFIG.apex1.enabled) {
+            log(`⚡ Apex ${TEST_CONFIG.apex1.method} ${TEST_CONFIG.apex1.path}`);
+            const [rI, response] = await sf.apex(TEST_CONFIG.apex1.method, TEST_CONFIG.apex1.path, { body: TEST_CONFIG.apex1.body });
+            log(`Apex OK: ${rI.status}`, rI, response);
+            console.log("Apex response:", rI, response);
         } else {
-            log(`(Apex skipped – enable TEST_CONFIG.apex.enabled and set path/body)`);
+            log(`(Apex skipped – enable TEST_CONFIG.apex1.enabled and set path/body)`);
         }
 
-        // J) CLEANUP (optional)
+        // J) OPTIONAL APEX
+        if (TEST_CONFIG.apex2.enabled) {
+            log(`⚡ Apex ${TEST_CONFIG.apex2.method} ${TEST_CONFIG.apex2.path}`);
+            const [rI, response] = await sf.apex(TEST_CONFIG.apex2.method, TEST_CONFIG.apex2.path, { body: TEST_CONFIG.apex2.body });
+            log(`Apex OK: ${rI.status}`, rI, response);
+            console.log("Apex response:", rI, response);
+        } else {
+            log(`(Apex skipped – enable TEST_CONFIG.apex2.enabled and set path/body)`);
+        }
+
+        // K) CLEANUP (optional)
         if (createdId && !TEST_CONFIG.keepCreatedRecords) {
             log(`🗑️  Delete created record`);
             const [rJ] = await sf.delete(SOBJ, createdId);
@@ -251,7 +270,7 @@
             log(`(Keeping created record ${createdId})`);
         }
 
-        // K) CREATE TREE (two records on the same day)
+        // L) CREATE TREE (two records on the same day)
         log(`🌳 Composite Tree insert (two ${SOBJ} records on the same day)`);
 
         // Place these later in the same day (e.g., 1–2pm and 2–3pm)
