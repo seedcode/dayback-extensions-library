@@ -1,5 +1,5 @@
 /* 
- * Highlight Event Errors and Warnings - v1.0
+ * Highlight Event Errors and Warnings
  */
 
 #calendar {
@@ -27,7 +27,6 @@
 .fc-event:not(.hasWarning) .warningIconContainer { display: none; }
 .fc-event:not(.hasError) .errorIconContainer { display: none; }
 
-
 /* Popover Error Highlighting */
 
 /* Has Error Colors */
@@ -39,7 +38,6 @@
     display: inline;
     left: 6px;
     font-family: 'FontAwesome';
-    
 }
 
 .dbk_editEvent .panel-selector.hasError .dbk_label,
@@ -94,6 +92,16 @@ div[field="description"].hasWarning { border: 1px solid var(--colors-warning); }
 
 /* Has Changed */
 
+/* .dbk_editEvent .panel-selector.hasChanged:before {
+    content: '\f06a';
+    color: var(--colors-changed);
+    position: absolute;
+    display: inline;
+    left: 6px;
+    font-family: 'FontAwesome';
+    
+} */
+
 .dbk_editEvent .panel-selector.hasChanged .dbk_label,
 .dbk_editEvent .panel-selector.hasChanged .text-right {
     color: var(--colors-changed);
@@ -112,9 +120,6 @@ textarea#title.hasChanged { border: 1px solid var(--colors-changed); }
 
 div[field="description"].hasChanged { box-shadow: 0px 0px 5px var(--colors-changed); }
 div[field="description"].hasChanged { border: 1px solid var(--colors-changed); }
-
-div[name="customFields"].hasError i { color: var(--colors-error); }
-div[name="customFields"].hasWarning i { color: var(--colors-warning); }
 
 /* Optional Shimmer */
 
@@ -199,13 +204,21 @@ div[name="customFields"].hasWarning i { color: var(--colors-warning); }
 }
 
 .panel-switch .hasChanged .control-label:before,
+/* .panel-switch .hasChanged:has(input[type=checkbox]) span:before {
+    content: '\f06a';
+    color: var(--colors-changed-light);
+    padding-right: 3px;
+    display: inline-block;
+    left: 6px;
+    font-family: 'FontAwesome';
+} */
 
 /* Modal Dialogue Styling */
 
-.modal-dialog .errorHeader,
-.modal-dialog .warningHeader {margin: 20px 0px;}
+.modal-dialog .errorHeader {margin: 20px 0px;}
+.modal-dialog ul.errorList li { text-align: left;}
 
-.modal-dialog ul.errorList li,
+.modal-dialog .warningHeader {margin: 20px 0px;}
 .modal-dialog ul.warningList li { text-align: left;}
 
 .modal-dialog:has(.errorHeader) h4 { color: pink; }
@@ -220,6 +233,50 @@ div[name="customFields"].hasWarning i { color: var(--colors-warning); }
     border: 1px solid orange;    
 }
 
+/* Required Field Asterisk */
+
+.panel-selector.requiredField span[translate]:after {
+    content: '*';
+    color: var(--colors-error);
+    position: relative;
+    display: inline;
+    left: 3px;
+}
+
+div[field="description"].requiredField:after {
+    content: '*';
+    color: var(--colors-error);
+    position: absolute;
+    display: inline;
+    right: -10px;
+    top: 0px;
+}
+
+.text-area-container:has(textarea#title.requiredField):after {
+    content: '*';
+    color: var(--colors-error);
+    position: absolute;
+    display: inline-block;
+    top: 0px;
+    right: -10px;
+} 
+
+.panel-switch .requiredField .control-label:after,
+.panel-switch .requiredField:has(input[type=checkbox]) span:after {
+    content: '*';
+    color: var(--colors-error-light);
+    display: inline;
+    padding-left: 3px;
+    right: 0px;
+}
+
+/* Hidden Field */
+
+[data-field-name].hiddenField {
+  max-height: 0;
+  opacity: 0;
+}
+
 /* Tooltip styling */
 
 .hasErrorTooltip .tooltip-inner {
@@ -229,4 +286,3 @@ div[name="customFields"].hasWarning i { color: var(--colors-warning); }
 .hasErrorTooltip  .tooltip-arrow {
     border-top-color: black !important;
 }
-

@@ -142,6 +142,27 @@
         //          ensure the user is given the appropriate feedback if they do not fill in
         //          a required field.
         //
+        //      hideField: (boolean or function)
+        //
+        //          If set to true, the field is hidden in the Edit Event popover.
+        //  
+        //          If false or not specified, the field is displayed normally.
+        //
+        //          If the value is defined as a function, it takes the event as
+        //          a parameter to allow you to calculate if the field should be hidden.
+        //          The function should return true to hide the field.
+        //
+        //          Example:
+        //
+        //          // Make Hours Estimate required and visible only if Event Type is Task
+        //
+        //          inputs.validationRules = {
+        //              "Hours Estimate": {
+        //                  markRequired: (event) => opt.getField('Event Type') === 'Task',
+        //                  hideField: (event) => event.getField('Event Type') !== 'Task'
+        //              }
+        //          }
+        //
         //      validateOn: (array) - An array of triggers determining when the field is validated.
         //
         //          Possible values are 'eventRender', 'eventClick', 'fieldChange', 'eventSave'.
@@ -853,6 +874,8 @@
                 ]
             },
             "Hours Estimate": {
+                markRequired: (event, opt) => opt.getField('truckNumber') === 'TRK-100',
+                hideField: (event, opt) => opt.getField('truckNumber') !== 'TRK-100',
                 validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
                 errorTests: [
                     { test: (event, opt) => opt.getField('Hours Estimate') == '' || !/^\d+$/.test(opt.getField('Hours Estimate')), message: 'Number is missing' }
@@ -902,6 +925,7 @@
         let allEventErrors = {};
         let allEventWarnings = {};
         let allEventRequired = {};
+        let allEventHidden = {};
 
         // To track changes made during an edit session
         let cancelOnClick = false;
@@ -916,6 +940,7 @@
             allEventErrors: allEventErrors,
             allEventWarnings: allEventWarnings,
             allEventRequired: allEventRequired,
+            allEventHidden: allEventHidden,
             inputs: inputs
         };
 
@@ -949,9 +974,10 @@
             let eventErrors = allEventErrors[event.eventID]?.errorFields || {};
             let eventWarnings = allEventWarnings[event.eventID]?.warningFields || {};
             let eventRequired = allEventRequired[event.eventID]?.requiredFields || {};
+            let eventHidden = allEventHidden[event.eventID]?.hiddenFields || {};
 
             // Observe the event popover and add errors to the fields
-            let eObserver = dbk.observe({
+            let eventObserver = dbk.observe({
                 name: `event_${event.eventID}`,
                 watch: document.body,
                 until: '.ng-popover:not([data-popover-event-id]) .dbk_button_success',
@@ -1009,6 +1035,24 @@
                 const customFieldHasWarning = Object.keys(eventWarnings).some(label => customFields.hasOwnProperty(label));
                 const customFieldsSelector = popover.querySelector('.dbk_editEvent div[name="customFields"]');
 
+                const popoverClickMainHandler = (e) => {
+
+                    // Recalculate errors if user clicked on a field
+
+                    calculateEventErrors(event, editEvent, 'eventClick', {});
+
+                    // Get current errors/warnings/required for the event
+
+                    eventErrors = allEventErrors[event.eventID]?.errorFields || {};
+                    eventWarnings = allEventWarnings[event.eventID]?.warningFields || {};
+                    eventRequired = allEventRequired[event.eventID]?.requiredFields || {};
+                    eventHidden = allEventHidden[event.eventID]?.hiddenFields || {};
+                };
+
+                // Add event listener for popover click
+                popover.querySelector('.dbk_editEvent')
+                    ?.addEventListener('click', debounce(popoverClickMainHandler, 200));
+
                 if (customFieldsSelector) {
                     if (customFieldHasError) {
                         customFieldsSelector.classList.remove('hasChanged');
@@ -1026,6 +1070,20 @@
                     then: checkCustomFields
                 });
 
+                let utilityDrawerObserver = dbk.observe({
+                    name: `event_utildrawer_${event._id}`,
+                    watch: popover,
+                    until: `.utility-panel:not([data-listener-added])`,
+                    then: (o) => {
+                        o.stop();
+                        popover.querySelectorAll('.utility-panel')?.forEach((drawer) => {
+                            if (drawer.dataset.listenerAdded) return;
+                            drawer.dataset.listenerAdded = 'true';
+                            drawer.addEventListener('click', debounce(popoverClickMainHandler, 200));
+                        });
+                    }
+                });
+
                 dbk.observe({
                     name: `event_destroy_${event.eventID}`,
                     watch: q('.calendar-scroll'),
@@ -1034,7 +1092,8 @@
                     },
                     then: (o) => {
                         customFieldsObserver.destroy();
-                        eObserver.destroy();
+                        utilityDrawerObserver.destroy();
+                        eventObserver.destroy();
                         o.destroy();
                     }
                 });
@@ -1042,6 +1101,16 @@
 
             function checkCustomFields(o) {
                 o.stop();
+
+                // // Revalidate again
+
+                // calculateEventErrors(event, editEvent, 'eventClick', {});
+
+                // // Get current errors/warnings/required for the event
+
+                // eventErrors = allEventErrors[event.eventID]?.errorFields || {};
+                // eventWarnings = allEventWarnings[event.eventID]?.warningFields || {};
+                // eventRequired = allEventRequired[event.eventID]?.requiredFields || {};
 
                 // Name the custom fields
 
@@ -1072,6 +1141,10 @@
 
                         if (eventRequired.hasOwnProperty(label)) {
                             item?.classList?.add('requiredField');
+                        }
+
+                        if (eventHidden.hasOwnProperty(label)) {
+                            item?.classList?.add('hiddenField');
                         }
 
                         addTooltip(item, item, label);
@@ -1105,7 +1178,7 @@
                 function showTooltip() {
                     if (panelSelector?.classList?.contains('hasError') || panelSelector?.classList?.contains('hasWarning')) {
                         tooltip = dbk.tooltip(getTooltipText(), tooltipOptions);
-                        tooltip.show();
+                        tooltip?.show();
                     }
                 }
 
@@ -1148,8 +1221,10 @@
                         return;
                     }
 
-                    if (type != '')
+                    if (type != '') {
+                        panelSelector?.classList?.remove('hasChanged');
                         panelSelector?.classList?.add(type === 'error' ? 'hasError' : 'hasWarning');
+                    }
 
                     panelSelector.dataset.fieldId = label;
                     panelSelector.dataset.fieldName = label;
@@ -1159,6 +1234,11 @@
                         panelSelector?.classList?.add('requiredField');
                     }
 
+                    if (eventHidden.hasOwnProperty(label)) {
+                        panelSelector?.classList?.add('hiddenField');
+                    }
+
+                    // Add tooltip
                     addTooltip(panelSelector, panelSelector, label);
                 }
             }
@@ -1223,6 +1303,7 @@
                 warningFields = allEventWarnings[event.eventID]?.warningFields || {};
 
                 if (errorFields.hasOwnProperty(label)) {
+                    element.classList.remove('hasChanged');
                     element.classList.add('hasError');
                     setTimeout(() => {
                         element.dispatchEvent(new Event("dbkOnErrorAdd", { bubbles: true }));
@@ -1233,6 +1314,7 @@
                 }
 
                 if (warningFields.hasOwnProperty(label)) {
+                    element.classList.remove('hasChanged');
                     element.classList.add('hasWarning');
                     setTimeout(() => {
                         element.dispatchEvent(new Event("dbkOnErrorAdd", { bubbles: true }));
@@ -1453,6 +1535,9 @@
             if (Object.hasOwn(allEventRequired, event.eventID)) {
                 delete allEventRequired[event.eventID];
             }
+            if (Object.hasOwn(allEventHidden, event.eventID)) {
+                delete allEventHidden[event.eventID];
+            }
 
             // Map changesObject keys (which may be field ids) to their label names for use in validation
             let changes = {};
@@ -1473,6 +1558,7 @@
             let errorFields = {};
             let warningFields = {};
             let requiredFields = {};
+            let hiddenFields = {};
 
             for (const [field, rules] of Object.entries(inputs.validationRules)) {
 
@@ -1503,6 +1589,32 @@
                     }
                     if (isRequired) {
                         requiredFields[field] = true;
+                    }
+                }
+                // Hidden field
+                if (rules.hasOwnProperty('hideField')) {
+                    let isHidden = false;
+                    if (typeof rules.hideField === 'function') {
+
+                        try {
+                            isHidden = rules.hideField(editEvent, {
+                                event: event,
+                                editEvent: editEvent,
+                                trigger: trigger,
+                                changes: changes,
+                                errors: errorFields,
+                                warnings: warningFields,
+                                getField: (field) => getCustomFieldValue(editEvent, field),
+                                setField: (field, value) => setCustomFieldValue(event, editEvent, field, value)
+                            });
+                        } catch (e) {
+                            isHidden = false;
+                        }
+                    } else if (typeof rules.hideField === 'boolean') {
+                        isHidden = rules.hideField;
+                    }
+                    if (isHidden) {
+                        hiddenFields[field] = true;
                     }
                 }
 
@@ -1583,6 +1695,9 @@
             if (Object.keys(requiredFields).length > 0) {
                 allEventRequired[event.eventID] = { requiredFields };
             }
+            if (Object.keys(hiddenFields).length > 0) {
+                allEventHidden[event.eventID] = { hiddenFields };
+            }
 
             // Remove error classes from elements that are no longer in error
 
@@ -1601,22 +1716,34 @@
                     element.classList.remove('requiredField');
                 }
             });
+            qa('[data-field-label].hiddenField')?.forEach(element => {
+                if (!hiddenFields.hasOwnProperty(element.dataset.fieldLabel)) {
+                    element.classList.remove('hiddenField');
+                }
+            });
 
             // Add error classes to elements that are in error
 
             for (const field of Object.keys(errorFields)) {
                 qa(`[data-field-label="${field}"]`)?.forEach(element => {
+                    element.classList.remove('hasChanged');
                     element.classList.add('hasError');
                 });
             }
             for (const field of Object.keys(warningFields)) {
                 qa(`[data-field-label="${field}"]`)?.forEach(element => {
+                    element.classList.remove('hasChanged');
                     element.classList.add('hasWarning');
                 });
             }
             for (const field of Object.keys(requiredFields)) {
                 qa(`[data-field-label="${field}"]`)?.forEach(element => {
                     element.classList.add('requiredField');
+                });
+            }
+            for (const field of Object.keys(hiddenFields)) {
+                qa(`[data-field-label="${field}"]`)?.forEach(element => {
+                    element.classList.add('hiddenField');
                 });
             }
 
