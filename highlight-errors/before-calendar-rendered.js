@@ -14,6 +14,7 @@
 
 (() => {
 
+
     let options = {};
     let inputs = {};
 
@@ -25,31 +26,16 @@
 
         options.runTimeout = 0;
 
-        // Error Modal titles and messages
-
-        inputs.errorsModalTitle = "Validation Errors Found";
-        inputs.errorsModalMessage = "Please review the following errors before saving:";
-        inputs.errorsModalFixButton = "Fix Errors";
-        inputs.errorsModalSaveAnywayButton = "Save Anyway";
+        // Allow Save on Errors and Warnings
+        //
+        //      If errors are detected when saving an event, this setting determines whether 
+        //      the user can still save the event, or whether they must go back and fix 
+        //      the errors and/or warnings.
+        //
+        //      If false, the user will not be able to save if there are errors or warnings.
+        //      If true, the user can still choose to save even if there are warnings.
 
         inputs.allowSaveOnError = true;
-        inputs.askForSecondConfirmationOnError = true;
-
-        // Warning Modal titles and messages
-
-        inputs.warningsModalTitle = "Review Warnings Before Saving";
-        inputs.warningsModalMessage = "Please review the following warnings before saving:";
-        inputs.warningsModalFixButton = "Make Changes";
-        inputs.warningsModalSaveAnywayButton = "Save Anyway";
-
-        // Allow Save on Warning:
-        //
-        //      If warnings are detected when saving an event, this setting determines whether 
-        //      the user can still save the event, or whether they must go back and fix 
-        //      the warnings.
-        //
-        //      If false, the user will not be able to save if there are warnings.
-        //      If true, the user can still choose to save even if there are warnings.
 
         inputs.allowSaveOnWarning = true;
 
@@ -61,7 +47,7 @@
         //      If false, the user can save without being prompted for additional confirmation.
         //      If true, the user will be asked to confirm saving if there are warnings.
 
-        inputs.askForSecondConfirmationOnWarning = false;
+        inputs.askForSecondConfirmation = false;
 
         // Run event validation rules even if an event was not modified.
         //
@@ -78,6 +64,34 @@
         //      If false, unchanged events can be opened and closed without triggering validation.
 
         inputs.validateUnchangedEvents = true;
+
+        // Query Cache for Salesforce Queries
+        // ----------------------------------
+        //
+        // If your tests require you to run API calls, you can cache query results
+        // to limit the number of Salesforce API calls made.
+        //
+        // The queryCache object is used to store cached results, and the queryCacheExpiry
+        // property defines how long the cached results are considered valid.
+        //
+        // To use the cache, call getCachedQuery(key) with a unique key for your query.
+        // If a valid cached result is found, it is returned. If not, run your query,
+        // store the result in the cache, and return the result.
+        //
+        // Example usage:
+        //
+        //      let [isCached, result] = getCachedQuery('myUniqueKey');
+        //
+        //      if (!isCached) {
+        //          result = await sf.query('SELECT Id, Name FROM Account LIMIT 1');
+        //          saveCachedQuery('myUniqueKey', result);
+        //      }
+        //      
+        //      return result;
+        //      
+
+        inputs.queryCache = {};
+        inputs.queryCacheExpiry = 3 * 60 * 1000; // 3 minutes
 
         // Event Validation Rules
         // ------------------------------
@@ -145,7 +159,7 @@
         //      hideField: (boolean or function)
         //
         //          If set to true, the field is hidden in the Edit Event popover.
-        //  
+        //
         //          If false or not specified, the field is displayed normally.
         //
         //          If the value is defined as a function, it takes the event as
@@ -160,6 +174,30 @@
         //              "Hours Estimate": {
         //                  markRequired: (event) => opt.getField('Event Type') === 'Task',
         //                  hideField: (event) => event.getField('Event Type') !== 'Task'
+        //              }
+        //          }
+        //
+        //
+        //      showField: (boolean or function)
+        //
+        //          This is the inverse of the prior hideField property. If set to true,
+        //          the field is shown in the Edit Event popover. Typically, you would
+        //          only use one of hideField or showField for a given field.
+        //
+        //          If false, the field is hidden.
+        //
+        //          If the value is defined as a function, it takes the event as
+        //          a parameter to allow you to calculate if the field should be shown.
+        //          The function should return true to show the field.
+        //
+        //          Example:
+        //
+        //          // Make Hours Estimate required and visible only if Event Type is Task
+        //
+        //          inputs.validationRules = {
+        //              "Hours Estimate": {
+        //                  markRequired: (event) => opt.getField('Event Type') === 'Task',
+        //                  showField: (event) => event.getField('Event Type') === 'Task'
         //              }
         //          }
         //
@@ -270,7 +308,7 @@
         //
         // Test Function Parameter:
         // ------------------------
-        // 
+        //
         // Each test function takes two parameters: an event, and an options object.
         // Whether you choose to accept the options object or not is up to you.
         //
@@ -307,6 +345,22 @@
         //                                or a "store in field" name, and a value as parameters and
         //                                sets the value of that custom field for the current event.
         //
+        //                fieldChanged - (function(field)) A function that takes an optional field label
+        //                                parameter, and checks whether it is present in the changesObject.
+        //                                If no parameter is provided, it returns true if the current field
+        //                                was changed.
+        //
+        //              Example:
+        //
+        //                                test: (event, opt) => {
+        //
+        //                                      // Only run this test if the trigger is eventSave
+        //                                      // and the field we're testing was actually changed.
+        //
+        //                                      return opt.trigger === 'eventSave' && !opt.fieldChanged()
+        //
+        //                                      // ... rest of test logic ...
+        //                                }
         //
         // Writing Tests against Standard Fields and Custom Fields
         // -------------------------------------------------------
@@ -540,7 +594,37 @@
         //          ]
         //      },
         //
-        // Comprehensive Example: 
+        // Running Asynchronous Tests:
+        // -------------------------------------------
+        //
+        // You can run Salesforce record checks or other asynchronous validation logic
+        // by defining your test functions as async (returning a Promise).
+        //
+        // Both synchronous and asynchronous tests are supported. If a test function returns a Promise,
+        // the validation system will handle it appropriately.
+        //
+        // Asynchronous tests are run sequentially, so each test will wait for the previous one to finish.
+        // This ensures that skipOnError works as expected, since later tests may depend on earlier results.
+        // If you have multiple independent async checks, you can run them in parallel inside a single test
+        // using Promise.all for better performance.
+        //
+        // Example of an asynchronous test:
+        //
+        //      {
+        //          test: async (event, opt) => {
+        //              const result = await someAsyncFunction(event);
+        //              return result; // true if error, false otherwise
+        //          }
+        //      }
+        //
+        // Behavior notes:
+        // - For the "Before Event Save" trigger, validation will wait for all async tests to finish before 
+        //   allowing save.
+        // - For other triggers (eventRender, eventClick, fieldChange), validation does not wait for async 
+        //   tests. Errors or warnings from async tests will appear after each Promise resolves, so there 
+        //   may be a short delay.
+        //
+        // Comprehensive Example:
         // --------------------------------------------------------------
         //
         // The following is a detailed example configuration for Medical Spa services
@@ -785,132 +869,499 @@
         //      };
 
 
+        // Event Validation Rules
+        // ------------------------------
+        //
+        // The validationRules object contains one property for each field you want to validate.
+        // Each property is an object that defines the validation rules for that field.
+        // You can define rules for standard fields (Title, Description, Start, End,
+        // Location, Calendar, Resource, Status) as well as custom fields by their label name.
+        //
+        // See the header above in your prompt for full docs on usage and triggers.
+        //
+
         inputs.validationRules = {
+
             Title: {
-                validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
-                markRequired: true,
-                errorTests: [
-                    { test: (event, opt) => !event.titleEdit || event.titleEdit.trim() === '', message: 'Title is missing' },
-                    {
-                        test: (event, opt) => event.titleEdit && event.titleEdit.length < 3, message: 'Title is too short',
-                        stopOnError: true
-                    }
-                ]
+                hideField: true,
             },
-            Description: {
-                validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
-                markRequired: true,
-                errorTests: [
-                    { test: (event, opt) => !event.description || event.description.trim() === '', message: 'Description is missing' }
-                ]
-            },
+
             Start: {
-                validateOn: ['fieldChange', 'eventSave'],
+                validateOn: ['eventSave'],
+                markRequired: true,
                 errorTests: [
                     {
-                        test: (event, opt) => {
-                            return opt.changes.hasOwnProperty('start') && event.start.isBefore(moment());
-                        }, message: 'Start time cannot be in the past'
+                        // Prevent saving if start is in the past
+                        test: (e, opt) => opt.fieldChanged('start') && e.start.isBefore(moment()),
+                        message: '<B>Start</B> time cannot be in the past.',
+                        emoji: '⏰'
                     }
                 ]
             },
+
             End: {
-                validateOn: ['fieldChange', 'eventSave'],
+                validateOn: ['eventSave'],
+                markRequired: true,
                 errorTests: [
                     {
-                        test: (event, opt) => {
-                            return opt.changes.hasOwnProperty('end') && event.end.isBefore(moment());
-                        }, message: 'End time time cannot be in the past'
+                        // Prevent saving if start is in the past
+                        test: (e, opt) => opt.fieldChanged('start') && e.start.isBefore(moment()),
+                        message: '<B>Start</B> time cannot be in the past.',
+                        emoji: '⏰'
                     }
                 ]
             },
-            Location: {
-                markRequired: (event, opt) => ['Booked', 'Deferred'].includes(event.status[0]),
-                validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
-                errorTests: [
-                    { test: (event, opt) => !event.location || event.location.trim() === '', message: 'Treatments must have a location' }
-                ]
-            },
-            Calendar: {
-                validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
-                errorTests: [
-                    { test: (event, opt) => event.schedule.name !== 'Treatments', message: 'Must be Treatments' }
-                ]
-            },
+
             Status: {
-                validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
-                errorTests: [
-                    { test: (event, opt) => event.status[0] !== 'Labs', message: 'Incorrect status for MRI. Please change to Labs' }
-                ]
-            },
-            "Project Category": {
-                validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
-                errorTests: [
-                    { test: (event, opt) => !['Project', 'Check-in'].includes(opt.getField('Project Category')?.[0]), message: 'Can only be Project or Check-in.' }
-                ]
-            },
-            "Truck Number": {
-                markRequired: (event, opt) => event.status[0] === 'Booked',
-                validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
+                // Example dependency: cannot mark Confirmed unless safety checks done
+                validateOn: ['eventClick', 'fieldChange', 'eventSave'],
                 errorTests: [
                     {
-                        test: (event, opt) => !/^TRK-\d{3}$/.test(opt.getField('truckNumber') || ''),
-                        message: 'Truck number is not valid. Please check the format.'
+                        test: (e, opt) => {
+
+                            // This is a generic test that applies to eventClick
+                            // in order to pre-populate default values for the event
+
+                            if (opt.trigger === 'eventClick') {
+
+                                let shouldRefresh = false;
+
+                                if (e.status[0] === 'Unassigned') {
+                                    e.status[0] = 'Pending';
+                                    shouldRefresh = true;
+                                }
+
+                                if (!e.location) {
+                                    e.location = 'Seattle, WA';
+                                    shouldRefresh = true;
+                                }
+
+                                if (shouldRefresh) {
+                                    dbk.refreshEditPopover(opt.editEvent);
+                                }
+                            }
+
+                            return false;
+                        },
                     },
                     {
-                        test: (event, opt) => {
-                            if (opt.getField('truckNumber') === 'TRK-100') {
-                                opt.setField('Hours Estimate', '40');
-                                return false; // Test passes, so no error shown
+                        test: (e, opt) => {
+
+                            // Test only applies to On Save
+                            if (opt.trigger !== 'eventSave') return false;
+
+                            const tryingToConfirm = e.status && e.status[0] === 'Confirmed';
+                            if (!tryingToConfirm) return false;
+
+                            const consentNeededFor = ['Treatment', 'Post-Op'];
+                            const notes = (opt.getField('Contraindications Notes') || '').trim();
+                            const vt = opt.getField('Visit Type')?.[0];
+                            const contraindicationsOK = !!opt.getField('Contraindications Checked');
+
+                            return consentNeededFor.includes(vt) && !contraindicationsOK && notes.length > 0;
+                        },
+                        message: 'Before <B>Confirming</B> the appointment, please <B>Review Contraindications</B>.',
+                        emoji: '❌'
+                    }
+                ],
+            },
+
+            'Patient': {
+                // Require a patient for all but generic holds
+                validateOn: ['eventSave'],
+                markRequired: true,
+                errorTests: [
+                    {
+                        test: (e, opt) => !e.contactName.length,
+                        message: 'Please select a <B>Patient</B> for this appointment.',
+                        emoji: '👤'
+                    }
+                ]
+            },
+
+            'Guardian Signature Obtained': {
+                // Require for minors
+                validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
+                showField: (e, opt) => ['Treatment', 'Post-Op', 'Follow-Up', 'Package Session'].includes(opt.getField('Visit Type')?.[0]) && opt.getField('Is Under 18'),
+                markRequired: (e, opt) => opt.getField('Is Under 18') && ['Treatment', 'Post-Op', 'Follow-Up', 'Package Session'].includes(opt.getField('Visit Type')?.[0]),
+                errorTests: [
+                    {
+                        test: (e, opt) => opt.getField('Is Under 18') && !opt.getField('Guardian Signature Obtained') && ['Treatment', 'Post-Op', 'Follow-Up', 'Package Session'].includes(opt.getField('Visit Type')?.[0]),
+                        message: 'A <B>Guardian Signature</B> is required for patients under 18.',
+                        emoji: '🖊️'
+                    }
+                ]
+            },
+
+            'Visit Type': {
+                markRequired: true
+            },
+
+            'Procedure': {
+                validateOn: ['eventClick', 'fieldChange', 'eventSave'],
+                markRequired: true,
+                hideField: (e, opt) => !['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]),
+                errorTests: [
+                    {
+                        // Require Procedure for Treatment & Post-Op
+                        test: (e, opt) => {
+                            return ['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]) && !opt.getField('Procedure')?.[0] && opt.trigger === 'eventSave';
+                        },
+                        message: 'A <B>Procedure Name</B> is required for Treatment or Post-Op visits.',
+                        emoji: '⚠️'
+                    },
+                    {
+                        // Get Procedure information from Salesforce On Field change
+                        test: async (e, opt) => {
+
+                            // Only run if user changed this field.
+                            const procedure = opt.getField('Procedure')?.[0];
+
+                            if (!procedure) {
+
+                                if (opt.fieldChanged()) {
+                                    opt.setField('Contraindications Notes', '');
+                                    opt.setField('Contraindications Checked', false);
+                                    dbk.refreshEditPopover(opt.editEvent);
+                                }
+
+                                return false;
                             }
+
+                            const sf = SalesforceClient({ errorMode: "return" });
+
+                            const [resp, rows] = await sf.query(`
+                                        SELECT Id, Name, Duration__c, Contraindications__c 
+                                        FROM Procedure__c WHERE Name = ${sf.quote(procedure)} 
+                                        LIMIT 1
+                                    `);
+
+                            if (!resp.ok || rows.length === 0) {
+                                sf.showError(resp);
+                            } else {
+
+                                const proc = rows[0];
+                                const duration = Number(proc.Duration__c) || 60;
+                                const notes = proc.Contraindications__c || '';
+
+                                // Set Duration by updating End time
+                                if (e.start) {
+                                    e.end = e.start.clone().add(duration, 'minutes');
+                                }
+
+                                // Set Contraindications_Notes__c field
+                                opt.setField('Contraindications Notes', notes);
+                                dbk.refreshEditPopover(opt.editEvent);
+                            }
+
+                            return false;
                         }
                     }
                 ]
             },
-            "ToDo Complete?": {
-                validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
+
+            'Chief Complaint': {
+                // Require for Consults
+                validateOn: ['eventClick', 'eventSave'],
+                hideField: (e, opt) => opt.getField('Visit Type')?.[0] !== 'Consult',
+                markRequired: (e, opt) => opt.getField('Visit Type')?.[0] === 'Consult',
                 errorTests: [
-                    { test: (event, opt) => false, message: 'Test' }
+                    {
+                        test: (e, opt) => opt.getField('Visit Type')?.[0] === 'Consult' && !(opt.getField('Chief Complaint') || '').trim(),
+                        message: 'Please fill in a <B>Chief Complaint</B> for Consults.',
+                        emoji: '📋'
+                    }
                 ]
             },
-            "Hours Estimate": {
-                markRequired: (event, opt) => opt.getField('truckNumber') === 'TRK-100',
-                hideField: (event, opt) => opt.getField('truckNumber') !== 'TRK-100',
-                validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
+
+            'Anatomic Area': {
+                validateOn: ['eventRender', 'eventClick', 'eventSave'],
+                hideField: (e, opt) => !['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]),
+                markRequired: (e, opt) => /(laser|inject|tox|filler|peel|sculpt)/i.test(opt.getField('Procedure')?.[0]),
                 errorTests: [
-                    { test: (event, opt) => opt.getField('Hours Estimate') == '' || !/^\d+$/.test(opt.getField('Hours Estimate')), message: 'Number is missing' }
+                    {
+                        test: (e, opt) => {
+
+                            // Only run on test on eventSave
+
+                            const visit = ['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]);
+                            const req = /(laser|inject|tox|filler|peel|sculpt)/i.test(opt.getField('Procedure')?.[0]);
+                            const area = opt.getField('Anatomic Area')?.trim() || '';
+                            const empty = !area || (Array.isArray(area) && area.length === 0);
+                            return visit && req && empty;
+                        },
+                        message: 'Please provide the <B>Anatomic Area</B> for the selected procedure.',
+                        emoji: '🧍'
+                    }
                 ]
             },
-            "Reference URL": {
-                validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
-                warningTests: [
-                    { test: (event, opt) => !/^https?:\/\//.test(opt.getField('Reference URL')), message: 'Url is missing' }
+
+            'Practitioner': {
+                validateOn: ['eventClick', 'fieldChange', 'eventSave'],
+                markRequired: true,
+                errorTests: [
+                    {
+                        critical: true,
+                        test: (e, opt) => {
+                            return opt.trigger === 'eventSave' && (e.resource.length === 0 ||
+                                e.resource[0] === 'Unassigned');
+                        },
+                        message: 'Please select a <B>Practitioner</B> for this appointment.',
+                        emoji: '👩‍⚕️'
+                    },
+                    {
+                        test: (e, opt) => {
+
+                            if (e.resource[0] == 'none' || !e.resource[0] || e.resource[0] == 'Unassigned') return false;
+
+                            const resource = e.resource[0];
+                            const visit = ['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]);
+                            const proc = opt.getField('Procedure')?.[0];
+
+                            if (!visit || !proc) return false;
+
+                            // Check cached result first
+                            const [cached, result] = getCachedQuery(`${resource}-${proc}`);
+
+                            // Cached result found, return it
+                            if (cached) return result;
+
+                            // Not cached, so we need to run the full query test
+                            return validateResourceCertification(opt, resource, proc);
+                        },
+                        message: 'The Practitioner\'s <B>License Type or Credential</B> doesn\'t match the selected Procedure.',
+                        emoji: '🪪'
+                    },
+                    {
+                        skipOnError: true, // Skip this test if prior test already failed
+                        test: (e, opt) => {
+
+                            if (e.resource[0] == 'none' || !e.resource[0] || e.resource[0] == 'Unassigned') return false;
+
+                            const resource = e.resource[0];
+                            const visit = ['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]);
+                            const proc = opt.getField('Procedure')?.[0];
+
+                            if (!visit || !proc) return false;
+
+                            return validateResourceCertification(opt, resource, proc);
+                        },
+                        message: 'The Practitioner\'s <B>License Type or Credential</B> doesn\'t match the selected Procedure.',
+                        emoji: '🪪'
+                    },
                 ]
             },
-            "Project Size": {
-                validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
+
+            'Contraindications Notes': {
+                validateOn: ['eventClick', 'eventSave'],
+                hideField: (e, opt) => !['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]),
+                markRequired: true,
                 warningTests: [
-                    { test: (event, opt) => opt.getField('Project Size') == '', message: 'Can only be small, medium or large' }
+                    {
+                        test: (e, opt) => {
+                            const notes = (opt.getField('Contraindications Notes') || '').trim();
+                            return !!notes && notes.length < 8;
+                        },
+                        message: 'The <B>Contraindication notes</B> look very brief — please add detail if clinically relevant.',
+                        emoji: '📝'
+                    }
                 ]
             },
-            "Due Date": {
-                validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
+
+            'Contraindications Checked': {
+                validateOn: ['fieldChange', 'eventSave'],
+                markRequired: (e, opt) => ['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]),
+                hideField: (e, opt) => !['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]) || !opt.getField('Procedure')?.[0],
                 warningTests: [
-                    { test: (event, opt) => !opt.getField('Due Date'), message: 'Date is missing' }
+                    {
+                        // If notes exist but box not checked, prompt to review
+                        test: (e, opt) => {
+
+                            if (!opt.fieldChanged('Contraindications Notes')) return false;
+
+                            const notes = opt.getField('Contraindications Notes')?.trim();
+                            const checked = !!opt.getField('Contraindications Checked');
+                            return !!notes && !checked;
+                        },
+                        message: 'You added <B>contraindication Notes</B> — mark as checked after review.',
+                        emoji: '⚠️'
+                    }
                 ],
                 errorTests: [
-                    { test: (event, opt) => opt.getField('Due Date') != '' && !moment(opt.getField('Due Date')).isAfter(moment()), message: 'Due date cannot be in the past' }
+                    {
+                        // Enforce when moving to Confirmed
+                        test: (e, opt) => {
+                            const isConfirming = e.status && e.status[0] === 'Confirmed';
+                            const required = ['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]);
+                            const proc = opt.getField('Procedure')?.[0];
+                            return isConfirming && proc && required && !opt.getField('Contraindications Checked');
+                        },
+                        message: 'Please ensure <B>Contraindications</B> are checked before confirming the appointment.',
+                        emoji: '⚠️'
+                    }
                 ]
             },
-            "Last Update Date Time": {
-                validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
+
+            'Allergy Notes': {
+                validateOn: ['eventRender', 'eventClick', 'eventSave'],
+                markRequired: (e, opt) => ['Treatment', 'Post-Op', 'Follow-Up', 'Package Session'].includes(opt.getField('Visit Type')?.[0]),
+                hideField: (e, opt) => !['Treatment', 'Post-Op', 'Follow-Up', 'Package Session'].includes(opt.getField('Visit Type')?.[0]),
                 warningTests: [
-                    { test: (event, opt) => !opt.getField('Last Update Date Time'), message: 'DateTime is missing' }
+                    {
+                        // Simple keyword check related to common agents
+                        test: (e, opt) => {
+                            const a = opt.getField('Allergy Notes') || '';
+                            const svc = opt.getField('Procedure')?.[0] || '';
+                            if (!a || !svc) return false;
+                            const lidocaineRelated = /botox|microneedling/i.test(svc);
+                            return lidocaineRelated && /(lido|lidocaine|caine|novocaine)/i.test(a);
+                        },
+                        message: 'The patient has an <B>allergy</B> that may conflict with local anesthetics - verify protocol.',
+                        emoji: '⚠️'
+                    },
+                    {
+                        test: (e, opt) => {
+                            const a = opt.getField('Allergy Notes') || '';
+                            const proc = opt.getField('Procedure')?.[0] || '';
+                            if (!a && proc) return true
+                        },
+                        message: 'Please ask the patient about any <B>allergies</B>.',
+                        emoji: '❓'
+                    }
+                ]
+            },
+
+            'Progress Report Complete': {
+                validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
+                markRequired: (e, opt) => opt.getField('Progress Report Required') && ['Follow-Up', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]),
+                hideField: (e, opt) => !opt.getField('Progress Report Required') || !['Follow-Up', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]),
+                warningTests: [
+                    {
+                        test: (e, opt) => {
+                            const hasReport = opt.getField('Progress Report Required');
+                            const complete = opt.getField('Progress Report Complete');
+                            const tx = ['Follow-Up', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]);
+                            return tx && hasReport && !complete && !(opt.trigger === 'eventSave' && e.status[0] === 'Complete');
+                        },
+                        message: 'Please confirm that the <B>Progress Report</B> is complete.',
+                        emoji: '✅'
+                    }
+                ],
+                errorTests: [
+                    {
+                        critical: true,
+                        test: (e, opt) => {
+                            const hasReport = opt.getField('Progress Report Required');
+                            const complete = opt.getField('Progress Report Complete');
+                            const tx = ['Follow-Up', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]);
+                            return tx && hasReport && !complete && opt.trigger === 'eventSave' && e.status[0] === 'Complete';
+                        },
+                        message: 'Please confirm that the <B>Progress Report</B> is complete.',
+                        emoji: '✅'
+                    }
                 ]
             }
         };
 
+        // Your SOQL Query Helper functions
+        // --------------------------------
+        //
+        // Use this section to define any helper functions you need to run
+        // queries against Salesforce to validate event data.
+        //
+        // The example below checks that the selected Resource (Practitioner)
+        // has the required Certification or License Tier to perform the
+        // selected Procedure. It uses a simple caching mechanism to avoid
+        // repeated queries for the same Resource-Procedure pair during
+        // validation.
+
+        async function validateResourceCertification(opt, resource, procedure) {
+
+            // Load Salesforce client library
+            const sf = SalesforceClient({ errorMode: "return" });
+
+            // Get Practitioner info
+            const [resp1, rows1] = await sf.query(`
+                        SELECT Id, Certifications__c, License_Tiers__c 
+                        FROM Practitioner__c WHERE Name = ${sf.quote(resource)} 
+                        LIMIT 1
+                    `);
+
+            if (!resp1.ok || rows1.length === 0) {
+                if (!resp1.ok) sf.showError(resp1);
+                return true;
+            }
+
+            // Get Procedure info
+            const [resp2, rows2] = await sf.query(`
+                        SELECT Id, Required_Certifications__c, Required_License_Tiers__c 
+                        FROM Procedure__c WHERE Name = ${sf.quote(procedure)} 
+                        LIMIT 1
+                    `);
+
+            if (!resp2.ok || rows2.length === 0) {
+                if (!resp2.ok) sf.showError(resp2);
+                return true;
+            }
+
+            // Find the intersection of Practitioner and Procedure certs/tiers
+            // If no intersection, return true to indicate an error
+            // If intersection exists, return false (no error)
+
+            const prac = rows1[0];
+            const proc = rows2[0];
+
+            // Helper to split and trim, but return [] for blank/empty/null
+            function splitList(str) {
+                if (!str || !str.trim()) return [];
+                return str.split(';').map(s => s.trim()).filter(Boolean);
+            }
+
+            const pracCerts = splitList(prac.Certifications__c);
+            const pracTiers = splitList(prac.License_Tiers__c);
+
+            const reqCerts = splitList(proc.Required_Certifications__c);
+            const reqTiers = splitList(proc.Required_License_Tiers__c);
+
+            const certsOK = reqCerts.length === 0 || reqCerts.some(c => pracCerts.includes(c));
+            const tiersOK = reqTiers.length === 0 || reqTiers.some(t => pracTiers.includes(t));
+
+            const result = !(certsOK && tiersOK);
+
+            // Cache the result for this resource-procedure pair for the session
+
+            saveCachedQuery(`${resource}-${procedure}`, result);
+
+            return result;
+        }
+
         //----------- End Configuration: You do not need to edit below this line -------------------
+
+        // Simple in-memory cache for query results to avoid repeated queries during validation
+        // Use a unique key for each query you want to cache
+        // Cached entries expire after inputs.queryCacheExpiry milliseconds
+
+        function getCachedQuery(key) {
+
+            const hasEntry = inputs.queryCache.hasOwnProperty(key);
+            if (hasEntry) {
+                const entry = inputs.queryCache[key];
+                const isValid = (new Date().getTime() - entry.timestamp) < inputs.queryCacheExpiry;
+                if (isValid) {
+                    return [true, entry.data];
+                } else {
+                    delete inputs.queryCache[key];
+                }
+            }
+            return [false, null];
+        }
+
+        function saveCachedQuery(key, data) {
+            inputs.queryCache[key] = {
+                timestamp: new Date().getTime(),
+                data: data
+            };
+        }
 
     } catch (error) {
         reportError(error);
@@ -921,14 +1372,21 @@
     // Action code goes inside this function
     function run() {
 
+        // Expose libraries and utility functions globally for use in other actions
+        globalThis.seedcodeCalendar = globalThis.sc = seedcodeCalendar;
+        globalThis.utilities = globalThis.u = utilities;
+        globalThis.q = function (qs) { return document.querySelector(qs) };
+        globalThis.qa = function (qsa) { return document.querySelectorAll(qsa) };
+
+        // Reopen Popover
+
+        let reopenPopover = false;
+
         // Initialize error handling system
         let allEventErrors = {};
         let allEventWarnings = {};
         let allEventRequired = {};
-        let allEventHidden = {};
-
-        // To track changes made during an edit session
-        let cancelOnClick = false;
+        let allEventHidden = { hiddenFields: {} };
 
         // Error handler object for use by other app actions
         let errorHandler = {
@@ -953,7 +1411,6 @@
         // Handle event click
         function onEventClick(event, editEvent, action) {
 
-            console.log(event, editEvent);
             // Define popover object to isolate query selectors to it
 
             let popover;
@@ -961,8 +1418,15 @@
             // Cancel the default action to prevent the popover from opening 
             // if another popover is still open
 
-            if (cancelOnClick) {
+            if (q('.modal-dialog')) {
                 return action?.callbacks?.cancel();
+            }
+
+            if (q('.ng-popover[data-popover-event-id]')) {
+                setTimeout(() => {
+                    onEventClick(event, editEvent, action);
+                }, 500);
+                return;
             }
 
             action?.callbacks?.confirm();
@@ -1031,37 +1495,49 @@
                     }
                 }
 
-                const customFieldHasError = Object.keys(eventErrors).some(label => customFields.hasOwnProperty(label));
-                const customFieldHasWarning = Object.keys(eventWarnings).some(label => customFields.hasOwnProperty(label));
-                const customFieldsSelector = popover.querySelector('.dbk_editEvent div[name="customFields"]');
+                // Calculate Changes Object at the outset of event creation popover. This
+                // object will be checked for changes to fire fieldChange events
+
+                let changesObject = dbk.eventChanged(editEvent, event.beforeDrop || event);
 
                 const popoverClickMainHandler = (e) => {
 
                     // Recalculate errors if user clicked on a field
 
-                    calculateEventErrors(event, editEvent, 'eventClick', {});
+                    if (q('.modal-dialog')) return;
 
-                    // Get current errors/warnings/required for the event
+                    // Recalculate changes object
+                    let changesObjectNew = dbk.eventChanged(editEvent, event.beforeDrop || event);
 
-                    eventErrors = allEventErrors[event.eventID]?.errorFields || {};
-                    eventWarnings = allEventWarnings[event.eventID]?.warningFields || {};
-                    eventRequired = allEventRequired[event.eventID]?.requiredFields || {};
-                    eventHidden = allEventHidden[event.eventID]?.hiddenFields || {};
+                    // Compare changesObject and changesObjectNew by stringifying
+                    let keysChanged = false;
+                    try {
+                        const oldStr = JSON.stringify(changesObject);
+                        const newStr = JSON.stringify(changesObjectNew);
+                        keysChanged = oldStr !== newStr;
+                    } catch (e) {
+                        paintVisualElements(event);
+                    }
+
+                    if (keysChanged) {
+                        calculateEventErrors(event, editEvent, 'fieldChange', changesObjectNew);
+
+                        // Get current errors/warnings/required for the event
+                        eventErrors = allEventErrors[event.eventID]?.errorFields || {};
+                        eventWarnings = allEventWarnings[event.eventID]?.warningFields || {};
+                        eventRequired = allEventRequired[event.eventID]?.requiredFields || {};
+                        eventHidden = allEventHidden[event.eventID]?.hiddenFields || {};
+
+                        // Update changesObject reference
+                        changesObject = changesObjectNew;
+                    } else {
+                        paintVisualElements(event);
+                    }
                 };
 
                 // Add event listener for popover click
                 popover.querySelector('.dbk_editEvent')
                     ?.addEventListener('click', debounce(popoverClickMainHandler, 200));
-
-                if (customFieldsSelector) {
-                    if (customFieldHasError) {
-                        customFieldsSelector.classList.remove('hasChanged');
-                        customFieldsSelector.classList.add('hasError');
-                    } else if (customFieldHasWarning) {
-                        customFieldsSelector.classList.remove('hasChanged');
-                        customFieldsSelector.classList.add('hasWarning');
-                    }
-                }
 
                 let customFieldsObserver = dbk.observe({
                     name: `event_cusfields_${event._id}`,
@@ -1102,15 +1578,16 @@
             function checkCustomFields(o) {
                 o.stop();
 
-                // // Revalidate again
+                // Repaint visual elements
 
-                // calculateEventErrors(event, editEvent, 'eventClick', {});
+                paintVisualElements(event);
 
-                // // Get current errors/warnings/required for the event
+                // Get current errors/warnings/required for the event
 
-                // eventErrors = allEventErrors[event.eventID]?.errorFields || {};
-                // eventWarnings = allEventWarnings[event.eventID]?.warningFields || {};
-                // eventRequired = allEventRequired[event.eventID]?.requiredFields || {};
+                eventErrors = allEventErrors[event.eventID]?.errorFields || {};
+                eventWarnings = allEventWarnings[event.eventID]?.warningFields || {};
+                eventRequired = allEventRequired[event.eventID]?.requiredFields || {};
+                eventHidden = allEventHidden[event.eventID]?.hiddenFields || {};
 
                 // Name the custom fields
 
@@ -1126,10 +1603,13 @@
                     }
                 });
 
+                const changesObject = dbk.eventChanged(editEvent, event.beforeDrop || event);
+
                 popover.querySelectorAll('.panel-switch:not(.fieldsProcessed)')?.forEach((panelSwitch) => {
 
                     labels?.forEach((item) => {
                         let label = item?.dataset?.fieldLabel;
+                        let fieldId = item.dataset.fieldId;
 
                         if (eventErrors.hasOwnProperty(label)) {
                             item?.classList?.remove('hasChanged');
@@ -1137,6 +1617,10 @@
                         } else if (eventWarnings.hasOwnProperty(label)) {
                             item?.classList?.remove('hasChanged');
                             item?.classList?.add('hasWarning');
+                        } else {
+                            if (fieldId && changesObject.hasOwnProperty(fieldId)) {
+                                item.classList.add('hasChanged');
+                            }
                         }
 
                         if (eventRequired.hasOwnProperty(label)) {
@@ -1187,19 +1671,13 @@
                 }
 
                 function getTooltipText() {
-                    // if (type === 'error') {
-                    //     return allEventErrors[event.eventID]?.errorFields[label];
-                    // } else if (type === 'warning') {
-                    //     return allEventWarnings[event.eventID]?.warningFields[label];
-                    // }
-
-                    if (allEventErrors[event.eventID]?.errorFields[label]) {
-                        return allEventErrors[event.eventID]?.errorFields[label];
-                    } else if (allEventWarnings[event.eventID]?.warningFields[label]) {
-                        return allEventWarnings[event.eventID]?.warningFields[label];
-                    }
-
-                    return ' - ';
+                    const errors = allEventErrors[event.eventID]?.errorFields[label];
+                    const warnings = allEventWarnings[event.eventID]?.warningFields[label];
+                    return errors
+                        ? (Array.isArray(errors) ? errors.join('<br><br>') : errors)
+                        : warnings
+                            ? (Array.isArray(warnings) ? warnings.join('<br><br>') : warnings)
+                            : ' - ';
                 }
             }
 
@@ -1286,234 +1764,323 @@
             let before = editEvent[fieldId];
             editEvent[fieldId] = value;
 
-            // console.log("Field changed:", fieldId, value, label, params, event);
-
+            // Get the field element in the popover
             let element = q(`[data-field-id="${fieldId}"]`);
+            if (!element) return action?.callbacks?.confirm();
+
+            // Get any changes
+            const changesObject = dbk.eventChanged(editEvent, event.beforeDrop || event);
+
+            // Recalculate errors
+            calculateEventErrors(event, editEvent, 'fieldChange', changesObject);
 
             let errorFields = allEventErrors[event.eventID]?.errorFields || {};
             let warningFields = allEventWarnings[event.eventID]?.warningFields || {};
 
-            if (element) {
-
-                const changesObject = dbk.eventChanged(editEvent, event.beforeDrop || event);
-
-                calculateEventErrors(event, editEvent, 'fieldChange', changesObject);
-
-                errorFields = allEventErrors[event.eventID]?.errorFields || {};
-                warningFields = allEventWarnings[event.eventID]?.warningFields || {};
-
-                if (errorFields.hasOwnProperty(label)) {
-                    element.classList.remove('hasChanged');
-                    element.classList.add('hasError');
-                    setTimeout(() => {
-                        element.dispatchEvent(new Event("dbkOnErrorAdd", { bubbles: true }));
-                    }, 200);
-                } else {
-                    element.classList.remove('hasError');
-                    element.dispatchEvent(new Event("dbkOnErrorRemove", { bubbles: true }));
-                }
-
-                if (warningFields.hasOwnProperty(label)) {
-                    element.classList.remove('hasChanged');
-                    element.classList.add('hasWarning');
-                    setTimeout(() => {
-                        element.dispatchEvent(new Event("dbkOnErrorAdd", { bubbles: true }));
-                    }, 200);
-
-                } else {
-                    element.classList.remove('hasWarning');
-                    element.dispatchEvent(new Event("dbkOnErrorRemove", { bubbles: true }));
-                }
-                // Treat '' as equivalent to undefined for change detection
-                const originalValue = (event[fieldId] === '' || event[fieldId] === undefined) ? undefined : event[fieldId];
-                const newValue = (editEvent[fieldId] === '' || editEvent[fieldId] === undefined) ? undefined : editEvent[fieldId];
-
-                if (!element.classList?.contains('hasError') &&
-                    !element.classList?.contains('hasWarning') &&
-                    originalValue !== newValue) {
-                    element.classList.add('hasChanged');
-                } else {
-                    element.classList.remove('hasChanged');
-                }
-
-                editEvent[fieldId] = before;
+            if (errorFields.hasOwnProperty(label)) {
+                element.classList.remove('hasChanged');
+                element.classList.add('hasError');
+                setTimeout(() => {
+                    element.dispatchEvent(new Event("dbkOnErrorAdd", { bubbles: true }));
+                }, 200);
+            } else {
+                element.classList.remove('hasError');
+                element.dispatchEvent(new Event("dbkOnErrorRemove", { bubbles: true }));
             }
 
-            if (!Object.keys(errorFields).length || !Object.keys(warningFields).length) {
-                if (!Object.keys(errorFields).length) {
-                    qa(`[data-id="${event._id}"].hasError`)?.forEach(el => el.classList.remove('hasError'));
-                }
+            if (warningFields.hasOwnProperty(label)) {
+                element.classList.remove('hasChanged');
+                element.classList.add('hasWarning');
+                setTimeout(() => {
+                    element.dispatchEvent(new Event("dbkOnErrorAdd", { bubbles: true }));
+                }, 200);
 
-                if (!Object.keys(warningFields).length) {
-                    qa(`[data-id="${event._id}"].hasWarning`)?.forEach(el => el.classList.remove('hasWarning'));
-                }
+            } else {
+                element.classList.remove('hasWarning');
+                element.dispatchEvent(new Event("dbkOnErrorRemove", { bubbles: true }));
             }
+
+            // Treat '' as equivalent to undefined for change detection
+            const originalValue = (event[fieldId] === '' || event[fieldId] === undefined) ? undefined : event[fieldId];
+            const newValue = (editEvent[fieldId] === '' || editEvent[fieldId] === undefined) ? undefined : editEvent[fieldId];
+
+            if (!element.classList?.contains('hasError') &&
+                !element.classList?.contains('hasWarning') &&
+                originalValue !== newValue) {
+                element.classList.add('hasChanged');
+            } else {
+                element.classList.remove('hasChanged');
+            }
+
+            editEvent[fieldId] = before;
 
             return action?.callbacks?.confirm();
         }
 
         // On Event Save
 
-        function onEventSave(event, editEvent, action) {
-            cancelOnClick = false;
+        function onEventSave(event, editEvent, changesObject, action) {
+
+            if (reopenPopover) {
+                reopenPopover = false;
+                changesObject = {};
+                action?.callbacks?.cancel();
+            } else {
+                action?.callbacks?.confirm();
+            }
         }
 
         // Before Event Save
 
-        function beforeEventSave(event, editEvent, action) {
+        async function beforeEventSave(event, editEvent, action) {
 
             // Handle field change event
-
             const changesObject = dbk.eventChanged(editEvent, event.beforeDrop || event);
 
             // If validateUnchangedEvents is false and there are no changes, skip validation
-
             if (inputs.validateUnchangedEvents && Object.keys(changesObject).length === 0) {
                 return action?.callbacks?.confirm();
             }
 
-            cancelOnClick = true;
-
-            calculateEventErrors(event, editEvent, 'eventSave', changesObject);
+            const criticalErrors = await calculateEventErrors(event, editEvent, 'eventSave', changesObject);
 
             let errorFields = allEventErrors[event.eventID]?.errorFields || {};
             let warningFields = allEventWarnings[event.eventID]?.warningFields || {};
 
-            if (!Object.keys(errorFields).length || !Object.keys(warningFields).length) {
-                if (!Object.keys(errorFields).length) {
-                    qa(`[data-id="${event._id}"].hasError`)?.forEach(el => el.classList.remove('hasError'));
-                }
+            // // Remove error/warning classes if none remain
+            // if (!Object.keys(errorFields).length || !Object.keys(warningFields).length) {
+            //     if (!Object.keys(errorFields).length) {
+            //         qa(`[data-id="${event._id}"].hasError`)?.forEach(el => el.classList.remove('hasError'));
+            //     }
+            //     if (!Object.keys(warningFields).length) {
+            //         qa(`[data-id="${event._id}"].hasWarning`)?.forEach(el => el.classList.remove('hasWarning'));
+            //     }
+            // }
 
-                if (!Object.keys(warningFields).length) {
-                    qa(`[data-id="${event._id}"].hasWarning`)?.forEach(el => el.classList.remove('hasWarning'));
+            // If no errors or warnings, just confirm
+            if (Object.keys(errorFields).length === 0 && Object.keys(warningFields).length === 0) {
+                return action?.callbacks?.confirm();
+            }
+
+            // Build combined modal HTML
+            let modalHtml = `
+                    <style>
+
+                        .modal-dialog {
+                            width: auto !important;
+                            height: auto !important;
+                            max-width: 40%;
+                            max-height: 60%;
+                            border-radius: 5px;
+                        }
+
+                        @media screen and (max-width: 1024px) {
+                            .modal-dialog {
+                                max-width: 60%;
+                                max-height: 80%;
+                            }
+                        }
+
+                        .modal-content {
+                            width: 100%;
+                            height: 100% !important;
+                            background-color: rgb(60,60,60);
+                            padding: 20px;
+                        }
+
+                        .modalHeader {
+                            font-size: 2rem;
+                            font-weight: bold;
+                            margin-bottom: 30px;
+                            color: pink;
+                            border-bottom: 1px solid rgb(100,100,100);
+                            padding-bottom: 10px;
+                        }
+
+                        .modalBody { 
+                            color: white; 
+                            padding: 0px 20px;
+                        }
+
+                        .modalButtons {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-top: 30px;
+                            border-top: 1px solid rgb(100,100,100);
+                            padding-top: 10px;
+                        }
+                        .modalButtons .left-buttons {
+                            display: flex;
+                            gap: 5px;
+                        }
+                        .modalButtons .right-buttons {
+                            display: flex;
+                            gap: 5px;
+                        }
+                        .errorList li span {
+                            font-weight: bold;
+                            color: pink;                
+                        }            
+                        .warningList li span {
+                            font-weight: bold;
+                            color: orange;
+                        }
+
+                        .modalButtons .btn-default {
+                            background-color: transparent;
+                            border-color: white;
+                            color: white;
+                        }
+
+                        .modalButtons .btn-primary {
+                            background-color: red;
+                            border-color: red;
+                        }
+
+                        .modalButtons .btn-success:active {
+                            background-color: darkred;
+                            border-color: black;
+                        }
+
+                        .modal-dialog li {
+                            list-style-type: none; 
+                        }
+
+                        .modal-dialog li ul li {
+                            list-style-type: disc;
+                        }
+
+                        .modal-dialog .emoji {
+                            display: inline-block;
+                            width: 1em;
+                            margin-right: 0.5em;
+                        }
+                    </style>
+                    <div class="modalHeader">
+                        Validation Issues Detected
+                    </div>
+                    <div class="modalBody">
+                    `;
+            // Precompute emoji maps for errors and warnings
+            const errorEmojis = {};
+            const warningEmojis = {};
+            for (const [label, rule] of Object.entries(inputs.validationRules)) {
+                if (rule && Array.isArray(rule.errorTests)) {
+                    for (const test of rule.errorTests) {
+                        if (test.message && test.emoji) {
+                            if (!errorEmojis[label]) errorEmojis[label] = {};
+                            errorEmojis[label][test.message] = `<span class="emoji">${test.emoji}</span>`;
+                        }
+                    }
+                }
+                if (rule && Array.isArray(rule.warningTests)) {
+                    for (const test of rule.warningTests) {
+                        if (test.message && test.emoji) {
+                            if (!warningEmojis[label]) warningEmojis[label] = {};
+                            warningEmojis[label][test.message] = `<span class="emoji">${test.emoji}</span>`;
+                        }
+                    }
                 }
             }
 
             if (Object.keys(errorFields).length > 0) {
-                let errorListHtml = `<div class="errorHeader">${inputs.errorsModalMessage}</div><ul class="errorList">`;
-                for (const [label, message] of Object.entries(errorFields)) {
-                    if (Array.isArray(message)) {
-                        message.forEach(msg => {
-                            errorListHtml += `<li><strong>${label}</strong> - ${msg}</li>`;
+                modalHtml += `<p>Please address the following errors:</p><ul class="errorList">`;
+                for (const [label, messages] of Object.entries(errorFields)) {
+                    if (Array.isArray(messages)) {
+                        messages.forEach(msg => {
+                            const emoji = errorEmojis[label]?.[msg] ? errorEmojis[label][msg] + ' ' : '🚫 ';
+                            modalHtml += `<li><span>${emoji}${label}</span><ul><li>${msg}</li></ul></li>`;
                         });
                     } else {
-                        errorListHtml += `<li><strong>${label}</strong> - ${message}</li>`;
+                        const emoji = errorEmojis[label]?.[messages] ? errorEmojis[label][messages] + ' ' : '⚠️ ';
+                        modalHtml += `<li><span>${emoji}${label}</span><ul><li>${messages}</li></ul></li>`;
                     }
                 }
-                errorListHtml += '</ul>';
-
-                // Build modal button parameters based on options
-
-                let modalButtons = [
-                    inputs.errorsModalTitle,
-                    errorListHtml
-                ];
-
-                // Always add Fix Errors button
-
-                modalButtons.push(inputs.errorsModalFixButton);
-                modalButtons.push(() => action?.callbacks?.cancel());
-
-                // Add Save Anyway button if allowed
-
-                if (inputs.allowSaveOnError) {
-                    modalButtons.push(inputs.errorsModalSaveAnywayButton);
-                    modalButtons.push(() => {
-                        if (inputs.askForSecondConfirmationOnError) {
-                            utilities.showModal(
-                                "Confirm Changes",
-                                "Are you sure you want to save changes anyway?",
-                                "No, I want to fix errors",
-                                () => action?.callbacks?.cancel(),
-                                "Save Changes",
-                                () => {
-                                    // After confirming errors, check warnings
-
-                                    if (Object.keys(warningFields).length > 0) {
-                                        showWarningModal();
-                                    } else {
-                                        cancelOnClick = false;
-                                        action?.callbacks?.confirm();
-                                    }
-                                }
-                            );
-                        } else {
-                            // After confirming errors, check warnings
-
-                            if (Object.keys(warningFields).length > 0) {
-                                showWarningModal();
-                            } else {
-                                cancelOnClick = false;
-                                action?.callbacks?.confirm();
-                            }
-                        }
-                    });
-                }
-
-                utilities.showModal(...modalButtons);
-            } else if (Object.keys(warningFields).length > 0) {
-                showWarningModal();
-            } else {
-                cancelOnClick = true;
-                action?.callbacks?.confirm();
+                modalHtml += '</ul>';
             }
-
-            function showWarningModal() {
-                let warningListHtml = `<div class="warningHeader">${inputs.warningsModalMessage}</div><ul class="warningList">`;
-
-                for (const [label, message] of Object.entries(warningFields)) {
-                    if (Array.isArray(message)) {
-                        message.forEach(msg => {
-                            warningListHtml += `<li><strong>${label}</strong> - ${msg}</li>`;
+            if (Object.keys(warningFields).length > 0) {
+                modalHtml += `<p>Please review the following warnings:</p><ul class="warningList">`;
+                for (const [label, messages] of Object.entries(warningFields)) {
+                    if (Array.isArray(messages)) {
+                        messages.forEach(msg => {
+                            const emoji = warningEmojis[label]?.[msg] ? warningEmojis[label][msg] + ' ' : '';
+                            modalHtml += `<li><span>${emoji}${label}</span><ul><li>${msg}</li></ul></li>`;
                         });
                     } else {
-                        warningListHtml += `<li><strong>${label}</strong> - ${message}</li>`;
+                        const emoji = warningEmojis[label]?.[messages] ? warningEmojis[label][messages] + ' ' : '';
+                        modalHtml += `<li><span>${emoji}${label}</span><ul><li>${messages}</li></ul></li>`;
                     }
                 }
-
-                warningListHtml += '</ul>';
-
-                // Build modal button parameters based on options
-
-                let modalButtons = [
-                    inputs.warningsModalTitle,
-                    warningListHtml
-                ];
-
-                // Always add Fix Warnings button
-
-                modalButtons.push(inputs.warningsModalFixButton);
-                modalButtons.push(() => action?.callbacks?.cancel());
-
-                // Add Save Anyway button if allowed
-
-                if (inputs.allowSaveOnWarning) {
-                    modalButtons.push(inputs.warningsModalSaveAnywayButton);
-                    modalButtons.push(() => {
-                        if (inputs.askForSecondConfirmationOnWarning) {
-                            utilities.showModal(
-                                "Confirm Changes",
-                                "Are you sure you want to save changes anyway?",
-                                "No, I want to fix warnings",
-                                () => {
-                                    cancelOnClick = true;
-                                    action?.callbacks?.cancel()
-                                },
-                                "Save Changes",
-                                () => {
-                                    cancelOnClick = false;
-                                    action?.callbacks?.confirm();
-                                }
-                            );
-                        } else {
-                            cancelOnClick = false;
-                            action?.callbacks?.confirm();
-                        }
-                    });
-                }
-
-                utilities.showModal(...modalButtons);
+                modalHtml += '</ul>';
             }
+
+            modalHtml += `</div>`;
+
+            // Define modal config
+            var config = {
+                container: q('#calendar-container') ? '#calendar-container' : '#app-container',
+                type: 'modal',
+                destroy: true,
+                show: true,
+                class: 'validationModal',
+                cancelButton: function () {
+                    return action.callbacks.cancel();
+                },
+                confirmButton: function () {
+                    if ((Object.keys(errorFields).length > 0 && inputs.askForSecondConfirmation) ||
+                        (Object.keys(warningFields).length > 0 && inputs.askForSecondConfirmation)) {
+
+                        utilities.showModal(
+                            "Confirm Changes",
+                            "Are you sure you want to override and save changes anyway?",
+                            "No, Fix issues",
+                            () => action?.callbacks?.cancel(),
+                            "Override and Save",
+                            () => action?.callbacks?.confirm()
+                        );
+                    } else {
+                        action?.callbacks?.confirm();
+                    }
+                },
+                revertButton: function () {
+                    reopenPopover = true;
+                    return action.callbacks.confirm();
+                },
+                autoHeight: true,
+            };
+            // Modal buttons
+
+            modalHtml += `
+                    <style>
+
+                    </style>
+                    <div class="modalButtons">
+                        <div class="left-buttons">
+                            <button ng-click="popover.config.revertButton(); popover.config.show = false;" class="btn btn-xs btn-default" style="margin: 5px;"><span class="fa fa-fw fa-undo"></span> Undo Changes</button>
+                        </div>
+                        <div class="right-buttons">
+                            <button ng-click="popover.config.cancelButton(); popover.config.show = false;" class="btn btn-xs btn-success" style="margin: 5px;"><span class="fa fa-fw fa-check"></span> Review Issues</button>
+                    `;
+
+            // Block critical errors from being overridden
+            // Allow save if only warnings, or if allowSaveOnError/allowSaveOnWarning is true
+
+            if (!criticalErrors &&
+                (Object.keys(errorFields).length > 0 || Object.keys(warningFields).length > 0) &&
+                (inputs.allowSaveOnError && Object.keys(errorFields).length > 0) ||
+                (inputs.allowSaveOnWarning && Object.keys(warningFields).length > 0 && Object.keys(errorFields).length === 0)) {
+                modalHtml += `
+                        <button ng-click="popover.config.confirmButton(); popover.config.show = false;" class="btn btn-xs btn-primary" style="margin: 5px;"><span class="fa fa-fw fa-save"></span> Save Anyway</button>
+                        `;
+            }
+
+            modalHtml += `
+                        </div>
+                    </div>
+                    `;
+
+            utilities.popover(config, modalHtml);
         }
 
         // -----------------------------------------------------------
@@ -1522,7 +2089,7 @@
 
         // Calculate Event Error
 
-        function calculateEventErrors(event, editEvent, trigger, changesObject = {}) {
+        async function calculateEventErrors(event, editEvent, trigger, changesObject = {}) {
 
             // Clear previous errors/warnings
 
@@ -1559,6 +2126,7 @@
             let warningFields = {};
             let requiredFields = {};
             let hiddenFields = {};
+            let criticalErrors = false;
 
             for (const [field, rules] of Object.entries(inputs.validationRules)) {
 
@@ -1579,7 +2147,8 @@
                                 errors: errorFields,
                                 warnings: warningFields,
                                 getField: (field) => getCustomFieldValue(editEvent, field),
-                                setField: (field, value) => setCustomFieldValue(event, editEvent, field, value)
+                                setField: (field, value) => setCustomFieldValue(event, editEvent, field, value),
+                                fieldChanged: (label) => { return changes.hasOwnProperty(label ? field : label); }
                             });
                         } catch (e) {
                             isRequired = false;
@@ -1591,11 +2160,35 @@
                         requiredFields[field] = true;
                     }
                 }
-                // Hidden field
-                if (rules.hasOwnProperty('hideField')) {
-                    let isHidden = false;
-                    if (typeof rules.hideField === 'function') {
 
+                // Hidden/Shown field logic
+                let isHidden = false;
+                if (rules.hasOwnProperty('showField')) {
+                    // If showField is present, default to hidden and show only if showField returns true
+                    let shouldShow = false;
+                    if (typeof rules.showField === 'function') {
+                        try {
+                            shouldShow = rules.showField(editEvent, {
+                                event: event,
+                                editEvent: editEvent,
+                                trigger: trigger,
+                                changes: changes,
+                                errors: errorFields,
+                                warnings: warningFields,
+                                getField: (field) => getCustomFieldValue(editEvent, field),
+                                setField: (field, value) => setCustomFieldValue(event, editEvent, field, value),
+                                fieldChanged: (label) => { return changes.hasOwnProperty(label ? field : label); }
+                            });
+                        } catch (e) {
+                            shouldShow = false;
+                        }
+                    } else if (typeof rules.showField === 'boolean') {
+                        shouldShow = rules.showField;
+                    }
+                    isHidden = !shouldShow;
+                } else if (rules.hasOwnProperty('hideField')) {
+                    // If hideField is present, default to visible and hide if hideField returns true
+                    if (typeof rules.hideField === 'function') {
                         try {
                             isHidden = rules.hideField(editEvent, {
                                 event: event,
@@ -1605,7 +2198,8 @@
                                 errors: errorFields,
                                 warnings: warningFields,
                                 getField: (field) => getCustomFieldValue(editEvent, field),
-                                setField: (field, value) => setCustomFieldValue(event, editEvent, field, value)
+                                setField: (field, value) => setCustomFieldValue(event, editEvent, field, value),
+                                fieldChanged: (label) => { return changes.hasOwnProperty(label ? field : label); }
                             });
                         } catch (e) {
                             isHidden = false;
@@ -1613,21 +2207,23 @@
                     } else if (typeof rules.hideField === 'boolean') {
                         isHidden = rules.hideField;
                     }
-                    if (isHidden) {
-                        hiddenFields[field] = true;
-                    }
+                }
+                if (isHidden) {
+                    hiddenFields[field] = true;
                 }
 
                 // Error tests
+
+                const isAsync = (f) => f[Symbol.toStringTag] === 'AsyncFunction' || f instanceof AsyncFunction;
 
                 if (Array.isArray(rules.errorTests) && (rules.validateOn === undefined || rules.validateOn.includes(trigger))) {
                     for (let t = 0; t < rules.errorTests.length; t++) {
                         try {
                             const _test = rules.errorTests[t];
                             // If skipOnError is true, skip this test if there are already errors for this field
-                            if (
-                                !(_test?.skipOnError && messages.errors.length > 0) &&
-                                _test['test'](editEvent, {
+                            if (!(_test?.skipOnError && messages.errors.length > 0) && typeof _test['test'] === 'function') {
+
+                                let result = _test['test'](editEvent, {
                                     event: event,
                                     editEvent: editEvent,
                                     trigger: trigger,
@@ -1635,11 +2231,39 @@
                                     errors: errorFields,
                                     warnings: warningFields,
                                     getField: (field) => getCustomFieldValue(editEvent, field),
-                                    setField: (field, value) => setCustomFieldValue(event, editEvent, field, value)
-                                }) === true
-                            ) {
-                                if (_test['message']) {
-                                    messages.errors.push(_test['message']);
+                                    setField: (field, value) => setCustomFieldValue(event, editEvent, field, value),
+                                    fieldChanged: (label) => { return changes.hasOwnProperty(label ? field : label); }
+                                });
+
+                                // --- Promise handling for async errorTests ---
+                                // calculateEventErrors is called in both async (awaited) and sync contexts.
+                                // On 'eventSave', the function is awaited, so we can await any async test directly.
+                                // On other triggers (like eventClick, fieldChange), the function is called synchronously,
+                                // so we cannot await Promises and must handle them with .then().
+                                // This dual handling ensures async errorTests work for both contexts.
+
+                                if (result instanceof Promise && trigger === 'eventSave') {
+                                    // On eventSave, we can await the result
+                                    result = await result;
+                                } else if (result instanceof Promise && trigger !== 'eventSave') {
+                                    result.then(resolved => {
+                                        throwResult(event, field, resolved, _test['message']);
+                                    }).catch(e => {
+                                        console.error(`Error in async error validation test for ${field}:`, e);
+                                    });
+                                    continue; // Skip further processing until promise resolves
+                                }
+
+                                // Handle resolved result (sync or awaited)
+                                if (result == -1 || (result === true && _test['critical'] === true)) {
+                                    criticalErrors = true;
+                                    if (_test['message']) {
+                                        messages.errors.push(_test['message']);
+                                    }
+                                } else if (result === true) {
+                                    if (_test['message']) {
+                                        messages.errors.push(_test['message']);
+                                    }
                                 }
                             }
                         } catch (e) {
@@ -1658,9 +2282,10 @@
                     for (let t = 0; t < rules.warningTests.length; t++) {
                         const _test = rules.warningTests[t];
                         try {
-                            if (
-                                !(_test?.skipOnError && messages.warnings.length > 0) &&
-                                _test['test'](editEvent, {
+                            // If skipOnError is true, skip this test if there are already warnings for this field
+                            if (!(_test?.skipOnError && messages.warnings.length > 0) && typeof _test['test'] === 'function') {
+
+                                let result = _test['test'](editEvent, {
                                     event: event,
                                     editEvent: editEvent,
                                     trigger: trigger,
@@ -1668,11 +2293,40 @@
                                     errors: errorFields,
                                     warnings: warningFields,
                                     getField: (field) => getCustomFieldValue(editEvent, field),
-                                    setField: (field, value) => setCustomFieldValue(event, editEvent, field, value)
-                                }) === true
-                            ) {
-                                if (_test['message']) {
-                                    messages.warnings.push(_test['message']);
+                                    setField: (field, value) => setCustomFieldValue(event, editEvent, field, value),
+                                    fieldChanged: (label) => { return changes.hasOwnProperty(label ? field : label); }
+                                });
+
+                                // --- Promise handling for async errorTests ---
+                                // calculateEventErrors is called in both async (awaited) and sync contexts.
+                                // On 'eventSave', the function is awaited, so we can await any async test directly.
+                                // On other triggers (like eventClick, fieldChange), the function is called synchronously,
+                                // so we cannot await Promises and must handle them with .then().
+                                // This dual handling ensures async errorTests work for both contexts.
+
+                                if (result instanceof Promise && trigger === 'eventSave') {
+                                    // On eventSave, we can await the result
+                                    result = await result;
+                                } else if (result instanceof Promise && trigger !== 'eventSave') {
+                                    // On other triggers, handle async result with .then()
+                                    result.then(resolved => {
+                                        throwResult(event, field, resolved, _test['message']);
+                                    }).catch(e => {
+                                        console.error(`Error in async error validation test for ${field}:`, e);
+                                    });
+                                    continue; // Skip further processing until promise resolves
+                                }
+
+                                // Handle resolved result (sync or awaited)
+                                if (result == -1 || (result === true && _test['critical'] === true)) {
+                                    criticalErrors = true;
+                                    if (_test['message']) {
+                                        messages.warnings.push(_test['message']);
+                                    }
+                                } else if (result === true) {
+                                    if (_test['message']) {
+                                        messages.warnings.push(_test['message']);
+                                    }
                                 }
                             }
                         } catch (e) {
@@ -1698,6 +2352,65 @@
             if (Object.keys(hiddenFields).length > 0) {
                 allEventHidden[event.eventID] = { hiddenFields };
             }
+
+            paintVisualElements(event);
+
+            return criticalErrors;
+
+            // Helper function to throw or clear an error for a specific field
+            // and repaint visual elements. Returns the result for convenience.
+            // Used only in context of async promise handling.
+
+            function throwResult(event, label, result, message) {
+
+                if (allEventErrors[event.eventID] === undefined) {
+                    allEventErrors[event.eventID] = { errorFields: {} };
+                }
+
+                if (result) {
+                    allEventErrors[event.eventID].errorFields[label] = message;
+                } else {
+                    delete allEventErrors[event.eventID].errorFields[label];
+                }
+
+                paintVisualElements(event);
+                return result;
+            }
+
+            // Helper function to get custom field value by name
+            // (either field label or "store in field" name).
+
+            function getCustomFieldValue(event, name) {
+                const id = Object.values(event.schedule.customFields)?.find(f => f.name === name || f.field === name)?.id;
+                return id ? event[id] : undefined;
+            }
+
+            // Helper function to set custom field value by name
+
+            function setCustomFieldValue(event, editEvent, name, value) {
+                const id = Object.values(event.schedule.customFields)?.find(f => f.name === name || f.field === name)?.id;
+                if (id) {
+                    editEvent[id] = value;
+                    dbk.refreshEditPopover(editEvent);
+                    qa('[data-field-id="' + id + '"]')?.forEach(el => {
+                        if (event[id] !== editEvent[id]) {
+                            el.classList.add('hasChanged');
+                        } else {
+                            el.classList.remove('hasChanged');
+                        }
+                    });
+                }
+            };
+        }
+
+        // Paint Visual Elements
+
+        function paintVisualElements(event) {
+
+            const errorFields = allEventErrors[event.eventID]?.errorFields || {};
+            const warningFields = allEventWarnings[event.eventID]?.warningFields || {};
+            const requiredFields = allEventRequired[event.eventID]?.requiredFields || {};
+            const hiddenFields = allEventHidden[event.eventID]?.hiddenFields || {};
 
             // Remove error classes from elements that are no longer in error
 
@@ -1747,23 +2460,53 @@
                 });
             }
 
-            // Helper function to get custom field value by name
-            // (either field label or "store in field" name).
+            // Get custom field labels and names
+            let customFields = {};
 
-            function getCustomFieldValue(event, name) {
-                const id = Object.values(event.schedule.customFields)?.find(f => f.name === name || f.field === name)?.id;
-                return id ? event[id] : undefined;
+            Object.values(event?.schedule?.customFields).map((field) => {
+                customFields[field.name] = { id: field.id, field: field.field };
+            });
+
+            // Mark the Custom Fields panel label if any custom fields have errors/warnings
+
+            const customFieldHasError = Object.keys(errorFields).some(label => customFields.hasOwnProperty(label));
+            const customFieldHasWarning = Object.keys(warningFields).some(label => customFields.hasOwnProperty(label));
+            const customFieldsSelector = document.querySelector('.dbk_editEvent div[name="customFields"]');
+
+            if (customFieldsSelector) {
+                if (customFieldHasError) {
+                    customFieldsSelector.classList.add('hasError');
+                } else {
+                    customFieldsSelector.classList.remove('hasError');
+                }
+
+                if (customFieldHasWarning) {
+                    customFieldsSelector.classList.add('hasWarning');
+                } else {
+                    customFieldsSelector.classList.remove('hasWarning');
+                }
             }
 
-            // Helper function to set custom field value by name
+            // Remove error/warning classes if none remain
 
-            function setCustomFieldValue(event, editEvent, name, value) {
-                const id = Object.values(event.schedule.customFields)?.find(f => f.name === name || f.field === name)?.id;
-                if (id) {
-                    editEvent[id] = value;
-                    dbk.refreshEditPopover(editEvent);
+            if (!Object.keys(errorFields).length || !Object.keys(warningFields).length) {
+                if (!Object.keys(errorFields).length) {
+                    qa(`[data-id="${event._id}"].hasError`)?.forEach(el => el.classList.remove('hasError'));
                 }
-            };
+                if (!Object.keys(warningFields).length) {
+                    qa(`[data-id="${event._id}"].hasWarning`)?.forEach(el => el.classList.remove('hasWarning'));
+                }
+            }
+
+            // Add error/warning class to event in calendar if any errors/warnings exist
+
+            if (Object.keys(errorFields).length > 0) {
+                qa(`[data-id="${event._id}"]`)?.forEach(el => el.classList.add('hasError'));
+            }
+
+            if (Object.keys(warningFields).length > 0 && Object.keys(errorFields).length === 0) {
+                qa(`[data-id="${event._id}"]`)?.forEach(el => el.classList.add('hasWarning'));
+            }
         }
 
         // -----------------------------------------------------------

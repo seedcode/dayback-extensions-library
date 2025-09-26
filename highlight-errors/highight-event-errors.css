@@ -14,15 +14,19 @@
 /* Event Pill Colors */
 
 .noShow { display: none !important;}
+
 .fc-event.hasError { box-shadow: 0px 0px 10px var(--colors-error); }
+.fc-event.hasWarning { box-shadow: 0px 0px 10px var(--colors-warning); }
+.fc-event.hasError.hasWarning { box-shadow: 0px 0px 10px var(--colors-error); }
 
 .fc-event.hasError { border: 1px solid var(--colors-error) !important; }
 .fc-event.hasError .errorIconContainer { float: right; color: var(--colors-error); text-shadow: 0px 0px 3px rgba(255,255,255,0.9); }
 
-.fc-event.hasWarning { box-shadow: 0px 0px 10px var(--colors-warning); }
+
 .fc-event.hasWarning { border: 1px solid var(--colors-warning) !important; }
 .fc-event.hasWarning .warningIconContainer { float: right; color: var(--colors-warning); text-shadow: 0px 0px 3px rgba(255,255,255,0.9); }
 .fc-event.hasError.hasWarning .warningIconContainer { display: none;}
+
 
 .fc-event:not(.hasWarning) .warningIconContainer { display: none; }
 .fc-event:not(.hasError) .errorIconContainer { display: none; }
@@ -91,16 +95,6 @@ div[field="description"].hasWarning { box-shadow: 0px 0px 5px var(--colors-warni
 div[field="description"].hasWarning { border: 1px solid var(--colors-warning); }
 
 /* Has Changed */
-
-/* .dbk_editEvent .panel-selector.hasChanged:before {
-    content: '\f06a';
-    color: var(--colors-changed);
-    position: absolute;
-    display: inline;
-    left: 6px;
-    font-family: 'FontAwesome';
-    
-} */
 
 .dbk_editEvent .panel-selector.hasChanged .dbk_label,
 .dbk_editEvent .panel-selector.hasChanged .text-right {
@@ -203,35 +197,8 @@ div[field="description"].hasChanged { border: 1px solid var(--colors-changed); }
     color: var(--colors-changed-light);
 }
 
-.panel-switch .hasChanged .control-label:before,
-/* .panel-switch .hasChanged:has(input[type=checkbox]) span:before {
-    content: '\f06a';
-    color: var(--colors-changed-light);
-    padding-right: 3px;
-    display: inline-block;
-    left: 6px;
-    font-family: 'FontAwesome';
-} */
 
 /* Modal Dialogue Styling */
-
-.modal-dialog .errorHeader {margin: 20px 0px;}
-.modal-dialog ul.errorList li { text-align: left;}
-
-.modal-dialog .warningHeader {margin: 20px 0px;}
-.modal-dialog ul.warningList li { text-align: left;}
-
-.modal-dialog:has(.errorHeader) h4 { color: pink; }
-.modal-dialog:has(.errorHeader) button.btn-success { 
-    background-color: red;
-    border: 1px solid red;    
-}
-
-.modal-dialog:has(.warningHeader) h4 { color: orange; }
-.modal-dialog:has(.warningHeader) button.btn-success { 
-    background-color: orange;
-    border: 1px solid orange;    
-}
 
 /* Required Field Asterisk */
 
@@ -273,8 +240,7 @@ div[field="description"].requiredField:after {
 /* Hidden Field */
 
 [data-field-name].hiddenField {
-  max-height: 0;
-  opacity: 0;
+   display: none;
 }
 
 /* Tooltip styling */
