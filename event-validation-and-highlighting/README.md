@@ -159,6 +159,7 @@ Each test object must contain:
 - `test(event, opt)` – Returns `true` if error.  
 - `message` (string) – Error message to show.  
 - `skipOnError` (optional) – If `true`, this test is skipped if previous tests failed.
+- `emoji` (string) - An optional emoji to prepend to the message. If not defined, with use 🚫 for errors and ⚠️ for warnings.
 
 **Example:**
 
