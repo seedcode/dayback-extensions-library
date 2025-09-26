@@ -153,16 +153,13 @@
 
         // Present an error using utilities.showModal / showMessage if available
         function showError(err) {
+
+            if (!err.code || err?.error?.code)
+                err = err.error || err;
+
             const code = err.code ? ` ${err.code}` : "";
             const status = err.httpStatus ? `[${err.httpStatus}]` : "";
-            const details = (() => {
-                if (Array.isArray(err.payload) && err.payload[0]?.fields) {
-                    return `\nFields: ${err.payload[0].fields.join(", ")}`;
-                }
-                return "";
-            })();
-
-            const text = `${status}${code} ${err.message}${details}`;
+            const text = `${status}${code} ${err.message}`;
 
             if (err.httpStatus >= 400 && err.httpStatus < 500) {
                 // Soft toast for client errors (e.g., 400 malformed, field errors)
