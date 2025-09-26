@@ -12,28 +12,6 @@ This library implements a comprehensive system for validating user interactions 
 - **Adds icons** to calendar event pills when an event has errors or warnings.
 - Can **auto-correct/auto-fill** fields (e.g., set `End` based on a selected “Treatment Type”).
 
-## Table of Contents
-
-- [Quick Start](#overview)
-- [Basic Structure](#example)
-- [Properties](#properties)
-  - [markRequired](#markrequired-boolean-or-function)
-  - [hideField](#hidefield-boolean-or-function)
-  - [showField](#showfield-boolean-or-function)
-  - [validateOn](#validateon-array)
-  - [errorTests](#errortests-array)
-  - [warningTests](#warningtests-array)
-- [Test Function Parameters](#test-function-parameters)
-- [Standard vs Custom Fields](#standard-vs-custom-fields)
-- [The changes Object](#the-changes-object)
-- [Examples](#examples)
-  - [Simple Title Validation](#simple-title-validation)
-  - [Advanced Title Validation](#advanced-title-validation)
-  - [Conditional Status Validation](#conditional-status-validation)
-  - [Contract Signed Dependency](#contract-signed-dependency)
-  - [Auto-Setting Treatment Duration](#auto-setting-treatment-duration)
-- [Asynchronous Tests](#asynchronous-tests)
-
 ---
 
 # Defining Event Validation Rules
@@ -144,16 +122,9 @@ inputs.validationRules = {
 ### `validateOn` (array)
 
 Defines when validation is triggered.  
-Possible values:
-
-- `eventRender` – On calendar load (adds icons/highlights).  
-- `eventClick` – When an event is opened.  
 - `fieldChange` – When a field changes in the popover.  
 - `eventSave` – On save or close of popover.  
 
-If not specified, validation runs on **all triggers**.
-
-**Examples:**
 
 Validate always:
 
@@ -179,15 +150,10 @@ Validate only when event is opened:
 ```js
 Status: {
     validateOn: ['eventClick'],
-    markRequired: true
-}
-```
 
 ---
 
 ### `errorTests` (array)
-
-Defines validation tests for errors.  
 Each test object must contain:
 
 - `test(event, opt)` – Returns `true` if error.  
@@ -210,7 +176,6 @@ Title: {
             message: 'Title is too short',
             skipOnError: true
         }
-    ]
 }
 ```
 
@@ -432,8 +397,6 @@ Status: {
                     let mins;
                     switch (tx) {
                         case 'Microneedling': mins = 60; break;
-                        case 'Chemical Peel': mins = 45; break;
-                        case 'Botox': mins = 30; break;
                         case 'Laser Hair Removal': mins = 90; break;
                         case 'IV Drip': mins = 75; break;
                         default: mins = 60;
