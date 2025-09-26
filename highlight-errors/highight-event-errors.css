@@ -22,11 +22,9 @@
 .fc-event.hasError { border: 1px solid var(--colors-error) !important; }
 .fc-event.hasError .errorIconContainer { float: right; color: var(--colors-error); text-shadow: 0px 0px 3px rgba(255,255,255,0.9); }
 
-
 .fc-event.hasWarning { border: 1px solid var(--colors-warning) !important; }
 .fc-event.hasWarning .warningIconContainer { float: right; color: var(--colors-warning); text-shadow: 0px 0px 3px rgba(255,255,255,0.9); }
 .fc-event.hasError.hasWarning .warningIconContainer { display: none;}
-
 
 .fc-event:not(.hasWarning) .warningIconContainer { display: none; }
 .fc-event:not(.hasError) .errorIconContainer { display: none; }
