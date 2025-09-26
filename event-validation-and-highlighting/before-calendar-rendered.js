@@ -1838,7 +1838,7 @@
             const changesObject = dbk.eventChanged(editEvent, event.beforeDrop || event);
 
             // If validateUnchangedEvents is false and there are no changes, skip validation
-            if (inputs.validateUnchangedEvents && Object.keys(changesObject).length === 0) {
+            if (!inputs.validateUnchangedEvents && Object.keys(changesObject).length === 0) {
                 return action?.callbacks?.confirm();
             }
 
