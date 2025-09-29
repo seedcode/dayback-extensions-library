@@ -1392,7 +1392,7 @@
         let allEventHidden = { hiddenFields: {} };
 
         // Error handler object for use by other app actions
-        let errorHandler = {
+        let validationHandler = {
             onEventClick: onEventClick,
             onFieldChange: onFieldChange,
             beforeEventRendered: beforeEventRendered,
@@ -1405,7 +1405,7 @@
             inputs: inputs
         };
 
-        sc.init('errorHandler', errorHandler);
+        sc.init('validationHandler', validationHandler);
 
         // -----------------------------------------------------------
         // Event Handlers
