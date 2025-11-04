@@ -1025,7 +1025,7 @@
         // -----------------------------
 
         inputs.globalDefaults = {
-            requiredFields: ['Start', 'End', 'Status', 'Patient', 'Visit Type'],
+            requiredFields: ['Start', 'End', 'Status', 'Visit Type'],
             hiddenFields: ['Title'],
             validationRules: {
                 Start: {
@@ -1034,7 +1034,7 @@
                     errorTests: [
                         {
                             // Prevent saving if start is in the past
-                            test: (e) => e.fieldChanged('start') && e.start.isBefore(moment()),
+                            test: (e) => e.fieldChanged('start') && e.fieldChanged() && e.start.isBefore(moment()),
                             message: '<B>Start</B> time cannot be in the past.',
                             emoji: '⏰'
                         }
@@ -1047,7 +1047,7 @@
                     errorTests: [
                         {
                             // Prevent saving if start is in the past
-                            test: (e) => e.fieldChanged('start') && e.start.isBefore(moment()),
+                            test: (e) => e.fieldChanged('start') && e.fieldChanged() && e.start.isBefore(moment()),
                             message: '<B>Start</B> time cannot be in the past.',
                             emoji: '⏰'
                         }
@@ -1139,11 +1139,11 @@
                 'Procedure': {
                     validateOn: ['eventClick', 'fieldChange', 'eventSave'],
                     markRequired: true,
-                    hideField: (e) => !['Treatment', 'Post-Op'].includes(e.getField('Visit Type')?.[0]),
+                    hideField: (e) => !['Treatment', 'Post-Op', 'Package Session', 'Follow-Up'].includes(e.getField('Visit Type')?.[0]),
                     errorTests: [
                         {
                             // Require Procedure for Treatment & Post-Op
-                            test: (e) => ['Treatment', 'Post-Op'].includes(e.getField('Visit Type')?.[0]) && !e.getField('Procedure')?.[0] && e.trigger === 'eventSave',
+                            test: (e) => ['Treatment', 'Post-Op', 'Package Session', 'Follow-Up'].includes(e.getField('Visit Type')?.[0]) && !e.getField('Procedure')?.[0] && e.trigger === 'eventSave',
                             message: 'A <B>Procedure Name</B> is required for Treatment or Post-Op visits.',
                             emoji: '⚠️'
                         },
@@ -1163,6 +1163,8 @@
 
                                     return false;
                                 }
+
+                                if (!e.fieldChanged()) return false;
 
                                 const sf = SalesforceClient({ errorMode: "return" });
 
@@ -1311,6 +1313,7 @@
                             // If notes exist but box not checked, prompt to review
                             test: (e) => {
                                 if (!e.fieldChanged('Contraindications Notes')) return false;
+                                if (!['Treatment', 'Post-Op'].includes(e.getField('Visit Type')?.[0])) return false;
 
                                 const notes = e.getField('Contraindications Notes')?.trim();
                                 const checked = !!e.getField('Contraindications Checked');
@@ -2507,9 +2510,9 @@
 
             function getCustomFieldValue(name) {
                 if (fieldResolutionMap.hasOwnProperty(name)) {
-                    return event[fieldResolutionMap[name]];
-                } else if (event.hasOwnProperty(name.toLowerCase())) {
-                    return event[name.toLowerCase()];
+                    return editEvent[fieldResolutionMap[name]];
+                } else if (editEvent.hasOwnProperty(name.toLowerCase())) {
+                    return editEvent[name.toLowerCase()];
                 }
                 return undefined;
             }
@@ -2716,10 +2719,12 @@
                     validateOn: ['eventSave'],
                     errorTests: [{
                         test: (e) => {
+                            if (e.trigger !== 'eventSave') return false;
                             const value = e.getField(field);
                             // Check if the field is empty
                             if (value instanceof moment) return false;
-                            if (Array.isArray(value) && (value.length === 0 || value[0] === 'none' || value[0] === 'Unassigned')) return true;
+                            console.log("Checking required field", field, "value:", value);
+                            if (Array.isArray(value) && (value.length === 0 || value[0] === 'none' || value[0] === "Unassigned")) return true;
                             if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) return true;
                             return false;
                         },
