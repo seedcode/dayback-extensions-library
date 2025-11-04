@@ -40,14 +40,14 @@
         },
 
         apex2: {
-            enabled: true,
+            enabled: false,
             method: "POST",                                  // "GET" | "POST" | "PATCH" | "DELETE" | "PUT"
             path: "/HelloWorld",
             body: { name: "SalesforceClient" }
         },
 
         // Cleanup
-        keepCreatedRecords: false, // true = leave the test-created record behind
+        keepCreatedRecords: true, // true = leave the test-created record behind
     };
 
     // ---- HELPERS ----
@@ -114,58 +114,68 @@
     try {
         // A) RETRIEVE by Id
         log(`🔎 Retrieve baseline ${SOBJ} by Id (${event.eventID})`);
-        const [rA, baseline] = await sf.retrieve(SOBJ, event.eventID, [
-            "Id", F.title, F.description, F.location, F.start, F.end, F.status
-        ]);
+        const rA = await sf.retrieve({
+            sobject: SOBJ, id: event.eventID, fields: [
+                "Id", F.title, F.description, F.location, F.start, F.end, F.status
+            ]
+        });
+        const baseline = rA.data;
         log(`Retrieve OK: ${rA.status} – title: ${baseline?.[F.title] || "(none)"}`);
 
         // B) QUERY by Id
         log(`🔎 Query by Id`);
-        const [rB, qRows] = await sf.query(
-            `SELECT Id, ${F.title}, ${F.start}, ${F.end}, ${F.status}
+        const rB = await sf.query({
+            soql: `SELECT Id, ${F.title}, ${F.start}, ${F.end}, ${F.status}
        FROM ${SOBJ}
        WHERE Id = ${sf.quote(event.eventID)}
-       LIMIT 1`
-        );
+       LIMIT 1` });
+        const qRows = rB.data;
         log(`Query OK: rows = ${qRows.length}`);
 
         // C) UPDATE the baseline record’s lightweight fields
         log(`✏️  Update baseline (title/status)`);
         const newTitle = `[TEST ${nowStamp()}] ${baseline?.[F.title] || "(no title)"}`;
         const newStatus = TEST_CONFIG.statusValues.find(s => s !== (baseline?.[F.status] || "")) || TEST_CONFIG.statusValues[0];
-        const [rC] = await sf.update(SOBJ, event.eventID, {
-            [F.title]: newTitle,
-            [F.status]: newStatus
+        const rC = await sf.update({
+            sobject: SOBJ, id: event.eventID, record: {
+                [F.title]: newTitle,
+                [F.status]: newStatus
+            }
         });
         log(`Update OK: ${rC.status}`);
 
         // D) CREATE a new record on the same day
         log(`➕ Create new ${SOBJ} on the same day`);
-        const [rD, created] = await sf.create(SOBJ, {
-            [F.title]: `[TEST CREATE] ${nowStamp()}`,
-            [F.description]: "Smoke test created via SalesforceClient",
-            [F.location]: "Test Location",
-            [F.start]: isoZ(newStart),
-            [F.end]: isoZ(newEnd),
-            [F.status]: "Tentative"
+        const rD = await sf.create({
+            sobject: SOBJ, record: {
+                [F.title]: `[TEST CREATE] ${nowStamp()}`,
+                [F.description]: "Smoke test created via SalesforceClient",
+                [F.location]: "Test Location",
+                [F.start]: isoZ(newStart),
+                [F.end]: isoZ(newEnd),
+                [F.status]: "Tentative"
+            }
         });
+        const created = rD.data;
         createdId = created?.id;
         log(`Create OK: ${rD.status} – id: ${createdId}`, created);
 
         // E) RETRIEVE created record
         log(`📥 Retrieve created record`);
-        const [rE, createdRec] = await sf.retrieve(SOBJ, createdId, ["Id", F.title, F.status, F.start, F.end]);
+        const rE = await sf.retrieve({ sobject: SOBJ, id: createdId, fields: ["Id", F.title, F.status, F.start, F.end] });
+        const createdRec = rE.data;
         log(`Retrieve created OK: ${rE.status} – title: ${createdRec?.[F.title]}`);
 
         // F) QUERY all records on that day (by start field)
         log(`📅 Query all ${SOBJ} on the same day`);
         const whereDay = soqlDateBetween(F.start, dayStart, dayEnd);
-        const [rF, dayRows] = await sf.query(
-            `SELECT Id, ${F.title}, ${F.start}, ${F.end}, ${F.status}
+        const rF = await sf.query({
+            soql: `SELECT Id, ${F.title}, ${F.start}, ${F.end}, ${F.status}
        FROM ${SOBJ}
        WHERE ${whereDay}
        ORDER BY ${F.start}`
-        );
+        });
+        const dayRows = rF.data;
         log(`Day query OK: ${dayRows.length} row(s)`);
 
         // G) UPSERT (Event-safe: include required fields + title/description/start/end)
@@ -178,7 +188,7 @@
             // Tie the created record to an External ID so we can hit the UPDATE path
             const extValueUpdate = `${TEST_CONFIG.upsert.externalIdValuePrefix}${createdId}`;
             log(`🔁 Prepare for upsert: set ${extField} on created record ${createdId}`);
-            await sf.update(SOBJ, createdId, { [extField]: extValueUpdate });
+            await sf.update({ sobject: SOBJ, id: createdId, record: { [extField]: extValueUpdate } });
 
             // Duration needed for Event inserts/updates
             const durMins = Math.max(1, newEnd.diff(newStart, "minutes"));
@@ -193,7 +203,7 @@
                     ? { StartDateTime: isoZ(newStart), EndDateTime: isoZ(newEnd), DurationInMinutes: durMins }
                     : { [startField]: isoZ(newStart), [endField]: isoZ(newEnd) })
             };
-            const [rG1] = await sf.upsert(SOBJ, extField, extValueUpdate, updateBody);
+            const rG1 = await sf.upsert({ sobject: SOBJ, externalIdField: extField, externalIdValue: extValueUpdate, record: updateBody });
             log(`Upsert UPDATE status: ${rG1.status}`);
 
             // --- INSERT path (should return 201) ---
@@ -212,13 +222,13 @@
                     : { [startField]: isoZ(insertStart), [endField]: isoZ(insertEnd) }),
                 ...(SOBJ !== "Event" && F.status ? { [F.status]: "Tentative" } : {})
             };
-            const [rG2, insertedPayload] = await sf.upsert(SOBJ, extField, extValueInsert, insertBody);
+            const rG2 = await sf.upsert({ sobject: SOBJ, externalIdField: extField, externalIdValue: extValueInsert, record: insertBody });
             log(`Upsert INSERT status: ${rG2.status}`);
-            const upsertInsertedId = insertedPayload?.id;
+            const upsertInsertedId = rG2.data?.id;
 
             // Optional cleanup of the upsert-inserted record
             if (!TEST_CONFIG.keepCreatedRecords && upsertInsertedId) {
-                const [rDelIns] = await sf.delete(SOBJ, upsertInsertedId);
+                const rDelIns = await sf.delete({ sobject: SOBJ, id: upsertInsertedId });
                 log(`Deleted upsert-inserted record ${upsertInsertedId}: ${rDelIns.status}`);
             }
         } else {
@@ -235,7 +245,8 @@
                 body: { [F.status]: "Confirmed", [F.title]: `[TEST BATCH] ${nowStamp()}` }
             }
         ];
-        const [rH, composite] = await sf.batch(batchReqs, { allOrNone: false });
+        const rH = await sf.batch({ requests: batchReqs, allOrNone: false });
+        const composite = rH.data;
         const per = composite?.compositeResponse || composite; // depends on SF version
         const texts = (per || []).map(p => `${p.referenceId}:${p.httpStatusCode}`).join(", ");
         log(`Composite OK: ${texts}`);
@@ -244,7 +255,8 @@
         // I) OPTIONAL APEX
         if (TEST_CONFIG.apex1.enabled) {
             log(`⚡ Apex ${TEST_CONFIG.apex1.method} ${TEST_CONFIG.apex1.path}`);
-            const [rI, response] = await sf.apex(TEST_CONFIG.apex1.method, TEST_CONFIG.apex1.path, { body: TEST_CONFIG.apex1.body });
+            const rI = await sf.apex({ method: TEST_CONFIG.apex1.method, path: TEST_CONFIG.apex1.path, body: TEST_CONFIG.apex1.body });
+            const response = rI.data;
             log(`Apex OK: ${rI.status}`, rI, response);
             console.log("Apex response:", rI, response);
         } else {
@@ -254,9 +266,10 @@
         // J) OPTIONAL APEX
         if (TEST_CONFIG.apex2.enabled) {
             log(`⚡ Apex ${TEST_CONFIG.apex2.method} ${TEST_CONFIG.apex2.path}`);
-            const [rI, response] = await sf.apex(TEST_CONFIG.apex2.method, TEST_CONFIG.apex2.path, { body: TEST_CONFIG.apex2.body });
-            log(`Apex OK: ${rI.status}`, rI, response);
-            console.log("Apex response:", rI, response);
+            const rI2 = await sf.apex({ method: TEST_CONFIG.apex2.method, path: TEST_CONFIG.apex2.path, body: TEST_CONFIG.apex2.body });
+            const response2 = rI2.data;
+            log(`Apex OK: ${rI2.status}`, rI2, response2);
+            console.log("Apex response:", rI2, response2);
         } else {
             log(`(Apex skipped – enable TEST_CONFIG.apex2.enabled and set path/body)`);
         }
@@ -264,7 +277,7 @@
         // K) CLEANUP (optional)
         if (createdId && !TEST_CONFIG.keepCreatedRecords) {
             log(`🗑️  Delete created record`);
-            const [rJ] = await sf.delete(SOBJ, createdId);
+            const rJ = await sf.delete({ sobject: SOBJ, id: createdId });
             log(`Delete OK: ${rJ.status}`);
         } else if (createdId) {
             log(`(Keeping created record ${createdId})`);
@@ -300,7 +313,8 @@
             }
         ];
 
-        const [rK, treePayloads] = await sf.createTree(SOBJ, treeRecords);
+        const rK = await sf.createTree({ sobject: SOBJ, records: treeRecords });
+        const treePayloads = rK.data;
         // treePayloads is an array of per-chunk payloads; each payload has {hasErrors, results:[{referenceId,id,errors:[]}, ...]}
         const treePayloadArray = Array.isArray(treePayloads) ? treePayloads : [treePayloads];
 
@@ -318,7 +332,7 @@
         if (!TEST_CONFIG.keepCreatedRecords && treeCreatedIds.length) {
             log(`🧹 Delete ${treeCreatedIds.length} tree record(s)`);
             for (const id of treeCreatedIds) {
-                const [rDel] = await sf.delete(SOBJ, id);
+                const rDel = await sf.delete({ sobject: SOBJ, id });
                 log(`  - ${id}: ${rDel.status}`);
             }
         } else if (treeCreatedIds.length) {

@@ -1,88 +1,74 @@
-// Salesforce Client for Canvas and Salesforce Connect - v1.0
+// Salesforce Client for Canvas and Salesforce Connect - v2.0 (Object Response API)
 //
 // Purpose:
-// Unified client for Salesforce REST API calls, supporting both
-// Canvas apps (Sfdc.canvas.client.ajax) and external apps
-// using Salesforce Connect (sfApi.ajaxRequest).
+// Unified client for Salesforce API calls in both Canvas (Sfdc.canvas.client.ajax)
+// and Salesforce Connect REST (sfApi.ajaxRequest). Auto-detects environment and
+// self-authenticates in REST mode if token / restURL are missing.
 //
-// Action Type: On Startup
-// Prevent Default Action: No
+// Full docs & migration guide:
+//   https://github.com/seedcode/dayback-extensions-library/tree/main/salesforce-client
 //
-// Full documentation and examples:
-// --------------------------------
+// New Usage (single options object + single response object):
+// -----------------------------------------------------------
+//   const sf = SalesforceClient();
 //
-//      https://github.com/seedcode/dayback-extensions-library/tree/main/salesforce-client
+//   // Calling by object
 //
-// General Usage:
+//   const r = await sf.query({ soql: `SELECT Id, Name FROM Contact WHERE Email = ${sf.quote(email)}` });
+//   if (!r.ok) return sf.showError(r.error);
+//
+//   // Calling by string (SOQL only)
+//
+//   const r = await sf.query(`SELECT Id, Name FROM Contact WHERE Email = ${sf.quote(email)`);
+//
+//   // All other calls use object notation:
+//
+//   const r = await sf.create({ sobject: "Contact", record: { FirstName: "Ada", LastName: "Lovelace" } });
+//   await sf.update({ sobject: "Contact", id: r.data.id, record: { Title: "CTO" } });
+//   const r = await sf.retrieve({ sobject: "Contact", id: r.data.id, fields: ["Id","Name","Title"] });
+//   const r = await sf.apex({ method: "POST", path: "/PauseSession", body: { /* ... */ } });
+//   const r = await sf.batch({ requests: [ { method: "GET", url: "/sobjects/Contact/" + r.data.id, referenceId: "getC" } ] });
+//   await sf.delete({ sobject: "Contact", id: r.data.id });
+//
+// Legacy Tuple Mode (backward compatible):
+// ----------------------------------------
+//   const sf = SalesforceClient({ legacyTuples: true });
+//   const [resp, rows] = await sf.query({ soql: "SELECT Id FROM Contact LIMIT 10" });
+//   // resp is the same response object; rows === resp.data
+//
+// Helper functions:
+//   sf.escapeSOQL(value) / sf.quote(value) - escape string literal for SOQL
+//   sf.showError(error)  - present errors via toast or modal in Canvas
+//
+// Response Object Shape:
+//   { ok, status, data, raw, error?, method, url, source, meta? }
+//   - ok: boolean (HTTP success)
+//   - data: mapped payload (records, create result, etc.)
+//   - raw: original Salesforce response body
+//   - error: { message, code? } if not ok (or thrown Error when errorMode="throw")
+//   - meta: query paging info (totalSize, done, pageCount, nextRecordsUrl, soql)
+//
+// Error Handling:
 // ---------------
+// Default (throws):
+//   try {
+//     const q = await sf.query({ soql: `SELECT Id, Name FROM Contact WHERE Email = ${sf.quote(email)}` });
+//     await sf.update({ sobject: "Contact", id: q.data[0].Id, record: { Custom_Field__c: "value" } });
+//   } catch (e) {
+//     sf.showError(e);
+//   }
 //
-//      const sf = SalesforceClient(); // autodetects Canvas vs REST mode
+// Return mode (no throws):
+//   const sfR = SalesforceClient({ errorMode: "return" });
+//   const q2 = await sfR.query({ soql: "SELECT Id FROM Contact LIMIT 20" });
+//   if (!q2.ok) {
+//     console.error(`Salesforce error ${q2.error?.code || ''} ${q2.error?.message}`);
+//     sfR.showError(q2.error || q2);
+//   } else {
+//     console.log("rows", q2.data);
+//   }
 //
-//      const [resp, rows] = await sf.query(`SELECT Id, Name FROM Contact WHERE Email = ${escapeSOQL(email)}`);
-//      const [r2, ins]   = await sf.create("Contact", { FirstName: "Ada", LastName: "Lovelace" });
-//      const [r3]        = await sf.update("Contact", ins.id, { Title: "CTO" });
-//      const [r4, got]   = await sf.retrieve("Contact", ins.id, ["Id","Name","Title"]);
-//      const [r5, res]   = await sf.apex("POST", "/PauseSession", { body: { /* ... */ } });
-//      const [r6, out]   = await sf.batch([ { method:"GET", url:"/sobjects/Contact/" + ins.id, referenceId:"c1" } ]);
-//      const [r7, trees] = await sf.createTree("Contact", [ { attributes:{type:"Contact", referenceId:"ref1"}, FirstName:"A", LastName:"One" } ]);
-//      const [r8]        = await sf.delete("Contact", ins.id);
-//
-// This client will auto-detect the mode. It is also self-authenticating
-// in REST mode if sfApi.settings.restURL and sfApi.settings.token are missing.
-//
-// Useful helper functions:
-//
-//      escapeSOQL(value) || sf.quote(value)
-//          Used to escape string literals for SOQL queries.
-//              Example: O'Neil -> 'O\'Neil'
-//          Use whichever name you find more intuitive.
-//
-//      sf.showError(err)
-//          Present errors via utilities.showModal / showMessage.
-//          Alternatively, catch and inspect the error object yourself.
-//          Error messages are also thrown to the console for easy debugging.
-//
-// Optional Try/Catch Error handling:
-// ----------------------------------
-//
-// Errors are thrown as rich Error objects with properties:
-//
-//      ok:     (e.g. true || false)
-//      status: (e.g., 400, 401, 403, 404, 500…)
-//      error: { 
-//          message: (e.g. message || "Salesforce Error")
-//          code: (e.g. code || "UNKNOWN_ERROR")
-//      }
-//      payload: (e.g. raw SF payload, array or object)
-//      method: (e.g. GET, PATCH, etc.)
-//      url:    (e.g. full URL we hit)
-//      source: (e.g. "canvas" | "rest" | "composite"),
-//
-// Example error handling:
-// -----------------------
-//
-//      try {
-//         const [response, contacts] = await sf.query(`
-//                 SELECT Id, Name FROM Contact WHERE Email = ${escapeSOQL(email)}
-//         `);
-//         await sf.update('Contact', contacts[0].Id, { Custom_Field__c: "value" });
-//      } catch (err) {
-//        sf.showError(err);
-//      }
-//
-// If you wish to check errors yourself, you can create a SalesforceClient instance 
-// with { errorMode: "return" } parameter. In this mode, errors are returned
-// as part of the result tuple [response, data] where response.ok === false.
-//
-//      const sf = SalesforceClient({ errorMode: "return" });
-//      const [resp, rows] = await sf.query("SELECT Id FROM Contact LIMIT 20");
-//      if (!resp.ok) {
-//          console.error(`Salesforce error ${resp.error.code}, ${resp.error.message}`);
-//          sf.showError(resp); // optional
-//      } else {
-//          console.log("rows", rows);
-//      }
-//
+// Note: You only need positional examples if using legacyTuples. Prefer object form for new code.
 // -------------------------------------------------------------------
 // You do not need to modify anything below this line to use the client
 // -------------------------------------------------------------------
@@ -502,74 +488,121 @@
             }
 
             // =========================
-            // Core ops
+            // Core ops (Response Object API)
             // =========================
-            async function query(soql, { pageAll = true } = {}) {
+
+            const tupleMode = !!config.legacyTuples; // backward compatibility if enabled
+
+            // Helper to standardize response object shape
+            function buildResponse(res, { data, meta } = {}) {
+                const out = {
+                    ok: !!res.ok,
+                    status: res.status,
+                    data: data,
+                    raw: res.payload,
+                    error: res.error,
+                    method: res.method,
+                    url: res.url,
+                    source: res.source,
+                    meta: meta || undefined,
+                };
+                return tupleMode ? [out, out.data] : out;
+            }
+
+            async function query(input, pageAll = true) {
+                // Support both object form and string SOQL
+                let soql, opts;
+                if (typeof input === "string") {
+                    soql = input;
+                    opts = { pageAll };
+                } else if (typeof input === "object" && input !== null) {
+                    soql = input.soql;
+                    opts = input;
+                } else {
+                    throw new Error("query requires a SOQL string or an options object");
+                }
+                if (!soql) throw new Error("query({ soql }) requires a SOQL string");
+
                 const res = useCanvas
                     ? await ajax("GET", `${endpoints.queryUrl}?q=${encodeURIComponent(soql)}`)
                     : await ajax("GET", `${endpoints.queryUrl}/`, { params: { q: soql } });
 
-                if (!res.ok) return [res, []];
+                if (!res.ok) return buildResponse(res, { data: [] });
                 let all = (res.payload?.records) || [];
-                // ... follow nextRecordsUrl if pageAll ...
-                return [res, all];
+                let nextUrl = res.payload?.nextRecordsUrl;
+                if ((opts.pageAll ?? true) && nextUrl) {
+                    // paginate until done (REST only; Canvas nextRecordsUrl may differ)
+                    while (nextUrl) {
+                        const url = useCanvas ? `${endpoints.base}${nextUrl}` : `${endpoints.base}${nextUrl}`;
+                        const more = await ajax("GET", url);
+                        if (!more.ok) {
+                            // stop paging but keep original data
+                            break;
+                        }
+                        all = all.concat(more.payload?.records || []);
+                        nextUrl = more.payload?.nextRecordsUrl;
+                        if (!more.payload?.done && !nextUrl) break;
+                    }
+                }
+                return buildResponse(res, {
+                    data: all,
+                    meta: {
+                        totalSize: res.payload?.totalSize,
+                        done: res.payload?.done,
+                        pageCount: all.length,
+                        nextRecordsUrl: res.payload?.nextRecordsUrl,
+                        soql,
+                    }
+                });
             }
 
-            async function retrieve(sobject, id, fields) {
+            async function retrieve({ sobject, id, fields } = {}) {
+                if (!sobject || !id) throw new Error("retrieve({ sobject, id, fields? }) requires sobject & id");
                 const path = `${endpoints.dataBase}/sobjects/${sobject}/${id}`;
                 const res = await ajax("GET", path, { params: fields && fields.length ? { fields: fields.join(",") } : undefined });
-                return [res, res.payload];
+                return buildResponse(res, { data: res.payload });
             }
 
-            async function create(sobject, body) {
+            async function create({ sobject, record } = {}) {
+                if (!sobject || !record) throw new Error("create({ sobject, record }) requires sobject & record");
                 const path = `${endpoints.dataBase}/sobjects/${sobject}/`;
-                const res = await ajax("POST", path, { body });
-                return [res, res.payload];
+                const res = await ajax("POST", path, { body: record });
+                return buildResponse(res, { data: res.payload });
             }
 
-            async function update(sobject, id, body) {
+            async function update({ sobject, id, record } = {}) {
+                if (!sobject || !id || !record) throw new Error("update({ sobject, id, record }) requires sobject, id & record");
                 const path = `${endpoints.dataBase}/sobjects/${sobject}/${id}`;
-                const res = await ajax("PATCH", path, { body });
-                return [res, res.payload];
+                const res = await ajax("PATCH", path, { body: record });
+                return buildResponse(res, { data: res.payload });
             }
 
-            async function upsert(sobject, externalIdField, externalIdValue, body) {
+            async function upsert({ sobject, externalIdField, externalIdValue, record } = {}) {
+                if (!sobject || !externalIdField || externalIdValue == null || !record) throw new Error("upsert({ sobject, externalIdField, externalIdValue, record }) requires all parameters");
                 const path = `${endpoints.dataBase}/sobjects/${sobject}/${externalIdField}/${encodeURIComponent(externalIdValue)}`;
-                const res = await ajax("PATCH", path, { body });
-                return [res, res.payload];
+                const res = await ajax("PATCH", path, { body: record });
+                return buildResponse(res, { data: res.payload });
             }
 
-            async function del(sobject, id) {
+            async function del({ sobject, id } = {}) {
+                if (!sobject || !id) throw new Error("delete({ sobject, id }) requires sobject & id");
                 const path = `${endpoints.dataBase}/sobjects/${sobject}/${id}`;
                 const res = await ajax("DELETE", path);
-                return [res, res.payload];
+                return buildResponse(res, { data: res.payload });
             }
 
-            // Composite batch (up to 25 subrequests)
-            // request: { method:"GET"|"POST"|"PATCH"|"DELETE", url:"/sobjects/Contact/...", referenceId:"ref1", body?:{} }
-            async function batch(requests, { allOrNone = false, collateSubrequests = false } = {}) {
+            async function batch({ requests, allOrNone = false, collateSubrequests = false } = {}) {
+                if (!Array.isArray(requests)) throw new Error("batch({ requests }) requires an array of requests");
                 const path = `${endpoints.dataBase}/composite`;
-                // Ensure urls are relative to /services/data/<v> (composite requirement)
                 const norm = (u) => {
-                    const ver = endpoints.version; // e.g., "v61.0"
+                    const ver = endpoints.version;
                     if (!u) return `/services/data/${ver}/`;
-
-                    // Already correct (/services/data/vXX.X/...)
                     if (/^\/services\/data\/v[\d.]+\//.test(u)) return u;
-
-                    // Starts with /vXX.X/...   -> prefix /services/data
                     if (/^\/v[\d.]+\//.test(u)) return `/services/data${u}`;
-
-                    // Starts with vXX.X/... (no leading slash)
                     if (/^v[\d.]+\//.test(u)) return `/services/data/${u}`;
-
-                    // Starts with "/" (e.g., /sobjects/..., /query/..., etc.)
                     if (u.startsWith('/')) return `/services/data/${ver}${u}`;
-
-                    // Plain relative (e.g., sobjects/Account/...)
                     return `/services/data/${ver}/${u}`;
                 };
-
                 const body = {
                     allOrNone,
                     collateSubrequests,
@@ -581,16 +614,14 @@
                     })),
                 };
                 const res = await ajax("POST", path, { body });
-                return [res, res.payload];
+                return buildResponse(res, { data: res.payload });
             }
 
-            // Composite Tree insert (200 records per request)
-            async function createTree(sobject, records, { chunkSize = 200 } = {}) {
+            async function createTree({ sobject, records, chunkSize = 200 } = {}) {
+                if (!sobject || !Array.isArray(records)) throw new Error("createTree({ sobject, records }) requires sobject & records array");
                 const path = `${endpoints.dataBase}/composite/tree/${sobject}`;
                 const chunks = [];
-                for (let i = 0; i < records.length; i += chunkSize) {
-                    chunks.push(records.slice(i, i + chunkSize));
-                }
+                for (let i = 0; i < records.length; i += chunkSize) chunks.push(records.slice(i, i + chunkSize));
                 const out = [];
                 let last = null;
                 for (const ch of chunks) {
@@ -598,24 +629,22 @@
                     last = res;
                     out.push(res.payload);
                 }
-                return [last, out];
+                return buildResponse(last || { ok: true, status: 200, payload: {} }, { data: out });
             }
 
-            // Apex REST helper
-            // path: "/MyEndpoint" or "MyEndpoint" → will be appended to /services/apexrest
-            async function apex(method, path, { params, body } = {}) {
+            async function apex({ method = "GET", path, params, body } = {}) {
+                if (!path) throw new Error("apex({ path }) requires path");
                 const clean = path.startsWith("/") ? path : `/${path}`;
                 const url = `${endpoints.apexBase}${clean}`;
                 const res = await ajax(method, url, { params, body });
-                return [res, res.payload];
+                return buildResponse(res, { data: res.payload });
             }
 
-            // Public surface
+            // Public surface (new object-based API)
             return {
-                // endpoints + escape helper
                 endpoints,
                 escapeSOQL,
-                quote: escapeSOQL, // alternate name
+                quote: escapeSOQL,
                 // CRUD / Query
                 query,
                 retrieve,
@@ -627,7 +656,9 @@
                 batch,
                 createTree,
                 apex,
-                showError
+                showError,
+                // Internal flags
+                tupleMode
             };
         }
 
