@@ -61,91 +61,92 @@ try {
 
 The SalesforceClient library provides the methods
 
+**Create Salesforce Client Instance**
 ```js
 const sf = SalesforceClient(); // new API (object responses)
-
-// Query by SOQL string
-
-  const response = await sf.query(`SELECT Id, Name FROM Contact WHERE Email = ${sf.quote(email)}`);
-  if (!response.ok) return sf.showError(response.error); // response.data = array of records
-  console.log(response.data.length, response.meta.totalSize);
-
-// Query by SOQL, using Object Notation
-
-  const response = await sf.query({ 
-    soql: `SELECT Id, Name FROM Contact WHERE Email = ${sf.quote(email)}` 
-  });
-  if (!response.ok) return sf.showError(response.error); // q.data = array of records
-  console.log(response.data.length, response.meta.totalSize);
-
-// Create new record for SObject
-
-  const response = await sf.create({ 
-    sobject: "Contact", 
-    record: { FirstName: "Ada", LastName: "Lovelace" } 
-  });
-  const newId = response.data?.id;
-
-// Update record in existing SObject
-
-  await sf.update({ 
-    sobject: "Contact", 
-    id: newId, 
-    record: { Title: "CTO" } 
-  });
-
-// Retrieve selected fields from an SObject
-
-  const response = await sf.retrieve({ 
-    sobject: "Contact", 
-    id: newId, 
-    fields: ["Id","Name","Title"] 
-  });
-
-// Apex REST API Call
-
-  const response = await sf.apex({ 
-    method: "POST", 
-    path: "/PauseSession", 
-    body: { /* ... */ } 
-  });
-
-// Composite batch
-
-  const response = await sf.batch({ 
-    requests: [ 
-      { 
-        method: "GET", 
-        url: "/sobjects/Contact/" + newId, 
-        referenceId: "getContact1" 
-      }
-    ] 
-  });
-
-// Tree insert
-
-  const response = await sf.createTree({ 
-    sobject: "Contact", 
-    records: [
-      { 
-        attributes: { type:"Contact", referenceId:"ref1" }, 
-        FirstName:"A", 
-        LastName:"One" 
-      },
-      { 
-        attributes: { type:"Contact", referenceId:"ref2" }, 
-        FirstName:"B", 
-        LastName:"Two" 
-      }
-    ] 
-  });
-
-// Delete
-
-  await sf.delete({ 
-    sobject: "Contact", 
-    id: newId 
-  });
+```
+**Query by SOQL string**
+```js
+const response = await sf.query(`SELECT Id, Name FROM Contact WHERE Email = ${sf.quote(email)}`);
+if (!response.ok) return sf.showError(response.error); // response.data = array of records
+console.log(response.data.length, response.meta.totalSize);
+```
+**Query by SOQL, using Object Notation**
+```js
+const response = await sf.query({ 
+  soql: `SELECT Id, Name FROM Contact WHERE Email = ${sf.quote(email)}` 
+});
+if (!response.ok) return sf.showError(response.error); // q.data = array of records
+console.log(response.data.length, response.meta.totalSize);
+```
+**Create new record for SObject**
+```js
+const response = await sf.create({ 
+  sobject: "Contact", 
+  record: { FirstName: "Ada", LastName: "Lovelace" } 
+});
+const newId = response.data?.id;
+```
+**Update record in existing SObject**
+```js
+await sf.update({ 
+  sobject: "Contact", 
+  id: newId, 
+  record: { Title: "CTO" } 
+});
+```
+**Retrieve selected fields from an SObject**
+```js
+const response = await sf.retrieve({ 
+  sobject: "Contact", 
+  id: newId, 
+  fields: ["Id","Name","Title"] 
+});
+```
+**Apex REST API Call**
+```js
+const response = await sf.apex({ 
+  method: "POST", 
+  path: "/PauseSession", 
+  body: { /* ... */ } 
+});
+```
+**Composite batch**
+```js
+const response = await sf.batch({ 
+  requests: [ 
+    { 
+      method: "GET", 
+      url: "/sobjects/Contact/" + newId, 
+      referenceId: "getContact1" 
+    }
+  ] 
+});
+```
+**Tree insert**
+```js
+const response = await sf.createTree({ 
+  sobject: "Contact", 
+  records: [
+    { 
+      attributes: { type:"Contact", referenceId:"ref1" }, 
+      FirstName:"A", 
+      LastName:"One" 
+    },
+    { 
+      attributes: { type:"Contact", referenceId:"ref2" }, 
+      FirstName:"B", 
+      LastName:"Two" 
+    }
+  ] 
+});
+```
+**Delete**
+```js
+await sf.delete({ 
+  sobject: "Contact", 
+  id: newId 
+});
 ```
 
 ---
@@ -194,20 +195,6 @@ interface SfResponse<T=any> {
 ```
 
 Utilities: `sf.escapeSOQL()` / `sf.quote()`; presenter `sf.showError()`. Supports SOQL, CRUD, composite, tree, Apex REST.
-
----
-## Basic Usage
-
-```js
-const sf = SalesforceClient(); // auto-detect environment
-
-const q = await sf.query({ soql: `SELECT Id, Name FROM Contact WHERE Email = ${sf.quote("ada@example.com")}` });
-if (!q.ok) return sf.showError(q.error);
-
-await sf.update({ sobject: "Contact", id: q.data[0].Id, record: { Title: "Macrodata Refiner" } });
-```
-
-> Use `sf.showError(e)` in Canvas/DayBack to surface errors elegantly.
 
 ---
 ## Modes
