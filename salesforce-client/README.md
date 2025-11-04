@@ -64,40 +64,88 @@ The SalesforceClient library provides the methods
 ```js
 const sf = SalesforceClient(); // new API (object responses)
 
-// Calling by string (SOQL only)
-const response = await sf.query(`SELECT Id, Name FROM Contact WHERE Email = ${sf.quote(email)}`);
-if (!response.ok) return sf.showError(response.error); // response.data = array of records
-console.log(response.data.length, response.meta.totalSize);
+// Query by SOQL string
 
-// Query by Object Notation
-const response = await sf.query({ soql: `SELECT Id, Name FROM Contact WHERE Email = ${sf.quote(email)}` });
-if (!response.ok) return sf.showError(response.error); // q.data = array of records
-console.log(response.data.length, response.meta.totalSize);
+  const response = await sf.query(`SELECT Id, Name FROM Contact WHERE Email = ${sf.quote(email)}`);
+  if (!response.ok) return sf.showError(response.error); // response.data = array of records
+  console.log(response.data.length, response.meta.totalSize);
 
-// Create
-const response = await sf.create({ sobject: "Contact", record: { FirstName: "Ada", LastName: "Lovelace" } });
-const newId = response.data?.id;
+// Query by SOQL, using Object Notation
 
-// Update
-await sf.update({ sobject: "Contact", id: newId, record: { Title: "CTO" } });
+  const response = await sf.query({ 
+    soql: `SELECT Id, Name FROM Contact WHERE Email = ${sf.quote(email)}` 
+  });
+  if (!response.ok) return sf.showError(response.error); // q.data = array of records
+  console.log(response.data.length, response.meta.totalSize);
 
-// Retrieve selected fields
-const response = await sf.retrieve({ sobject: "Contact", id: newId, fields: ["Id","Name","Title"] });
+// Create new record for SObject
 
-// Apex REST
-const response = await sf.apex({ method: "POST", path: "/PauseSession", body: { /* ... */ } });
+  const response = await sf.create({ 
+    sobject: "Contact", 
+    record: { FirstName: "Ada", LastName: "Lovelace" } 
+  });
+  const newId = response.data?.id;
+
+// Update record in existing SObject
+
+  await sf.update({ 
+    sobject: "Contact", 
+    id: newId, 
+    record: { Title: "CTO" } 
+  });
+
+// Retrieve selected fields from an SObject
+
+  const response = await sf.retrieve({ 
+    sobject: "Contact", 
+    id: newId, 
+    fields: ["Id","Name","Title"] 
+  });
+
+// Apex REST API Call
+
+  const response = await sf.apex({ 
+    method: "POST", 
+    path: "/PauseSession", 
+    body: { /* ... */ } 
+  });
 
 // Composite batch
-const response = await sf.batch({ requests: [ { method: "GET", url: "/sobjects/Contact/" + newId, referenceId: "getC" } ] });
+
+  const response = await sf.batch({ 
+    requests: [ 
+      { 
+        method: "GET", 
+        url: "/sobjects/Contact/" + newId, 
+        referenceId: "getContact1" 
+      }
+    ] 
+  });
 
 // Tree insert
-const response = await sf.createTree({ sobject: "Contact", records: [
-  { attributes:{ type:"Contact", referenceId:"ref1" }, FirstName:"A", LastName:"One" },
-  { attributes:{ type:"Contact", referenceId:"ref2" }, FirstName:"B", LastName:"Two" }
-] });
+
+  const response = await sf.createTree({ 
+    sobject: "Contact", 
+    records: [
+      { 
+        attributes: { type:"Contact", referenceId:"ref1" }, 
+        FirstName:"A", 
+        LastName:"One" 
+      },
+      { 
+        attributes: { type:"Contact", referenceId:"ref2" }, 
+        FirstName:"B", 
+        LastName:"Two" 
+      }
+    ] 
+  });
 
 // Delete
-await sf.delete({ sobject: "Contact", id: newId });
+
+  await sf.delete({ 
+    sobject: "Contact", 
+    id: newId 
+  });
 ```
 
 ---
