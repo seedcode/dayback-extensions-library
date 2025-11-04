@@ -361,7 +361,7 @@ try {
                 return (
                     editEvent.schedule.name == "Clinic Schedule" ||
                     (Array.isArray(panelType) &&
-                    panelType.includes("Project")
+                        panelType.includes("Project")
                         ? true
                         : false)
                 );
@@ -800,7 +800,7 @@ try {
             decimalPlaces > 0
                 ? parseFloat(number).toFixed(decimalPlaces)
                 : number;
-        
+
         number = number === undefined || isNaN(number) ? 0 : number;
 
         return (
@@ -889,11 +889,11 @@ function run() {
 
     // Verify we have at least 1 panel defined
     if (!inputs.panels || Object.keys(inputs.panels).length < -1) {
-        return alert("Please define at least one panel");
+        return alert('Please define at least one panel');
     }
 
     // Register function for calls from On Field Change
-    seedcodeCalendar.init("dbkCheckPanelApplicability", popoverButtonHandling);
+    seedcodeCalendar.init('dbkCheckPanelApplicability', popoverButtonHandling);
 
     // Get applicable panel, or return if none apply
     var applicablePanel = getApplicablePanel();
@@ -925,13 +925,13 @@ function run() {
 
     function getApplicablePanel() {
         for (const [name, obj] of Object.entries(inputs.panels)) {
-            if (obj.hasOwnProperty("restriction")) {
+            if (obj.hasOwnProperty('restriction')) {
                 if (
-                    typeof obj.restriction === "function" &&
+                    typeof obj.restriction === 'function' &&
                     obj.restriction()
                 ) {
                     return obj;
-                } else if (typeof obj.restriction == "object") {
+                } else if (typeof obj.restriction == 'object') {
                     const conditionCount = Object.keys(obj.restriction).length;
 
                     let matches = 0;
@@ -945,7 +945,7 @@ function run() {
                         );
 
                         if (
-                            key == "schedule" &&
+                            key == 'schedule' &&
                             editEvent.schedule.name == value
                         ) {
                             matches++;
@@ -953,7 +953,7 @@ function run() {
                             matches++;
                         } else if (
                             editEvent.hasOwnProperty(key) &&
-                            typeof editEvent[key] == "array" &&
+                            typeof editEvent[key] == 'array' &&
                             editEvent[key].includes(value)
                         ) {
                             matches++;
@@ -962,7 +962,7 @@ function run() {
                             custFieldId !== undefined &&
                             editEvent.hasOwnProperty(custFieldId) &&
                             (editEvent[custFieldId] == value ||
-                                (typeof editEvent[custFieldId] == "array" &&
+                                (typeof editEvent[custFieldId] == 'array' &&
                                     editEvent[custFieldId].includes(value)))
                         ) {
                             matches++;
@@ -982,7 +982,9 @@ function run() {
     //----- Utility Drawer Functions ------
 
     function queueGetIconOverride() {
-        var popover = document.querySelector(".edit-container");
+        var popover = document.querySelector(
+            '.dbk_editEvent:has(.btn-success)'
+        );
 
         if (popover) {
             popoverButtonHandling();
@@ -991,7 +993,7 @@ function run() {
 
             if (
                 applicablePanel &&
-                applicablePanel.hasOwnProperty("autoOpen") &&
+                applicablePanel.hasOwnProperty('autoOpen') &&
                 applicablePanel.autoOpen == true
             ) {
                 openPanelClick();
@@ -1009,7 +1011,9 @@ function run() {
     // after the change of any field variable
 
     function popoverButtonHandling() {
-        popover = document.querySelector(".edit-container");
+        var popover = document.querySelector(
+            '.dbk_editEvent:has(.btn-success)'
+        );
 
         if (!popover) {
             return;
@@ -1021,7 +1025,7 @@ function run() {
             '[ng-if="edit.customActions || calendar.config.admin"]'
         );
         gearIconButton = popover.querySelector(
-            "[ng-click=\"togglePanel('action')\""
+            '[ng-click="togglePanel(\'action\')"'
         );
         buttonBarEditable = popover.querySelector('[ng-if="edit.editable"]');
         buttonBarReadOnly = popover.querySelector('[ng-if="!edit.editable"]');
@@ -1030,84 +1034,84 @@ function run() {
 
         if (
             applicablePanel &&
-            !popover.classList.contains("customPopoverPanel")
+            !popover.classList.contains('customPopoverPanel')
         ) {
-            popover.classList.add("customPopoverPanel");
+            popover.classList.add('customPopoverPanel');
 
             // Create New Gear Button and Icon and hide original
 
-            var newGearIconElem = document.createElement("i");
-            var newGearIconBtn = document.createElement("button");
+            var newGearIconElem = document.createElement('i');
+            var newGearIconBtn = document.createElement('button');
 
-            newGearIconElem.classList = "fa fa-cog fa-lg";
+            newGearIconElem.classList = 'fa fa-cog fa-lg';
             newGearIconBtn.classList =
-                "btn btn-link dbk_button_link dbk_icon_cog";
+                'btn btn-link dbk_button_link dbk_icon_cog';
             newGearIconBtn.onclick = overrideGearIconHandling;
-            newGearIconBtn.id = "customPoverPanel_overrideGearIcon";
+            newGearIconBtn.id = 'customPoverPanel_overrideGearIcon';
             newGearIconBtn.appendChild(newGearIconElem);
 
             if (gearIconContainer) {
                 if (gearIconButton) {
-                    gearIconButton.style.display = "none";
+                    gearIconButton.style.display = 'none';
                 }
 
                 gearIconContainer.appendChild(newGearIconBtn);
-                gearIconContainer.style.left = "0px";
-                gearIconContainer.style.removeProperty("right");
+                gearIconContainer.style.left = '0px';
+                gearIconContainer.style.removeProperty('right');
             }
 
             // Add drawer handing buttons to button container
 
             if (buttonBar) {
-                buttonBar.classList.add("customPopoverPanelButtonBar");
+                buttonBar.classList.add('customPopoverPanelButtonBar');
 
-                var btn = document.createElement("button");
-                var btnIcon = document.createElement("i");
+                var btn = document.createElement('button');
+                var btnIcon = document.createElement('i');
 
-                btnIcon.classList = "fa fa-chevron-right";
+                btnIcon.classList = 'fa fa-chevron-right';
                 btn.classList =
-                    "btn btn-xs btn-primary dbk_button_success customPopoverPanelButton";
-                btn.id = "customPoverPanel_openDrawerButton";
+                    'btn btn-xs btn-primary dbk_button_success customPopoverPanelButton';
+                btn.id = 'customPoverPanel_openDrawerButton';
                 btn.onclick = openPanelClick;
                 btn.appendChild(btnIcon);
 
                 buttonBar.appendChild(btn);
-                buttonBar.style.textAlign = "right";
-                buttonBar.style.float = "right";
+                buttonBar.style.textAlign = 'right';
+                buttonBar.style.float = 'right';
             }
         } else if (
             !applicablePanel &&
-            popover.classList.contains("customPopoverPanel")
+            popover.classList.contains('customPopoverPanel')
         ) {
-            popover.classList.remove("customPopoverPanel");
+            popover.classList.remove('customPopoverPanel');
 
             // Remove all buttons and restore alignment of buttons in button container
 
             if (gearIconContainer) {
-                gearIconContainer.style.removeProperty("left");
-                gearIconContainer.style.right = "0px";
+                gearIconContainer.style.removeProperty('left');
+                gearIconContainer.style.right = '0px';
             }
 
             var overrideIcon = document.getElementById(
-                "customPoverPanel_overrideGearIcon"
+                'customPoverPanel_overrideGearIcon'
             );
             if (overrideIcon) {
                 overrideIcon.parentElement.removeChild(overrideIcon);
             }
 
-            gearIconButton.style.display = "block";
+            gearIconButton.style.display = 'block';
 
             var btnElementId = document.getElementById(
-                "customPoverPanel_openDrawerButton"
+                'customPoverPanel_openDrawerButton'
             );
             if (btnElementId) {
                 btnElementId.parentElement.removeChild(btnElementId);
             }
 
             if (buttonBar) {
-                buttonBar.classList.remove("customPopoverPanelButtonBar");
-                buttonBar.style.textAlign = "center";
-                buttonBar.style.removeProperty("float");
+                buttonBar.classList.remove('customPopoverPanelButtonBar');
+                buttonBar.style.textAlign = 'center';
+                buttonBar.style.removeProperty('float');
             }
         }
     }
@@ -1120,7 +1124,9 @@ function run() {
     function overrideGearIconHandling() {
         // Check if the utility drawer is open
 
-        var utilityDrawer = document.querySelector(".utility-drawer");
+        var utilityDrawer = document.querySelector(
+            environment.isPhone ? '.utility-panel' : '.utility-drawer'
+        );
 
         if (utilityDrawer) {
             // If we are clicking gear icon, and we are not already on the
@@ -1133,12 +1139,12 @@ function run() {
                 return gearIconButton.click();
             }
 
-            var subElements = drawerType.querySelector("event-actions");
+            var subElements = drawerType.querySelector('event-actions');
             var containerDiv = drawerType.querySelector(
-                ".customUtilityDrawerContainer"
+                '.customUtilityDrawerContainer'
             );
 
-            subElements.style.display = "block";
+            subElements.style.display = 'block';
 
             // Remove our custom build drawer if one exists
 
@@ -1157,9 +1163,9 @@ function run() {
     // drawer with our own custom container
 
     function openPanelClick() {
-        var popover = document.querySelector(".edit-container");
+        var popover = document.querySelector('.dbk_editEvent');
         var gearIcon = popover.querySelector(
-            "[ng-click=\"togglePanel('action')\""
+            '[ng-click="togglePanel(\'action\')"'
         );
 
         // Check if drawer is active
@@ -1170,7 +1176,9 @@ function run() {
         queueUtilityDrawer();
 
         function queueUtilityDrawer() {
-            var utilityDrawer = document.querySelector(".utility-drawer");
+            var utilityDrawer = document.querySelector(
+                environment.isPhone ? '.utility-panel' : '.utility-drawer'
+            );
             var drawerType;
 
             if (!utilityDrawer) {
@@ -1194,7 +1202,7 @@ function run() {
                     }
                 } else {
                     var containerDiv = drawerType.querySelector(
-                        ".customUtilityDrawerContainer"
+                        '.customUtilityDrawerContainer'
                     );
 
                     if (containerDiv) {
@@ -1202,17 +1210,17 @@ function run() {
                     }
 
                     // Create Utility drawer container
-                    containerDiv = document.createElement("div");
+                    containerDiv = document.createElement('div');
                     containerDiv.classList =
-                        "customUtilityDrawerContainer customPopoverPanel";
+                        'customUtilityDrawerContainer customPopoverPanel';
                     drawerType.appendChild(containerDiv);
 
                     // Build our custom container based on current panel
                     buildCustomContainer(containerDiv);
 
                     // Hide Gear icon event actions
-                    var subElements = drawerType.querySelector("event-actions");
-                    subElements.style.display = "none";
+                    var subElements = drawerType.querySelector('event-actions');
+                    subElements.style.display = 'none';
                 }
             }
         }
@@ -1229,21 +1237,21 @@ function run() {
         // Get first applicable panel
         applicablePanel = getApplicablePanel();
 
-        var utilityButton = document.querySelector(".customPopoverPanelButton");
+        var utilityButton = document.querySelector('.customPopoverPanelButton');
 
         var panel = applicablePanel;
 
         if (!panel) {
-            utilityButton.style.display = "none";
+            utilityButton.style.display = 'none';
         } else {
-            utilityButton.style.display = "inline-block";
+            utilityButton.style.display = 'inline-block';
         }
 
         // Set default
 
-        var className = panel.hasOwnProperty("className")
+        var className = panel.hasOwnProperty('className')
             ? panel.className
-            : "customPopoverPanelDrawer";
+            : 'customPopoverPanelDrawer';
 
         // Define list of helper function for suppported row types
 
@@ -1253,26 +1261,26 @@ function run() {
             contentRow: helper_panelrow_contentRow,
             labelValue: helper_panelrow_labelValue,
             progressBar: helper_panelrow_progressBar,
-            separator: helper_panelrow_separator
+            separator: helper_panelrow_separator,
         };
 
         // Start building content
 
         var content = '<div class="' + className + '">';
 
-        if (panel.hasOwnProperty("rows")) {
+        if (panel.hasOwnProperty('rows')) {
             for (let r = 0; r < panel.rows.length; r++) {
                 let row = panel.rows[r];
                 if (helpers.hasOwnProperty(row.type)) {
                     // Check for restrictions
 
-                    if (row.hasOwnProperty("restriction")) {
+                    if (row.hasOwnProperty('restriction')) {
                         if (
-                            typeof row.restriction === "function" &&
+                            typeof row.restriction === 'function' &&
                             row.restriction()
                         ) {
                             content = content + helpers[row.type](row);
-                        } else if (typeof row.restriction == "object") {
+                        } else if (typeof row.restriction == 'object') {
                             const conditionCount = Object.keys(
                                 row.restriction
                             ).length;
@@ -1283,7 +1291,7 @@ function run() {
                                 row.restriction
                             )) {
                                 if (
-                                    key == "schedule" &&
+                                    key == 'schedule' &&
                                     editEvent.schedule.name == value
                                 ) {
                                     matches++;
@@ -1291,7 +1299,7 @@ function run() {
                                     matches++;
                                 } else if (
                                     editEvent.hasOwnProperty(key) &&
-                                    typeof editEvent.key == "array" &&
+                                    typeof editEvent.key == 'array' &&
                                     editEvent[key].includes(value)
                                 ) {
                                     matches++;
@@ -1332,20 +1340,20 @@ function run() {
                         content = content + helpers[row.type](row);
                     }
                 } else {
-                    return reportError("Unsuppored row type " + row.type);
+                    return reportError('Unsuppored row type ' + row.type);
                 }
             }
-        } else if (panel.hasOwnProperty("content")) {
+        } else if (panel.hasOwnProperty('content')) {
             content =
                 content + helper_panelrow_contentRow({ text: panel.content });
         }
 
         // Add closing tag for content
 
-        content = content + "</div>";
+        content = content + '</div>';
 
-        var editContainer = document.querySelector(".edit-container");
-        var utilityPanel = document.querySelector(".utility-panel");
+        var editContainer = document.querySelector('.dbk_editEvent');
+        var utilityPanel = document.querySelector('.utility-panel');
 
         container.innerHTML = content;
 
@@ -1353,39 +1361,39 @@ function run() {
             container.style.height = editContainer.scrollHeight;
 
             if (container.scrollHeight > editContainer.scrollHeight) {
-                container.classList.add("scrollable");
+                container.classList.add('scrollable');
             } else {
-                container.classList.remove("scrollable");
+                container.classList.remove('scrollable');
             }
 
             // Add scrollable content floating div and management function
 
             if (container.scrollHeight > editContainer.scrollHeight) {
-                var postScrollDiv = document.createElement("DIV");
-                var postScrollSpan = document.createElement("SPAN");
-                var postScrollI = document.createElement("I");
+                var postScrollDiv = document.createElement('DIV');
+                var postScrollSpan = document.createElement('SPAN');
+                var postScrollI = document.createElement('I');
 
-                postScrollI.classList = "fa fa-caret-down";
+                postScrollI.classList = 'fa fa-caret-down';
                 postScrollSpan.appendChild(postScrollI);
                 postScrollDiv.append(postScrollSpan);
 
                 container.innerHTML =
                     container.innerHTML +
                     '<div class="postScrollPadding"></div>';
-                postScrollDiv.classList = "postScrollDiv";
+                postScrollDiv.classList = 'postScrollDiv';
 
                 container.appendChild(postScrollDiv);
 
-                $(postScrollDiv).css("width", container.clientWidth);
+                $(postScrollDiv).css('width', container.clientWidth);
 
-                container.addEventListener("scroll", () => {
+                container.addEventListener('scroll', () => {
                     if (
                         container.offsetHeight + container.scrollTop >=
                         container.scrollHeight - 10
                     ) {
-                        postScrollI.classList = "fa fa-caret-up";
+                        postScrollI.classList = 'fa fa-caret-up';
                     } else {
-                        postScrollI.classList = "fa fa-caret-down";
+                        postScrollI.classList = 'fa fa-caret-down';
                     }
                 });
             }
@@ -1394,8 +1402,8 @@ function run() {
         // Run any post render function that must run after a panel has loaded
 
         if (
-            panel.hasOwnProperty("postRenderFunction") &&
-            typeof panel.postRenderFunction == "function"
+            panel.hasOwnProperty('postRenderFunction') &&
+            typeof panel.postRenderFunction == 'function'
         ) {
             panel.postRenderFunction();
         }
@@ -1404,7 +1412,7 @@ function run() {
 
         if (inputs.postRenderHooks.length > 0) {
             for (var hook = 0; hook < inputs.postRenderHooks.length; hook++) {
-                if (typeof inputs.postRenderHooks[hook] === "function") {
+                if (typeof inputs.postRenderHooks[hook] === 'function') {
                     inputs.postRenderHooks[hook]();
                 }
             }
@@ -1417,107 +1425,107 @@ function run() {
         // ----- Panel Row Type helper functions ------
 
         function helper_panelrow_header(params) {
-            setDefaultsToBlank(params, ["class", "text"]);
+            setDefaultsToBlank(params, ['class', 'text']);
             return (
                 '<div class="panelHeader ' +
-                params["class"] +
+                params['class'] +
                 '">' +
                 '<div class="">' +
-                params["text"] +
-                "</div>" +
-                "</div>"
+                params['text'] +
+                '</div>' +
+                '</div>'
             );
         }
 
         function helper_panelrow_textRow(params) {
-            setDefaultsToBlank(params, ["class", "text"]);
+            setDefaultsToBlank(params, ['class', 'text']);
             return (
                 '<div class="row panelTextRow ' +
-                params["class"] +
+                params['class'] +
                 '">' +
                 '<div class="col-xs-12">' +
-                params["text"] +
-                "</div>" +
-                "</div>"
+                params['text'] +
+                '</div>' +
+                '</div>'
             );
         }
 
         function helper_panelrow_contentRow(params) {
-            setDefaultsToBlank(params, ["class", "text"]);
+            setDefaultsToBlank(params, ['class', 'text']);
             return (
                 '<div class="row panelContentRow ' +
-                params["class"] +
+                params['class'] +
                 '">' +
                 '<div class="col-xs-12">' +
-                params["text"] +
-                "</div>" +
-                "</div>"
+                params['text'] +
+                '</div>' +
+                '</div>'
             );
         }
 
         function helper_panelrow_labelValue(params) {
             setDefaultsToBlank(params, [
-                "class",
-                "label",
-                "value",
-                "labelSize",
-                "valueSize"
+                'class',
+                'label',
+                'value',
+                'labelSize',
+                'valueSize',
             ]);
 
-            params["labelSize"] =
-                params["labelSize"] > 0 ? params["labelSize"] : 6;
-            params["valueSize"] =
-                params["valueSize"] > 0 ? params["valueSize"] : 6;
+            params['labelSize'] =
+                params['labelSize'] > 0 ? params['labelSize'] : 6;
+            params['valueSize'] =
+                params['valueSize'] > 0 ? params['valueSize'] : 6;
 
             return (
                 '<div class="row panelRow">' +
                 '<div class="col-xs-' +
-                params["labelSize"] +
+                params['labelSize'] +
                 ' panelLabel">' +
-                params["label"] +
-                ":" +
-                "</div>" +
+                params['label'] +
+                ':' +
+                '</div>' +
                 '<div class="col-xs-' +
-                params["valueSize"] +
-                " panelValue " +
-                params["class"] +
+                params['valueSize'] +
+                ' panelValue ' +
+                params['class'] +
                 '">' +
-                params["value"] +
-                "</div>" +
-                "</div>"
+                params['value'] +
+                '</div>' +
+                '</div>'
             );
         }
 
         function helper_panelrow_progressBar(params) {
-            setDefaultsToBlank(params, ["class", "value", "scale", "name"]);
+            setDefaultsToBlank(params, ['class', 'value', 'scale', 'name']);
             let percent = Math.floor(
-                (params["value"] / Math.max(params["value"], params["scale"])) *
-                    100
+                (params['value'] / Math.max(params['value'], params['scale'])) *
+                100
             );
             return (
                 '<div class="row panelProgress">' +
                 '<div class="col-xs-12"><div class="progressText">' +
-                params["title"] +
+                params['title'] +
                 ':</div><div class="progress"> ' +
                 '<div class="progress__bar ' +
-                params["name"] +
+                params['name'] +
                 '" style="width: ' +
                 percent +
                 '% !important;"></div>' +
-                "</div>" +
-                "</div>" +
-                "</div>"
+                '</div>' +
+                '</div>' +
+                '</div>'
             );
         }
 
         function helper_panelrow_separator(params) {
-            setDefaultsToBlank(params, ["class"]);
+            setDefaultsToBlank(params, ['class']);
             return (
                 '<div class="row panelTextRow ' +
-                params["class"] +
+                params['class'] +
                 '">' +
                 '<div class="panelSeparator"></div>' +
-                "</div>"
+                '</div>'
             );
         }
 
@@ -1525,7 +1533,7 @@ function run() {
 
         function setDefaultsToBlank(items, list) {
             for (const i of list) {
-                items[i] = !items[i] ? "" : items[i];
+                items[i] = !items[i] ? '' : items[i];
             }
         }
     }
