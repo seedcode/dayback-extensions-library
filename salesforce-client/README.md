@@ -11,8 +11,50 @@ This helper library lets you work with Salesforce records with a unified client 
 
 ### Async/Await versus Promise Chaining
 
-Most of our legacy examples used `.then().catch()` methodology. This can be useful if we need to run
-multiple Salesforce operations at once and respond to each asynchronously. However, most of our code depends on code executing sequentially, so that the result of one operation can be used in another. With `async/await` methodology, you get linear flow and clean `try/catch` blocks, which make code easier to read, refactor, and debug.
+Most of our legacy examples used `.then().catch()` methodology. This can be useful when you need to run multiple Salesforce operations independently and respond to each as soon as it completes. For example, if you want to fetch several records in parallel:
+
+```js
+// Promise chaining for parallel operations
+sf.query({ soql: "SELECT Id FROM Contact" })
+  .then(resp => sf.retrieve({ sobject: "Account", id: resp.data[0].Id }))
+  .then(accountResp => console.log(accountResp.data))
+  .catch(e => sf.showError(e));
+```
+
+Or, using `Promise.all` to run several queries at once and wait for all results:
+
+```js
+const queries = [
+  sf.query({ soql: "SELECT Id FROM Contact LIMIT 1" }),
+  sf.query({ soql: "SELECT Id FROM Account LIMIT 1" }),
+  sf.query({ soql: "SELECT Id FROM Opportunity LIMIT 1" })
+];
+
+const results = await Promise.all(queries);
+results.forEach(resp => {
+  if (!resp.ok) return sf.showError(resp.error);
+  console.log(resp.data);
+});
+```
+
+However, most of our code depends on operations executing sequentially, so that the result of one operation can be used in another. With `async/await`, you get linear flow and clean `try/catch` blocks, which make code easier to read, refactor, and debug:
+
+```js
+try {
+  const contactResp = await sf.query({ soql: "SELECT Id FROM Contact LIMIT 1" });
+  if (!contactResp.ok) throw contactResp.error;
+
+  const accountResp = await sf.retrieve({ sobject: "Account", id: contactResp.data[0].Id });
+  if (!accountResp.ok) throw accountResp.error;
+
+  console.log(accountResp.data);
+} catch (e) {
+  sf.showError(e);
+}
+```
+
+**Use async/await** when you need sequential logic and error handling.  
+**Use Promise chaining or `Promise.all`** when you want to run multiple operations in parallel and handle their results together.
 
 ---
 ## Quick Start (New Response Object API)
