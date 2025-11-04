@@ -59,7 +59,7 @@ try {
 ---
 ## Quick Start (New Response Object API)
 
-The SalesforceClient library provides the methods
+The SalesforceClient library provides the following methods:
 
 **Create Salesforce Client Instance**
 ```js
