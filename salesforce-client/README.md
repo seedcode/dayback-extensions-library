@@ -15,7 +15,7 @@ Most of our legacy examples used `.then().catch()` methodology. This can be usef
 
 ```js
 // Promise chaining for parallel operations
-sf.query({ soql: "SELECT Id FROM Contact" })
+sf.query("SELECT Id FROM Contact")
   .then(resp => sf.retrieve({ sobject: "Account", id: resp.data[0].Id }))
   .then(accountResp => console.log(accountResp.data))
   .catch(e => sf.showError(e));
@@ -25,9 +25,9 @@ Or, using `Promise.all` to run several queries at once and wait for all results:
 
 ```js
 const queries = [
-  sf.query({ soql: "SELECT Id FROM Contact LIMIT 1" }),
-  sf.query({ soql: "SELECT Id FROM Account LIMIT 1" }),
-  sf.query({ soql: "SELECT Id FROM Opportunity LIMIT 1" })
+  sf.query("SELECT Id FROM Contact LIMIT 1"),
+  sf.query("SELECT Id FROM Account LIMIT 1"),
+  sf.query("SELECT Id FROM Opportunity LIMIT 1")
 ];
 
 const results = await Promise.all(queries);
