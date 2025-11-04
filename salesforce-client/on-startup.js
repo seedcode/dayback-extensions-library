@@ -30,12 +30,6 @@
 //   const r = await sf.batch({ requests: [ { method: "GET", url: "/sobjects/Contact/" + r.data.id, referenceId: "getC" } ] });
 //   await sf.delete({ sobject: "Contact", id: r.data.id });
 //
-// Legacy Tuple Mode (backward compatible):
-// ----------------------------------------
-//   const sf = SalesforceClient({ legacyTuples: true });
-//   const [resp, rows] = await sf.query({ soql: "SELECT Id FROM Contact LIMIT 10" });
-//   // resp is the same response object; rows === resp.data
-//
 // Helper functions:
 //   sf.escapeSOQL(value) / sf.quote(value) - escape string literal for SOQL
 //   sf.showError(error)  - present errors via toast or modal in Canvas
@@ -68,7 +62,6 @@
 //     console.log("rows", q2.data);
 //   }
 //
-// Note: You only need positional examples if using legacyTuples. Prefer object form for new code.
 // -------------------------------------------------------------------
 // You do not need to modify anything below this line to use the client
 // -------------------------------------------------------------------
@@ -491,11 +484,9 @@
             // Core ops (Response Object API)
             // =========================
 
-            const tupleMode = !!config.legacyTuples; // backward compatibility if enabled
-
             // Helper to standardize response object shape
             function buildResponse(res, { data, meta } = {}) {
-                const out = {
+                return out = {
                     ok: !!res.ok,
                     status: res.status,
                     data: data,
@@ -506,7 +497,6 @@
                     source: res.source,
                     meta: meta || undefined,
                 };
-                return tupleMode ? [out, out.data] : out;
             }
 
             async function query(input, pageAll = true) {
@@ -657,12 +647,10 @@
                 createTree,
                 apex,
                 showError,
-                // Internal flags
-                tupleMode
             };
         }
 
-        // UMD-ish export
+        // Global export
         globalThis.SalesforceClient = SalesforceClient;
         globalThis.escapeSOQL = escapeSOQL;
     }
