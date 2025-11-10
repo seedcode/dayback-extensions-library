@@ -19,6 +19,8 @@
 	const options = {};
 	const inputs = {};
 
+	const calendarConfig = globals.seedcodeCalendar.get('config');
+
 	try {
 		//----------- Configuration -------------------
 
@@ -43,7 +45,7 @@
 		 * The currently signed in account email
 		 * @type {string}
 		 */
-		inputs.account = globals.seedcodeCalendar.get('config').account;
+		inputs.account = calendarConfig.account;
 
 		//define object and fields for resource folders
 		//multiple objects can be defined by adding to the array
@@ -107,9 +109,7 @@
 		document.head.appendChild(style);
 
 		//add none resource
-		resources.push(
-			createResource(globals.seedcodeCalendar.get('config').noFilterLabel)
-		);
+		resources.push(createResource(calendarConfig.noFilterLabel));
 		resourceCount++;
 
 		//loop through each resource object
@@ -308,7 +308,10 @@
 			const newResource = {};
 
 			newResource.name = name;
-			newResource.color = color || stringToRGB(name);
+			newResource.color =
+				name === calendarConfig.noFilterLabel
+					? 'rgba(244, 244, 244, 0.85)'
+					: color || stringToRGB(name);
 
 			if (folder) {
 				newResource.folderID = folder.folderID;
@@ -334,7 +337,12 @@
 				}
 			}
 
-			newResource.sort = sort || (folder ? folder.sort + 1 : 0);
+			if (sort) {
+				newResource.sort = sort;
+			} else if (folder) {
+				folder.currentSort = (folder.currentSort + 0.001).toFixed(3); //increment sort by 0.01 to ensure unique sort values
+				newResource.sort = folder.currentSort;
+			}
 
 			if (tags) {
 				newResource.tags = [];
@@ -359,6 +367,7 @@
 			folder.nameSafe = folderName;
 			folder.isFolder = true;
 			folder.sort = resourceCount;
+			folder.currentSort = folder.sort;
 			folder.status = {
 				folderExpanded: false,
 				selected: false,
