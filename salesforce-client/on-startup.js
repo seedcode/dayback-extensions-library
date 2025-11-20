@@ -101,7 +101,6 @@
         }
 
         // Create a rich Error object from various inputs
-
         function makeSfError({ httpStatus, message, code, payload, method, url, source }) {
             const err = new Error(message || "Salesforce Error");
             err.httpStatus = httpStatus;    // e.g., 400, 401, 403, 404, 500…
@@ -155,8 +154,16 @@
         }
 
         /**
-         * Build helpers from either Canvas context or REST settings.
+         * Converts a moment object to a Salesforce time string (HH:mm:ss.SSSZ)
+         * @param {object} momentObj - A moment.js object
+         * @returns {string} Salesforce time string (e.g., '14:30:00.000+0000')
          */
+        function formatDateTime(momentObj) {
+            if (!momentObj || typeof momentObj.format !== 'function') return '';
+            return momentObj.format('HH:mm:ss.SSSZ');
+        }
+
+        // Build helpers from either Canvas context or REST settings.
         function makeEndpointsFromCanvas(context, apiVersion) {
             const version = apiVersion || context.version || "v61.0";
             const base = context.instanceUrl || "";
@@ -171,6 +178,7 @@
             };
         }
 
+        // Split a restURL into its components
         function splitRestURL(restURL) {
             // restURL like: https://instance/services/data/v61.0/
             const m = /^https?:\/\/[^/]+/.exec(restURL);
@@ -486,7 +494,7 @@
 
             // Helper to standardize response object shape
             function buildResponse(res, { data, meta } = {}) {
-                return out = {
+                return {
                     ok: !!res.ok,
                     status: res.status,
                     data: data,
@@ -635,6 +643,7 @@
                 endpoints,
                 escapeSOQL,
                 quote: escapeSOQL,
+                formatDateTime,
                 // CRUD / Query
                 query,
                 retrieve,
