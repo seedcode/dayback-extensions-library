@@ -194,7 +194,7 @@ interface SfResponse<T=any> {
 }
 ```
 
-Utilities: `sf.escapeSOQL()` / `sf.quote()`; presenter `sf.showError()`. Supports SOQL, CRUD, composite, tree, Apex REST.
+Utilities: `sf.escapeSOQL()` / `sf.quote()`; presenter `sf.showError()`. Supports SOQL, CRUD, composite, tree, Apex REST. `sf.formatDateTime(moment)` for moment to Salesforce datetime conversion.
 
 ---
 ## Modes
@@ -318,6 +318,14 @@ await sf.query({ soql: `SELECT Id FROM Contact WHERE Email = ${email}` });
 Show errors with appropriate UI affordance in Canvas.
 ```js
 try { await sf.update({ sobject:"Contact", id:c.data.id, record:{ Title:"CTO" } }); } catch(e) { sf.showError(e); }
+```
+
+#### 🕒 `sf.formatDateTime(momentObj)`
+Format a moment.js object to a Salesforce-compatible time string (`HH:mm:ss.SSSZ`):
+
+```js
+const timeString = sf.formatDateTime(moment());
+console.log(timeString); // e.g., '14:30:00.000+0000'
 ```
 
 ---

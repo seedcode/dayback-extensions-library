@@ -33,6 +33,7 @@
 // Helper functions:
 //   sf.escapeSOQL(value) / sf.quote(value) - escape string literal for SOQL
 //   sf.showError(error)  - present errors via toast or modal in Canvas
+//   sf.formatDateTime(momentObj) - format a moment object for Salesforce DateTime fields
 //
 // Response Object Shape:
 //   { ok, status, data, raw, error?, method, url, source, meta? }
