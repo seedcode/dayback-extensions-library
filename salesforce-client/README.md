@@ -264,7 +264,7 @@ console.log(q.data.length, q.meta.totalSize);
 ```
 
 #### 🔎 `sf.bulkQuery({ soql, onRow?, delayMs?, maxPages? })`
-Run multi-page version of `sf.quey()` with various pagination conrols. Please section below for full documentation.
+Run multi-page version of `sf.quey()` with various pagination conrols. Please [see section below](#-bulk-query-sfbulkquery) for full documentation.
 
 #### 📥 `sf.retrieve({ sobject, id, fields? })`
 Fetch a record by Id with optional field selection.
@@ -395,9 +395,7 @@ A powerful, memory-safe SOQL reader with **three usage modes**:
 3. **Page iterator mode** — streaming page by page
 4. **Collector helper** — gather all rows into an array
 
----
-
-# 1. Callback mode (easy row processing)
+#### 1. Callback mode (easy row processing)
 
 ```js
 await sf.bulkQuery({
@@ -417,7 +415,7 @@ await sf.bulkQuery({
 });
 ```
 
-# 2. Async iterator — stream rows efficiently
+#### 2. Async iterator — stream rows efficiently
 
 ```js
 for await (const row of sf.bulkQuery({ soql })) {
@@ -432,8 +430,7 @@ Useful for:
 * Building DayBack caches
 * Avoiding memory overhead from large `query()` results
 
-
-# 3. Page iterator — process SOQL pages in batches
+#### 3. Page iterator — process SOQL pages in batches
 
 ```js
 for await (const page of sf.bulkQuery.pages({ soql })) {
@@ -441,14 +438,14 @@ for await (const page of sf.bulkQuery.pages({ soql })) {
 }
 ```
 
-# 4. Collector — get all rows into a single array
+#### 4. Collector — get all rows into a single array
 
 ```js
 const rows = await sf.bulkQuery.collect({ soql });
 console.log(rows.length);
 ```
 
-# Options
+#### Options
 
 ```ts
 interface BulkQueryOptions {
@@ -459,7 +456,7 @@ interface BulkQueryOptions {
 }
 ```
 
-# Why use `bulkQuery()` instead of `sf.query()`?
+#### Why use `bulkQuery()` instead of `sf.query()`?
 
 | Feature                        | `sf.query()` | `sf.bulkQuery()` |
 | ------------------------------ | ------------ | ---------------- |
@@ -472,7 +469,7 @@ interface BulkQueryOptions {
 | Callback-based processing      | No           | Yes              |
 
 ---
-## Error Model
+# Error Model
 
 Thrown errors (or `resp.error` in return mode) include:
 * `httpStatus`
