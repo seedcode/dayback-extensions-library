@@ -252,6 +252,133 @@
         log(`Composite OK: ${texts}`);
         console.log("Composite response:", rH, composite);
 
+        // H2) COMPOUND BATCH TEST
+        log(`📦 Compound Batch (sObject collections inside composite`);
+
+        // Prepare 3 small test records for compound batch
+        const cbStart = newStart.clone().add(4, "hours");
+        const cbEnd = cbStart.clone().add(1, "hour");
+
+        const cbRecords = [
+            {
+                attributes: { type: SOBJ },
+                [F.title]: `[TEST C - BATCH #1] ${nowStamp()} `,
+                [F.description]: "Compound batch test record 1",
+                [F.location]: "Compound Batch Loc",
+                [F.start]: isoZ(cbStart),
+                [F.end]: isoZ(cbEnd),
+                [F.status]: "Pending"
+            },
+            {
+                attributes: { type: SOBJ },
+                [F.title]: `[TEST C - BATCH #2] ${nowStamp()} `,
+                [F.description]: "Compound batch test record 2",
+                [F.location]: "Compound Batch Loc",
+                [F.start]: isoZ(cbStart.clone().add(1, "hour")),
+                [F.end]: isoZ(cbEnd.clone().add(1, "hour")),
+                [F.status]: "Confirmed"
+            },
+            {
+                attributes: { type: SOBJ },
+                [F.title]: `[TEST C - BATCH #3] ${nowStamp()} `,
+                [F.description]: "Compound batch test record 3",
+                [F.location]: "Compound Batch Loc",
+                [F.start]: isoZ(cbStart.clone().add(2, "hours")),
+                [F.end]: isoZ(cbEnd.clone().add(2, "hours")),
+                [F.status]: "Tentative"
+            }
+        ];
+
+        // No extraRequests in this simple test
+        const rCB = await sf.compoundBatch({
+            requests: cbRecords,
+            batchSize: 200,
+            envelopeSize: 25,
+            allOrNone: true
+        });
+
+        log(`CompoundBatch OK: `, rCB);
+
+        console.log("[SF TEST] compoundBatch raw response:", rCB);
+        log(`CompoundBatch status: ${rCB.status}, ok=${rCB.ok}, error=`, rCB.error);
+
+        // Extract any created IDs
+        let cbCreated = [];
+        try {
+            const last = rCB.data?.[rCB.data.length - 1];
+            const inner = last?.compositeResponse || [];
+
+            for (const sub of inner) {
+                if (sub.body?.results) {
+                    for (const r of sub.body.results) {
+                        if (r.id) cbCreated.push(r.id);
+                    }
+                }
+            }
+        } catch (_) { }
+
+
+        // H3) BULK QUERY TESTS
+        log(`📚 Bulk Query Tests`);
+
+        // Build a small SOQL window for testing bulk query streaming
+        const bulkWhere = soqlDateBetween(F.start, dayStart, dayEnd);
+        const bulkSoql = `SELECT Id, ${F.title}, ${F.start}
+  FROM ${SOBJ}
+  WHERE ${bulkWhere}
+  ORDER BY ${F.start}`;
+
+        // 1) Async iterator mode
+        log(`🔄 bulkQuery iterator mode`);
+        let iterCount = 0;
+        for await (const row of sf.bulkQuery({ soql: bulkSoql })) {
+            iterCount++;
+        }
+        log(`bulkQuery iterator OK – rows streamed: ${iterCount}`);
+
+
+        // 2) onRow callback mode
+        log(`🧩 bulkQuery onRow callback`);
+        let cbCount = 0;
+        await sf.bulkQuery({
+            soql: bulkSoql,
+            onRow: row => {
+                cbCount++;
+            }
+        });
+        log(`bulkQuery onRow OK – callback count: ${cbCount}`);
+
+
+        // 3) Page iterator
+        log(`📄 bulkQuery.pages (page iterator)`);
+        let pageIndex = 0;
+        for await (const page of sf.bulkQuery.pages({ soql: bulkSoql })) {
+            log(`  - page ${pageIndex}, size ${page.length}`);
+            pageIndex++;
+        }
+        log(`bulkQuery.pages OK – total pages: ${pageIndex}`);
+
+
+        // 4) Full collection
+        log(`📥 bulkQuery.collect`);
+        const collected = await sf.bulkQuery.collect({ soql: bulkSoql });
+        log(`bulkQuery.collect OK – total collected: ${collected.length}`);
+
+
+        // Optional cleanup
+        if (!TEST_CONFIG.keepCreatedRecords && cbCreated.length) {
+            log(`🧹 Delete ${cbCreated.length} compound - batch record(s)`);
+            for (const id of cbCreated) {
+                const rd = await sf.delete({ sobject: SOBJ, id });
+                log(`  - ${id}: ${rd.status} `);
+            }
+        } else if (cbCreated.length) {
+            log(`(Keeping compound - batch records: ${cbCreated.join(", ")})`);
+        }
+
+
+
+
         // I) OPTIONAL APEX
         if (TEST_CONFIG.apex1.enabled) {
             log(`⚡ Apex ${TEST_CONFIG.apex1.method} ${TEST_CONFIG.apex1.path}`);

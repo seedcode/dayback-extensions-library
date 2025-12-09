@@ -29,7 +29,13 @@
 //   const r = await sf.apex({ method: "POST", path: "/PauseSession", body: { /* ... */ } });
 //   const r = await sf.batch({ requests: [ { method: "GET", url: "/sobjects/Contact/" + r.data.id, referenceId: "getC" } ] });
 //   await sf.delete({ sobject: "Contact", id: r.data.id });
-//
+//   const r = await sf.compoundBatch({
+//      requests: [ /* sobject create/update/delete subrequests */],
+//          batchSize: 200,        // max records per inner sobject-composite
+//              envelopeSize: 25,      // max requests per outer composite
+//                  allOrNone: true
+//      });
+// 
 // Helper functions:
 //   sf.escapeSOQL(value) / sf.quote(value) - escape string literal for SOQL
 //   sf.showError(error)  - present errors via toast or modal in Canvas
@@ -155,13 +161,21 @@
         }
 
         /**
-         * Converts a moment object to a Salesforce time string (HH:mm:ss.SSSZ)
+         * Converts a moment object into a Salesforce-friendly DateTime string.
+         * 
+         * Salesforce accepts ISO-like datetime strings for both Date and Time fields.
+         * We now return a full datetime value:
+         *   YYYY-MM-DDTHH:mm:ss.SSSZ
+         *
+         * The "T" and "Z" must be *literal characters*, not interpreted tokens,
+         * so they are wrapped in square brackets.
+         *
          * @param {object} momentObj - A moment.js object
-         * @returns {string} Salesforce time string (e.g., '14:30:00.000+0000')
+         * @returns {string} Salesforce datetime string (e.g. '2025-01-14T14:30:00.000Z')
          */
         function formatDateTime(momentObj) {
             if (!momentObj || typeof momentObj.format !== 'function') return '';
-            return momentObj.format('HH:mm:ss.SSSZ');
+            return momentObj.format("YYYY-MM-DD[T]HH:mm:ss.SSS[Z]");
         }
 
         // Build helpers from either Canvas context or REST settings.
@@ -639,6 +653,247 @@
                 return buildResponse(res, { data: res.payload });
             }
 
+            /**
+             * compoundBatch({
+             *   requests: [ {...}, {...}, ... ],  // array of sObject records (POST/PATCH)
+             *   batchSize: 200,                   // max records per inner composite/sobjects (SF limit)
+             *   envelopeSize: 25,                 // max compositeRequest items in outer batch
+             *   method: "POST" | "PATCH",         // inferred from requests if omitted
+             *   allOrNone: true
+             * })
+             *
+             * Returns a single composite result object.
+             */
+            async function compoundBatch({
+                requests,
+                batchSize = 200,
+                envelopeSize = 25,
+                method,               // optional override for POST vs PATCH
+                allOrNone = true,
+            } = {}) {
+                if (!Array.isArray(requests)) {
+                    throw new Error("compoundBatch requires an array of sObject records.");
+                }
+
+                // Determine POST/PATCH dynamically if not supplied
+                const inferredMethod = method || (requests[0]?.id ? "PATCH" : "POST");
+
+                // Step 1: Chunk into inner /composite/sobjects batches
+                const innerBatches = [];
+                for (let i = 0; i < requests.length; i += batchSize) {
+                    innerBatches.push(requests.slice(i, i + batchSize));
+                }
+
+                // Step 2: Build compositeRequest entries
+                const compositeRequests = innerBatches.map((batch, i) => ({
+                    method: inferredMethod,
+                    url: `/services/data/${endpoints.version}/composite/sobjects`,
+                    referenceId: `batch${i}`,
+                    body: {
+                        allOrNone,
+                        records: batch.map(rec => ({
+                            attributes: { type: rec.attributes?.type },
+                            id: rec.id,
+                            ...Object.fromEntries(
+                                Object.entries(rec)
+                                    .filter(([k]) => !["id", "attributes"].includes(k))
+                            )
+                        }))
+                    }
+                }));
+
+                // Step 3: Outer composite envelope chunking (25 max)
+                const envelopes = [];
+                for (let i = 0; i < compositeRequests.length; i += envelopeSize) {
+                    envelopes.push(compositeRequests.slice(i, i + envelopeSize));
+                }
+
+                // Step 4: Execute envelopes serially (required for dependencies)
+                let lastResponse = null;
+                const results = [];
+
+                for (let e = 0; e < envelopes.length; e++) {
+                    const body = {
+                        allOrNone,
+                        compositeRequest: envelopes[e]
+                    };
+
+                    const url = `${endpoints.dataBase}/composite`;
+
+                    const res = await ajax("POST", url, { body });
+                    lastResponse = res;
+                    results.push(res.payload);
+
+                    if (!res.ok) {
+                        // Stop immediately on composite-level error
+                        return buildResponse(res, { data: results });
+                    }
+
+                    // Check for inner composite errors
+                    const inner = res.payload?.compositeResponse || [];
+                    const innerErr = inner.find(r =>
+                        r.httpStatusCode !== 200 &&
+                        r.httpStatusCode !== 201 &&
+                        r.httpStatusCode !== 204
+                    );
+
+                    if (innerErr) {
+                        // Propagate error in format consistent with SalesforceClient
+                        const p = parseSfErrorPayload(innerErr?.body);
+                        const err = {
+                            httpStatus: innerErr.httpStatusCode,
+                            message: p.message,
+                            code: p.code,
+                            payload: innerErr.body,
+                            method: inferredMethod,
+                            url,
+                            source: "rest"
+                        };
+                        return shouldThrow
+                            ? Promise.reject(makeSfError(err))
+                            : asResult(err);
+                    }
+                }
+
+                return buildResponse(lastResponse || { ok: true, status: 200 }, {
+                    data: results
+                });
+            }
+
+            /**
+             * bulkQuery()
+             * -----------
+             * A streaming, memory-efficient SOQL query API.
+             * Supports:
+             *   - auto-pagination
+             *   - async iteration over rows
+             *   - async iteration over pages
+             *   - optional throttling (delay)
+             *   - optional max page limit
+             *   - optional full collect()
+             *
+             * Usage:
+             *    for await (const row of sf.bulkQuery({ soql })) { ... }
+             *
+             *    const rows = await sf.bulkQuery.collect({ soql });
+             *
+             *    for await (const page of sf.bulkQuery.pages({ soql })) { ... }
+             */
+            /**
+ * bulkQuery({ soql, onRow, delayMs, maxPages })
+ *
+ * If onRow is supplied:
+ *    - bulkQuery returns a Promise
+ *    - generator is consumed internally
+ *
+ * If onRow is omitted:
+ *    - bulkQuery returns an async iterator
+ */
+            function bulkQueryBase({ soql, onRow, delayMs = 0, maxPages = Infinity } = {}) {
+                if (!soql) throw new Error("bulkQuery({ soql }) requires a SOQL string");
+
+                const initialUrl = useCanvas
+                    ? `${endpoints.queryUrl}?q=${encodeURIComponent(soql)}`
+                    : `${endpoints.queryUrl}/?q=${encodeURIComponent(soql)}`;
+
+                async function* rowGenerator() {
+                    let nextUrl = initialUrl;
+                    let pageCount = 0;
+
+                    while (nextUrl && pageCount < maxPages) {
+                        const res = useCanvas
+                            ? await ajax("GET", nextUrl)
+                            : await ajax("GET", nextUrl);
+
+                        if (!res.ok) {
+                            const p = parseSfErrorPayload(res.payload);
+                            throw makeSfError({
+                                httpStatus: res.status,
+                                message: p.message,
+                                code: p.code,
+                                payload: res.payload,
+                                method: res.method,
+                                url: res.url,
+                                source: res.source
+                            });
+                        }
+
+                        const records = res.payload?.records || [];
+                        for (const r of records) yield r;
+
+                        pageCount++;
+
+                        const nxt = res.payload?.nextRecordsUrl;
+                        nextUrl = nxt ? `${endpoints.base}${nxt}` : null;
+
+                        if (delayMs > 0) await new Promise(r => setTimeout(r, delayMs));
+                    }
+                }
+
+                // If the user provides onRow, run immediately and return a Promise.
+                if (typeof onRow === "function") {
+                    return (async () => {
+                        for await (const row of rowGenerator()) {
+                            await onRow(row);
+                        }
+                    })();
+                }
+
+                // Otherwise return the async iterator itself.
+                return rowGenerator();
+            }
+
+            // ----- Full collector -----
+            bulkQueryBase.collect = async function ({ soql, delayMs = 0, maxPages = Infinity } = {}) {
+                const rows = [];
+                for await (const row of bulkQueryBase({ soql, delayMs, maxPages })) {
+                    rows.push(row);
+                }
+                return rows;
+            };
+
+            // ----- Page generator -----
+            bulkQueryBase.pages = async function* ({ soql, delayMs = 0, maxPages = Infinity } = {}) {
+                if (!soql) throw new Error("bulkQuery.pages({ soql }) requires a SOQL string");
+
+                const initialUrl = useCanvas
+                    ? `${endpoints.queryUrl}?q=${encodeURIComponent(soql)}`
+                    : `${endpoints.queryUrl}/?q=${encodeURIComponent(soql)}`;
+
+                let nextUrl = initialUrl;
+                let pageCount = 0;
+
+                while (nextUrl && pageCount < maxPages) {
+                    const res = await ajax("GET", nextUrl);
+
+                    if (!res.ok) {
+                        const p = parseSfErrorPayload(res.payload);
+                        throw makeSfError({
+                            httpStatus: res.status,
+                            message: p.message,
+                            code: p.code,
+                            payload: res.payload,
+                            method: res.method,
+                            url: res.url,
+                            source: res.source
+                        });
+                    }
+
+                    const page = res.payload?.records || [];
+                    yield page;
+
+                    pageCount++;
+                    const nxt = res.payload?.nextRecordsUrl;
+                    nextUrl = nxt ? `${endpoints.base}${nxt}` : null;
+
+                    if (delayMs > 0) {
+                        await new Promise(r => setTimeout(r, delayMs));
+                    }
+                }
+            };
+
+            const bulkQuery = bulkQueryBase;
+
             // Public surface (new object-based API)
             return {
                 endpoints,
@@ -657,6 +912,8 @@
                 createTree,
                 apex,
                 showError,
+                compoundBatch,
+                bulkQuery
             };
         }
 

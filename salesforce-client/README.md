@@ -123,6 +123,16 @@ const response = await sf.batch({
   ] 
 });
 ```
+**Compound Composite Batch**
+```js
+const response = await sf.compoundBatch({
+   requests: [ {...}, {...}, ... ],  // array of sObject records (POST/PATCH)
+   batchSize: 200,                   // max records per inner composite/sobjects (SF limit)
+   envelopeSize: 25,                 // max compositeRequest items in outer batch
+   method: "POST" | "PATCH",         // inferred from requests if omitted
+   allOrNone: true
+});
+```
 **Tree insert**
 ```js
 const response = await sf.createTree({ 
@@ -148,6 +158,8 @@ await sf.delete({
   id: newId 
 });
 ```
+---
+## Error Handling
 
 ---
 ## Error Handling
@@ -244,11 +256,15 @@ const sf = SalesforceClient({
 All methods return an `SfResponse`.
 
 #### 🔎 `sf.query({ soql, pageAll? })`
-Run SOQL. Auto‑pages when `pageAll` true (default). `resp.meta` includes paging info.
+Run SOQL. Auto‑pages when `pageAll` true (default). `resp.meta` includes paging info, but blocks
+execution until all pages are collected. 
 ```js
 const q = await sf.query({ soql: `SELECT Id, Name FROM Account ORDER BY Name` });
 console.log(q.data.length, q.meta.totalSize);
 ```
+
+#### 🔎 `sf.bulkQuery({ soql, onRow?, delayMs?, maxPages? })`
+Run multi-page version of `sf.quey()` with various pagination conrols. Please section below for full documentation.
 
 #### 📥 `sf.retrieve({ sobject, id, fields? })`
 Fetch a record by Id with optional field selection.
@@ -292,6 +308,47 @@ const b = await sf.batch({
 });
 ```
 
+#### 📦 `sf.compoundBatch({ requests, allOrNone?, method?, batchSize?, envelopeSize? })`
+
+Salesforce limits you to:
+
+* **200 CRUD operations per `/composite/sobjects` call**, and
+* **25 subrequests per outer `/composite` call**
+
+This function automatically:
+
+1. **Chunks your records into groups of 200**, each wrapped in `/composite/sobjects`
+2. **Groups those subrequests into envelopes of 25**
+3. **Executes them in sequence**, preserving order and supporting all-or-none semantics
+
+For example:
+
+```js
+const payload = events.map(ev => ({
+  attributes: { type: "Lesson__c" },
+  id: ev.Id, // omit for POST
+  Status__c: "Scheduled",
+  Instructor__c: ev.InstructorId
+}));
+
+const r = await sf.compoundBatch({ 
+  requests: payload,
+  allOrNone: true
+});
+```
+
+Optional Variables
+
+```js
+const response = await sf.compoundBatch({
+   requests: [ {...}, {...}, ... ],  // array of sObject records (POST/PATCH)
+   batchSize: 200,                   // max records per inner composite/sobjects (SF limit)
+   envelopeSize: 25,                 // max compositeRequest items in outer batch
+   method: "POST" | "PATCH",         // inferred from requests if omitted
+   allOrNone: true
+});
+```
+
 #### 🌳 `sf.createTree({ sobject, records, chunkSize? })`
 Tree insert in batches (`chunkSize` default 200). Returns array of chunk payloads.
 ```js
@@ -327,6 +384,92 @@ Format a moment.js object to a Salesforce-compatible time string (`HH:mm:ss.SSSZ
 const timeString = sf.formatDateTime(moment());
 console.log(timeString); // e.g., '14:30:00.000+0000'
 ```
+
+---
+## 🆕 **Bulk Query (`sf.bulkQuery`)**
+
+A powerful, memory-safe SOQL reader with **three usage modes**:
+
+1. **Callback mode** — for processing each row
+2. **Async iterator mode** — streaming row by row
+3. **Page iterator mode** — streaming page by page
+4. **Collector helper** — gather all rows into an array
+
+---
+
+# 1. Callback mode (easy row processing)
+
+```js
+await sf.bulkQuery({
+  soql: "SELECT Id, Name FROM Contact",
+  onRow: row => processRow(row)   // called for each record
+});
+```
+
+Async callbacks are supported:
+
+```js
+await sf.bulkQuery({
+  soql,
+  onRow: async row => {
+    await saveToExternalSystem(row);
+  }
+});
+```
+
+# 2. Async iterator — stream rows efficiently
+
+```js
+for await (const row of sf.bulkQuery({ soql })) {
+  console.log(row.Id, row.Name);
+}
+```
+
+Useful for:
+
+* Very large result sets
+* ETL pipelines
+* Building DayBack caches
+* Avoiding memory overhead from large `query()` results
+
+
+# 3. Page iterator — process SOQL pages in batches
+
+```js
+for await (const page of sf.bulkQuery.pages({ soql })) {
+  console.log("Page size:", page.length);
+}
+```
+
+# 4. Collector — get all rows into a single array
+
+```js
+const rows = await sf.bulkQuery.collect({ soql });
+console.log(rows.length);
+```
+
+# Options
+
+```ts
+interface BulkQueryOptions {
+  soql: string;
+  onRow?: (record: any) => void | Promise<void>;
+  delayMs?: number;       // throttle between pages
+  maxPages?: number;      // stop early
+}
+```
+
+# Why use `bulkQuery()` instead of `sf.query()`?
+
+| Feature                        | `sf.query()` | `sf.bulkQuery()` |
+| ------------------------------ | ------------ | ---------------- |
+| Automatically paginate         | Yes          | Yes              |
+| Load all data into memory      | Always       | Optional         |
+| Stream rows                    | No           | Yes              |
+| Stream pages                   | No           | Yes              |
+| Throttling between pages       | No           | Yes              |
+| Safe for huge (>100k) datasets | Risky        | Excellent        |
+| Callback-based processing      | No           | Yes              |
 
 ---
 ## Error Model
