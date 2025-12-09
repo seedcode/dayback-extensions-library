@@ -423,13 +423,6 @@ for await (const row of sf.bulkQuery({ soql })) {
 }
 ```
 
-Useful for:
-
-* Very large result sets
-* ETL pipelines
-* Building DayBack caches
-* Avoiding memory overhead from large `query()` results
-
 #### 3. Page iterator — process SOQL pages in batches
 
 ```js
