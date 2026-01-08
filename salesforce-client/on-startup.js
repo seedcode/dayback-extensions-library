@@ -23,17 +23,17 @@
 //
 //   // All other calls use object notation:
 //
-//   const r = await sf.create({ sobject: "Contact", record: { FirstName: "Ada", LastName: "Lovelace" } });
-//   await sf.update({ sobject: "Contact", id: r.data.id, record: { Title: "CTO" } });
-//   const r = await sf.retrieve({ sobject: "Contact", id: r.data.id, fields: ["Id","Name","Title"] });
+//   const r = await sf.create({ objectName: "Contact", record: { FirstName: "Ada", LastName: "Lovelace" } });
+//   await sf.update({ objectName: "Contact", id: r.data.id, record: { Title: "CTO" } });
+//   const r = await sf.retrieve({ objectName: "Contact", id: r.data.id, fields: ["Id","Name","Title"] });
 //   const r = await sf.apex({ method: "POST", path: "/PauseSession", body: { /* ... */ } });
 //   const r = await sf.batch({ requests: [ { method: "GET", url: "/sobjects/Contact/" + r.data.id, referenceId: "getC" } ] });
-//   await sf.delete({ sobject: "Contact", id: r.data.id });
+//   await sf.delete({ objectName: "Contact", id: r.data.id });
 //   const r = await sf.compoundBatch({
-//      requests: [ /* sobject create/update/delete subrequests */],
-//          batchSize: 200,        // max records per inner sobject-composite
-//              envelopeSize: 25,      // max requests per outer composite
-//                  allOrNone: true
+//      requests: [ /* objectName create/update/delete subrequests */],
+//          batchSize: 200,        // max records per inner objectName-composite
+//          envelopeSize: 25,      // max requests per outer composite
+//          allOrNone: true
 //      });
 // 
 // Helper functions:
@@ -54,7 +54,7 @@
 // Default (throws):
 //   try {
 //     const q = await sf.query({ soql: `SELECT Id, Name FROM Contact WHERE Email = ${sf.quote(email)}` });
-//     await sf.update({ sobject: "Contact", id: q.data[0].Id, record: { Custom_Field__c: "value" } });
+//     await sf.update({ objectName: "Contact", id: q.data[0].Id, record: { Custom_Field__c: "value" } });
 //   } catch (e) {
 //     sf.showError(e);
 //   }
@@ -569,37 +569,37 @@
                 });
             }
 
-            async function retrieve({ sobject, id, fields } = {}) {
-                if (!sobject || !id) throw new Error("retrieve({ sobject, id, fields? }) requires sobject & id");
-                const path = `${endpoints.dataBase}/sobjects/${sobject}/${id}`;
+            async function retrieve({ objectName, id, fields } = {}) {
+                if (!objectName || !id) throw new Error("retrieve({ objectName, id, fields? }) requires objectName & id");
+                const path = `${endpoints.dataBase}/sobjects/${objectName}/${id}`;
                 const res = await ajax("GET", path, { params: fields && fields.length ? { fields: fields.join(",") } : undefined });
                 return buildResponse(res, { data: res.payload });
             }
 
-            async function create({ sobject, record } = {}) {
-                if (!sobject || !record) throw new Error("create({ sobject, record }) requires sobject & record");
-                const path = `${endpoints.dataBase}/sobjects/${sobject}/`;
+            async function create({ objectName, record } = {}) {
+                if (!objectName || !record) throw new Error("create({ objectName, record }) requires objectName & record");
+                const path = `${endpoints.dataBase}/sobjects/${objectName}/`;
                 const res = await ajax("POST", path, { body: record });
                 return buildResponse(res, { data: res.payload });
             }
 
-            async function update({ sobject, id, record } = {}) {
-                if (!sobject || !id || !record) throw new Error("update({ sobject, id, record }) requires sobject, id & record");
-                const path = `${endpoints.dataBase}/sobjects/${sobject}/${id}`;
+            async function update({ objectName, id, record } = {}) {
+                if (!objectName || !id || !record) throw new Error("update({ objectName, id, record }) requires objectName, id & record");
+                const path = `${endpoints.dataBase}/sobjects/${objectName}/${id}`;
                 const res = await ajax("PATCH", path, { body: record });
                 return buildResponse(res, { data: res.payload });
             }
 
-            async function upsert({ sobject, externalIdField, externalIdValue, record } = {}) {
-                if (!sobject || !externalIdField || externalIdValue == null || !record) throw new Error("upsert({ sobject, externalIdField, externalIdValue, record }) requires all parameters");
-                const path = `${endpoints.dataBase}/sobjects/${sobject}/${externalIdField}/${encodeURIComponent(externalIdValue)}`;
-                const res = await ajax("PATCH", path, { body: record });
+            async function upsert({ objectName, externalIdField, externalIdValue, record } = {}) {
+                if (!objectName || !externalIdField || externalIdValue == null || !record) throw new Error("upsert({ objectName, externalIdField, externalIdValue, record }) requires all parameters");
+                const path = `${endpoints.dataBase}/sobjects/${objectName}/${externalIdField}/${encodeURIComponent(externalIdValue)}`;
+                const res = await ajax("PATCH", path, { body: sobjectsrecord });
                 return buildResponse(res, { data: res.payload });
             }
 
-            async function del({ sobject, id } = {}) {
-                if (!sobject || !id) throw new Error("delete({ sobject, id }) requires sobject & id");
-                const path = `${endpoints.dataBase}/sobjects/${sobject}/${id}`;
+            async function del({ objectName, id } = {}) {
+                if (!objectName || !id) throw new Error("delete({ objectName, id }) requires objectName & id");
+                const path = `${endpoints.dataBase}/sobjects/${objectName}/${id}`;
                 const res = await ajax("DELETE", path);
                 return buildResponse(res, { data: res.payload });
             }
@@ -630,9 +630,9 @@
                 return buildResponse(res, { data: res.payload });
             }
 
-            async function createTree({ sobject, records, chunkSize = 200 } = {}) {
-                if (!sobject || !Array.isArray(records)) throw new Error("createTree({ sobject, records }) requires sobject & records array");
-                const path = `${endpoints.dataBase}/composite/tree/${sobject}`;
+            async function createTree({ objectName, records, chunkSize = 200 } = {}) {
+                if (!objectName || !Array.isArray(records)) throw new Error("createTree({ objectName, records }) requires objectName & records array");
+                const path = `${endpoints.dataBase}/composite/tree/${objectName}`;
                 const chunks = [];
                 for (let i = 0; i < records.length; i += chunkSize) chunks.push(records.slice(i, i + chunkSize));
                 const out = [];
@@ -655,7 +655,7 @@
 
             /**
              * compoundBatch({
-             *   requests: [ {...}, {...}, ... ],  // array of sObject records (POST/PATCH)
+             *   requests: [ {...}, {...}, ... ],  // array of objectName records (POST/PATCH)
              *   batchSize: 200,                   // max records per inner composite/sobjects (SF limit)
              *   envelopeSize: 25,                 // max compositeRequest items in outer batch
              *   method: "POST" | "PATCH",         // inferred from requests if omitted
@@ -672,7 +672,7 @@
                 allOrNone = true,
             } = {}) {
                 if (!Array.isArray(requests)) {
-                    throw new Error("compoundBatch requires an array of sObject records.");
+                    throw new Error("compoundBatch requires an array of the sObject's records.");
                 }
 
                 // Determine POST/PATCH dynamically if not supplied

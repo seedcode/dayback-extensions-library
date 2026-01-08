@@ -16,7 +16,7 @@ Most of our legacy examples used `.then().catch()` methodology. This can be usef
 ```js
 // Promise chaining for parallel operations
 sf.query("SELECT Id FROM Contact")
-  .then(resp => sf.retrieve({ sobject: "Account", id: resp.data[0].Id }))
+  .then(resp => sf.retrieve({ objectName: "Account", id: resp.data[0].Id }))
   .then(accountResp => console.log(accountResp.data))
   .catch(e => sf.showError(e));
 ```
@@ -44,7 +44,7 @@ try {
   const contactResp = await sf.query({ soql: "SELECT Id FROM Contact LIMIT 1" });
   if (!contactResp.ok) throw contactResp.error;
 
-  const accountResp = await sf.retrieve({ sobject: "Account", id: contactResp.data[0].Id });
+  const accountResp = await sf.retrieve({ objectName: "Account", id: contactResp.data[0].Id });
   if (!accountResp.ok) throw accountResp.error;
 
   console.log(accountResp.data);
@@ -79,26 +79,26 @@ const response = await sf.query({
 if (!response.ok) return sf.showError(response.error); // q.data = array of records
 console.log(response.data.length, response.meta.totalSize);
 ```
-**Create new record for SObject**
+**Create new record for objectName**
 ```js
 const response = await sf.create({ 
-  sobject: "Contact", 
+  objectName: "Contact", 
   record: { FirstName: "Ada", LastName: "Lovelace" } 
 });
 const newId = response.data?.id;
 ```
-**Update record in existing SObject**
+**Update record in existing objectName**
 ```js
 await sf.update({ 
-  sobject: "Contact", 
+  objectName: "Contact", 
   id: newId, 
   record: { Title: "CTO" } 
 });
 ```
-**Retrieve selected fields from an SObject**
+**Retrieve selected fields from an objectName**
 ```js
 const response = await sf.retrieve({ 
-  sobject: "Contact", 
+  objectName: "Contact", 
   id: newId, 
   fields: ["Id","Name","Title"] 
 });
@@ -126,7 +126,7 @@ const response = await sf.batch({
 **Compound Composite Batch**
 ```js
 const response = await sf.compoundBatch({
-   requests: [ {...}, {...}, ... ],  // array of sObject records (POST/PATCH)
+   requests: [ {...}, {...}, ... ],  // array of objectName records (POST/PATCH)
    batchSize: 200,                   // max records per inner composite/sobjects (SF limit)
    envelopeSize: 25,                 // max compositeRequest items in outer batch
    method: "POST" | "PATCH",         // inferred from requests if omitted
@@ -136,7 +136,7 @@ const response = await sf.compoundBatch({
 **Tree insert**
 ```js
 const response = await sf.createTree({ 
-  sobject: "Contact", 
+  objectName: "Contact", 
   records: [
     { 
       attributes: { type:"Contact", referenceId:"ref1" }, 
@@ -154,7 +154,7 @@ const response = await sf.createTree({
 **Delete**
 ```js
 await sf.delete({ 
-  sobject: "Contact", 
+  objectName: "Contact", 
   id: newId 
 });
 ```
@@ -171,7 +171,7 @@ Use `try/catch` (default throws) or inspect response objects when `errorMode: "r
 const sf = SalesforceClient();
 try {
   const q = await sf.query({ soql: "SELECT Id FROM Contact LIMIT 1" });
-  await sf.update({ sobject: "Contact", id: q.data[0].Id, record: { Title: "CTO" } });
+  await sf.update({ objectName: "Contact", id: q.data[0].Id, record: { Title: "CTO" } });
 } catch (e) {
   sf.showError(e);
 }
@@ -183,7 +183,7 @@ const sf = SalesforceClient({ errorMode: "return" });
 const resp = await sf.query({ soql: "SELECT Id FROM Contact LIMIT 1" });
 if (!resp.ok) return sf.showError(resp.error);
 
-const resp2 = await sf.update({ sobject: "Contact", id: resp.data[0].Id, record: { Title: "CTO" } });
+const resp2 = await sf.update({ objectName: "Contact", id: resp.data[0].Id, record: { Title: "CTO" } });
 if (!resp2.ok) return sf.showError(resp2.error);
 ```
 
@@ -266,34 +266,34 @@ console.log(q.data.length, q.meta.totalSize);
 #### 🔎 `sf.bulkQuery({ soql, onRow?, delayMs?, maxPages? })`
 Run multi-page version of `sf.quey()` with various pagination conrols. Please [see section below](#-bulk-query-sfbulkquery) for full documentation.
 
-#### 📥 `sf.retrieve({ sobject, id, fields? })`
+#### 📥 `sf.retrieve({ objectName, id, fields? })`
 Fetch a record by Id with optional field selection.
 ```js
-const r = await sf.retrieve({ sobject: "Account", id: "001xx000000123A", fields: ["Id","Name"] });
+const r = await sf.retrieve({ objectName: "Account", id: "001xx000000123A", fields: ["Id","Name"] });
 ```
 
-#### ➕ `sf.create({ sobject, record })`
+#### ➕ `sf.create({ objectName, record })`
 Create. `resp.data` includes Salesforce create payload (`id`, `success`, `errors`).
 ```js
-const c = await sf.create({ sobject: "Contact", record: { FirstName: "Ada", LastName: "Lovelace" } });
+const c = await sf.create({ objectName: "Contact", record: { FirstName: "Ada", LastName: "Lovelace" } });
 ```
 
-#### ✏️ `sf.update({ sobject, id, record })`
+#### ✏️ `sf.update({ objectName, id, record })`
 Update (status usually 204).
 ```js
-await sf.update({ sobject: "Contact", id: c.data.id, record: { Title: "CTO" } });
+await sf.update({ objectName: "Contact", id: c.data.id, record: { Title: "CTO" } });
 ```
 
-#### 🔁 `sf.upsert({ sobject, externalIdField, externalIdValue, record })`
+#### 🔁 `sf.upsert({ objectName, externalIdField, externalIdValue, record })`
 Create or update based on external Id.
 ```js
-await sf.upsert({ sobject: "Contact", externalIdField: "Email", externalIdValue: "ada@example.com", record: { LastName: "Unknown" } });
+await sf.upsert({ objectName: "Contact", externalIdField: "Email", externalIdValue: "ada@example.com", record: { LastName: "Unknown" } });
 ```
 
-#### 🗑️ `sf.delete({ sobject, id })`
+#### 🗑️ `sf.delete({ objectName, id })`
 Delete by Id.
 ```js
-await sf.delete({ sobject: "Contact", id: c.data.id });
+await sf.delete({ objectName: "Contact", id: c.data.id });
 ```
 
 #### 📦 `sf.batch({ requests, allOrNone?, collateSubrequests? })`
@@ -341,7 +341,7 @@ Optional Variables
 
 ```js
 const response = await sf.compoundBatch({
-   requests: [ {...}, {...}, ... ],  // array of sObject records (POST/PATCH)
+   requests: [ {...}, {...}, ... ],  // array of objectName records (POST/PATCH)
    batchSize: 200,                   // max records per inner composite/sobjects (SF limit)
    envelopeSize: 25,                 // max compositeRequest items in outer batch
    method: "POST" | "PATCH",         // inferred from requests if omitted
@@ -349,10 +349,10 @@ const response = await sf.compoundBatch({
 });
 ```
 
-#### 🌳 `sf.createTree({ sobject, records, chunkSize? })`
+#### 🌳 `sf.createTree({ objectName, records, chunkSize? })`
 Tree insert in batches (`chunkSize` default 200). Returns array of chunk payloads.
 ```js
-const t = await sf.createTree({ sobject: "Contact", records: [
+const t = await sf.createTree({ objectName: "Contact", records: [
   { attributes:{ type:"Contact", referenceId:"ref1" }, FirstName:"A", LastName:"One" },
   { attributes:{ type:"Contact", referenceId:"ref2" }, FirstName:"B", LastName:"Two" }
 ] });
@@ -374,7 +374,7 @@ await sf.query({ soql: `SELECT Id FROM Contact WHERE Email = ${email}` });
 #### 🚨 `sf.showError(error)`
 Show errors with appropriate UI affordance in Canvas.
 ```js
-try { await sf.update({ sobject:"Contact", id:c.data.id, record:{ Title:"CTO" } }); } catch(e) { sf.showError(e); }
+try { await sf.update({ objectName:"Contact", id:c.data.id, record:{ Title:"CTO" } }); } catch(e) { sf.showError(e); }
 ```
 
 #### 🕒 `sf.formatDateTime(momentObj)`

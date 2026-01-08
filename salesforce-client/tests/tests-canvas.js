@@ -9,8 +9,8 @@
 (async function runSfClientSmokeTestsHarness() {
     // ---- CONFIG ----
     const TEST_CONFIG = {
-        // Prefer the mapped object from the schedule; otherwise override with your sObject:
-        sobject: 'Event',
+        // Prefer the mapped object from the schedule; otherwise override with your objectName:
+        objectName: 'Event',
 
         // Field mapping on your event object:
         fields: {
@@ -88,7 +88,7 @@
     const sf = SalesforceClient();
 
     // Convenience aliases
-    const SOBJ = TEST_CONFIG.sobject;
+    const SOBJ = TEST_CONFIG.objectName;
     const F = TEST_CONFIG.fields;
 
     // Build day window on the original event’s date
@@ -115,7 +115,7 @@
         // A) RETRIEVE by Id
         log(`🔎 Retrieve baseline ${SOBJ} by Id (${event.eventID})`);
         const rA = await sf.retrieve({
-            sobject: SOBJ, id: event.eventID, fields: [
+            objectName: SOBJ, id: event.eventID, fields: [
                 "Id", F.title, F.description, F.location, F.start, F.end, F.status
             ]
         });
@@ -137,7 +137,7 @@
         const newTitle = `[TEST ${nowStamp()}] ${baseline?.[F.title] || "(no title)"}`;
         const newStatus = TEST_CONFIG.statusValues.find(s => s !== (baseline?.[F.status] || "")) || TEST_CONFIG.statusValues[0];
         const rC = await sf.update({
-            sobject: SOBJ, id: event.eventID, record: {
+            objectName: SOBJ, id: event.eventID, record: {
                 [F.title]: newTitle,
                 [F.status]: newStatus
             }
@@ -147,7 +147,7 @@
         // D) CREATE a new record on the same day
         log(`➕ Create new ${SOBJ} on the same day`);
         const rD = await sf.create({
-            sobject: SOBJ, record: {
+            objectName: SOBJ, record: {
                 [F.title]: `[TEST CREATE] ${nowStamp()}`,
                 [F.description]: "Smoke test created via SalesforceClient",
                 [F.location]: "Test Location",
@@ -162,7 +162,7 @@
 
         // E) RETRIEVE created record
         log(`📥 Retrieve created record`);
-        const rE = await sf.retrieve({ sobject: SOBJ, id: createdId, fields: ["Id", F.title, F.status, F.start, F.end] });
+        const rE = await sf.retrieve({ objectName: SOBJ, id: createdId, fields: ["Id", F.title, F.status, F.start, F.end] });
         const createdRec = rE.data;
         log(`Retrieve created OK: ${rE.status} – title: ${createdRec?.[F.title]}`);
 
@@ -188,7 +188,7 @@
             // Tie the created record to an External ID so we can hit the UPDATE path
             const extValueUpdate = `${TEST_CONFIG.upsert.externalIdValuePrefix}${createdId}`;
             log(`🔁 Prepare for upsert: set ${extField} on created record ${createdId}`);
-            await sf.update({ sobject: SOBJ, id: createdId, record: { [extField]: extValueUpdate } });
+            await sf.update({ objectName: SOBJ, id: createdId, record: { [extField]: extValueUpdate } });
 
             // Duration needed for Event inserts/updates
             const durMins = Math.max(1, newEnd.diff(newStart, "minutes"));
@@ -203,7 +203,7 @@
                     ? { StartDateTime: isoZ(newStart), EndDateTime: isoZ(newEnd), DurationInMinutes: durMins }
                     : { [startField]: isoZ(newStart), [endField]: isoZ(newEnd) })
             };
-            const rG1 = await sf.upsert({ sobject: SOBJ, externalIdField: extField, externalIdValue: extValueUpdate, record: updateBody });
+            const rG1 = await sf.upsert({ objectName: SOBJ, externalIdField: extField, externalIdValue: extValueUpdate, record: updateBody });
             log(`Upsert UPDATE status: ${rG1.status}`);
 
             // --- INSERT path (should return 201) ---
@@ -222,13 +222,13 @@
                     : { [startField]: isoZ(insertStart), [endField]: isoZ(insertEnd) }),
                 ...(SOBJ !== "Event" && F.status ? { [F.status]: "Tentative" } : {})
             };
-            const rG2 = await sf.upsert({ sobject: SOBJ, externalIdField: extField, externalIdValue: extValueInsert, record: insertBody });
+            const rG2 = await sf.upsert({ objectName: SOBJ, externalIdField: extField, externalIdValue: extValueInsert, record: insertBody });
             log(`Upsert INSERT status: ${rG2.status}`);
             const upsertInsertedId = rG2.data?.id;
 
             // Optional cleanup of the upsert-inserted record
             if (!TEST_CONFIG.keepCreatedRecords && upsertInsertedId) {
-                const rDelIns = await sf.delete({ sobject: SOBJ, id: upsertInsertedId });
+                const rDelIns = await sf.delete({ objectName: SOBJ, id: upsertInsertedId });
                 log(`Deleted upsert-inserted record ${upsertInsertedId}: ${rDelIns.status}`);
             }
         } else {
@@ -253,7 +253,7 @@
         console.log("Composite response:", rH, composite);
 
         // H2) COMPOUND BATCH TEST
-        log(`📦 Compound Batch (sObject collections inside composite`);
+        log(`📦 Compound Batch (objectName collections inside composite`);
 
         // Prepare 3 small test records for compound batch
         const cbStart = newStart.clone().add(4, "hours");
@@ -369,7 +369,7 @@
         if (!TEST_CONFIG.keepCreatedRecords && cbCreated.length) {
             log(`🧹 Delete ${cbCreated.length} compound - batch record(s)`);
             for (const id of cbCreated) {
-                const rd = await sf.delete({ sobject: SOBJ, id });
+                const rd = await sf.delete({ objectName: SOBJ, id });
                 log(`  - ${id}: ${rd.status} `);
             }
         } else if (cbCreated.length) {
@@ -404,7 +404,7 @@
         // K) CLEANUP (optional)
         if (createdId && !TEST_CONFIG.keepCreatedRecords) {
             log(`🗑️  Delete created record`);
-            const rJ = await sf.delete({ sobject: SOBJ, id: createdId });
+            const rJ = await sf.delete({ objectName: SOBJ, id: createdId });
             log(`Delete OK: ${rJ.status}`);
         } else if (createdId) {
             log(`(Keeping created record ${createdId})`);
@@ -440,7 +440,7 @@
             }
         ];
 
-        const rK = await sf.createTree({ sobject: SOBJ, records: treeRecords });
+        const rK = await sf.createTree({ objectName: SOBJ, records: treeRecords });
         const treePayloads = rK.data;
         // treePayloads is an array of per-chunk payloads; each payload has {hasErrors, results:[{referenceId,id,errors:[]}, ...]}
         const treePayloadArray = Array.isArray(treePayloads) ? treePayloads : [treePayloads];
@@ -459,7 +459,7 @@
         if (!TEST_CONFIG.keepCreatedRecords && treeCreatedIds.length) {
             log(`🧹 Delete ${treeCreatedIds.length} tree record(s)`);
             for (const id of treeCreatedIds) {
-                const rDel = await sf.delete({ sobject: SOBJ, id });
+                const rDel = await sf.delete({ objectName: SOBJ, id });
                 log(`  - ${id}: ${rDel.status}`);
             }
         } else if (treeCreatedIds.length) {
