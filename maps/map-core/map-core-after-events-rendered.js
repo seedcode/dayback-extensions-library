@@ -4,7 +4,7 @@
 // Action Type: After Events Rendered
 // Prevent Default Action: No
 // Requires: Map core functions
-// Version: v1.0.0
+// Version: v1.0.1
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -13,8 +13,9 @@
 
 (() => {
 	// Declare global imports
+	// prettier-ignore
 	// @ts-ignore
-	const globals = {action, params, dbk, seedcodeCalendar, utilities};
+	const globals = {action, params, dbk, seedcodeCalendar, utilities, $rootScope};
 
 	const options = {};
 	const inputs = {};
@@ -50,6 +51,8 @@
 
 	//----------- The action itself: you may not need to edit this. -------------------
 
+	let unscheduledFilterActivated = false;
+
 	// Action code goes inside this function
 	function run() {
 		// Global prefix
@@ -73,6 +76,10 @@
 			resetAll();
 		} else if (!globals.params.data.fromResize) {
 			// Will schedule to run after the markers have updated
+			runReRoute();
+		}
+
+		function runReRoute() {
 			scheduleRunner('afterUpdate', reRouteResource);
 		}
 	}

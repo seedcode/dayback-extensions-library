@@ -1,9 +1,9 @@
 // DayBack Custom Action Template v1.0.5
 
 // Purpose: Registers all of the functionality needed for calculating distances and routing
-// Action Type: On Sources Fetched
+// Action Type: On Startup
 // Prevent Default Action: No
-// Version: v1.1.4
+// Version: v1.1.5
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -155,6 +155,11 @@
 			scheduleRunner,
 			true
 		);
+		globals.seedcodeCalendar.init(
+			`${globalPrefix}hasRoutes`,
+			hasRoutes,
+			true
+		);
 
 		let mapApiKey = '';
 		let advancedMarkerElement;
@@ -164,6 +169,8 @@
 
 		let routes = {};
 		let wasDestroyed = false;
+
+		let unscheduledFilterListener;
 
 		initialize();
 
@@ -189,7 +196,10 @@
 						const altView =
 							globals.seedcodeCalendar.get('alt-view');
 
-						if (altView.type === 'map' && wasDestroyed) {
+						if (
+							(altView.type === 'map' || config.altViewPanels) &&
+							wasDestroyed
+						) {
 							reRouteResource();
 						}
 						wasDestroyed = false;
@@ -205,6 +215,13 @@
 			pinElement = PinElement;
 			// Geometry library utlities
 			geometry = await globals.google.maps.importLibrary('geometry');
+
+			unscheduledFilterListener = globals.$rootScope.$on(
+				'afterUnscheduledFiltered',
+				() => {
+					reRouteResource();
+				}
+			);
 		}
 
 		/** @type {(resourceId?: string) => void} */
@@ -478,6 +495,14 @@
 			await showRouteForResource(resourceId, !!ev?.shiftKey);
 		}
 
+		function asyncTimeout(delay) {
+			return new Promise((resolve, reject) => {
+				setTimeout(() => {
+					resolve(true);
+				}, delay);
+			});
+		}
+
 		/** @type {(resourceId: string, compareRoute?: boolean, fromReroute?: boolean) => Promise<void>} */
 		async function showRouteForResource(
 			resourceId,
@@ -490,6 +515,8 @@
 			if (routes[resourceId]?.loading) {
 				return;
 			}
+
+			// await asyncTimeout(5000);
 
 			// Start by focusing the map tab and error if it isn't enabled
 			try {
@@ -726,6 +753,12 @@
 			}
 		}
 
+		/** @type {() => boolean} */
+		function hasRoutes() {
+			const routeKeys = Object.keys(routes);
+			return !!routeKeys.length;
+		}
+
 		/** @type {(resourceId: string, resourceDistanceContainer: HTMLElement | null) => void} */
 		function clearRouteLoading(resourceId, resourceDistanceContainer) {
 			if (routes[resourceId]?.loading) {
@@ -858,6 +891,7 @@
 						eventMarker.markerContent;
 					eventMarker.event.map.marker.zIndex = eventMarker.zIndex;
 				}
+
 				routes[routeKey].eventMarkersChanged = [];
 
 				for (const marker of routes[routeKey].dynamicMarkers) {
@@ -889,7 +923,7 @@
 				if (wasLoading.has(resourceId)) {
 					continue;
 				}
-				showRouteForResource(resourceId, true, true);
+				await showRouteForResource(resourceId, true, true);
 			}
 		}
 
@@ -1171,7 +1205,10 @@
 				}
 				const altView = globals.seedcodeCalendar.get('alt-view');
 
-				if (altView.type === 'map' && altView.show) {
+				if (
+					(config.altViewPanels || altView.type === 'map') &&
+					altView.show
+				) {
 					resolve();
 					return;
 				}
@@ -1179,7 +1216,10 @@
 				globals.dbk.updateAltView({show: true, type: 'map'});
 
 				// Wait for the map markers to render before continuing
-				if (altView.show || altView.type !== 'map') {
+				if (
+					altView.show ||
+					(altView.type !== 'map' && !config.altViewPanels)
+				) {
 					scheduleRunner('afterUpdate', () => {
 						resolve();
 					});
