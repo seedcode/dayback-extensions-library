@@ -225,7 +225,6 @@
 					`${globalPrefix}unscheduledFilterWatcher`,
 
 					globals.$rootScope.$on('afterUnscheduledFiltered', () => {
-						console.log('reroute');
 						reRouteResource();
 					})
 				);

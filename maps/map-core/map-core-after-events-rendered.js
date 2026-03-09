@@ -76,10 +76,6 @@
 			resetAll();
 		} else if (!globals.params.data.fromResize) {
 			// Will schedule to run after the markers have updated
-			runReRoute();
-		}
-
-		function runReRoute() {
 			scheduleRunner('afterUpdate', reRouteResource);
 		}
 	}
