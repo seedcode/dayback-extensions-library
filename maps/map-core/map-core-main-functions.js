@@ -3,7 +3,7 @@
 // Purpose: Registers all of the functionality needed for calculating distances and routing
 // Action Type: On Startup
 // Prevent Default Action: No
-// Version: v1.1.6
+// Version: v1.1.7
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -169,8 +169,6 @@
 
 		let routes = {};
 		let wasDestroyed = false;
-
-		let unscheduledFilterListener;
 
 		initialize();
 
