@@ -3,7 +3,7 @@
 // Purpose: Registers all of the functionality needed for calculating distances and routing
 // Action Type: On Startup
 // Prevent Default Action: No
-// Version: v1.1.5
+// Version: v1.1.6
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -217,6 +217,7 @@
 			geometry = await globals.google.maps.importLibrary('geometry');
 
 			if (
+				globals.seedcodeCalendar.getPersistent &&
 				!globals.seedcodeCalendar.getPersistent(
 					`${globalPrefix}unscheduledFilterWatcher`
 				)
