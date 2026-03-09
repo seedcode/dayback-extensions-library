@@ -216,12 +216,20 @@
 			// Geometry library utlities
 			geometry = await globals.google.maps.importLibrary('geometry');
 
-			unscheduledFilterListener = globals.$rootScope.$on(
-				'afterUnscheduledFiltered',
-				() => {
-					reRouteResource();
-				}
-			);
+			if (
+				!globals.seedcodeCalendar.getPersistent(
+					`${globalPrefix}unscheduledFilterWatcher`
+				)
+			) {
+				globals.seedcodeCalendar.setPersistent(
+					`${globalPrefix}unscheduledFilterWatcher`,
+
+					globals.$rootScope.$on('afterUnscheduledFiltered', () => {
+						console.log('reroute');
+						reRouteResource();
+					})
+				);
+			}
 		}
 
 		/** @type {(resourceId?: string) => void} */
