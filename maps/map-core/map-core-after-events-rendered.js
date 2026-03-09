@@ -15,7 +15,7 @@
 	// Declare global imports
 	// prettier-ignore
 	// @ts-ignore
-	const globals = {action, params, dbk, seedcodeCalendar, utilities, $rootScope};
+	const globals = {action, params, dbk, seedcodeCalendar, utilities};
 
 	const options = {};
 	const inputs = {};
