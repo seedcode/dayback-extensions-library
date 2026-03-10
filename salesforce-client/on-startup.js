@@ -761,7 +761,7 @@
             }
 
             /**
-             * bulkQuery()
+             * bulkQuery({ soql, onRow, delayMs, maxPages })
              * -----------
              * A streaming, memory-efficient SOQL query API.
              * Supports:
@@ -778,17 +778,14 @@
              *    const rows = await sf.bulkQuery.collect({ soql });
              *
              *    for await (const page of sf.bulkQuery.pages({ soql })) { ... }
+             *
+             * If onRow is supplied:
+             *    - bulkQuery returns a Promise
+             *    - generator is consumed internally
+             *
+             * If onRow is omitted:
+             *    - bulkQuery returns an async iterator
              */
-            /**
- * bulkQuery({ soql, onRow, delayMs, maxPages })
- *
- * If onRow is supplied:
- *    - bulkQuery returns a Promise
- *    - generator is consumed internally
- *
- * If onRow is omitted:
- *    - bulkQuery returns an async iterator
- */
             function bulkQueryBase({ soql, onRow, delayMs = 0, maxPages = Infinity } = {}) {
                 if (!soql) throw new Error("bulkQuery({ soql }) requires a SOQL string");
 
