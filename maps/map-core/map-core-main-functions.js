@@ -501,14 +501,6 @@
 			await showRouteForResource(resourceId, !!ev?.shiftKey);
 		}
 
-		function asyncTimeout(delay) {
-			return new Promise((resolve, reject) => {
-				setTimeout(() => {
-					resolve(true);
-				}, delay);
-			});
-		}
-
 		/** @type {(resourceId: string, compareRoute?: boolean, fromReroute?: boolean) => Promise<void>} */
 		async function showRouteForResource(
 			resourceId,
@@ -521,8 +513,6 @@
 			if (routes[resourceId]?.loading) {
 				return;
 			}
-
-			// await asyncTimeout(5000);
 
 			// Start by focusing the map tab and error if it isn't enabled
 			try {
