@@ -46,8 +46,8 @@ try {
 function run() {
 	var filterItems = [];
 	var item;
-
-	if (utilities.getDBKPlatform() === 'dbkfmjs') {
+// Added dbkfmwd to if to capture for WebDirect
+	if (utilities.getDBKPlatform() === 'dbkfmjs' || utilities.getDBKPlatform() === 'dbkfmwd') {
 		dbk.performFileMakerScript(inputs.scriptName, null, function (result) {
 			if (result && result.payload) {
 				for (var i = 0; i < result.payload.length; i++) {
