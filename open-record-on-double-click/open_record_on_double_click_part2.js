@@ -1,4 +1,7 @@
 // Open Record On Double Click v1.0 - Part 2
+
+// Name: Open Record On Double Click - Part 2
+// Type: Event Action
 //
 // Purpose:
 // This action prevents the standard DayBack popover from opening

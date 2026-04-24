@@ -1,3 +1,5 @@
+// Name: Make Active
+// Type: Button Action
 function makeActive() {
     // Define field we will set to true. This is the Salesforce field API name.
     // Customs fields will end with __c

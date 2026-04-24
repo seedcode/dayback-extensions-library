@@ -1,4 +1,7 @@
 // Event Validation - Before Event Rendered - v1.0
+
+// Name: Event Validation - Before Event Rendered
+// Type: Event Action
 //
 // Purpose:
 // Validates events before they are rendered 

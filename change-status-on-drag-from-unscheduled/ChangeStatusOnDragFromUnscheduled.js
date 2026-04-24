@@ -1,5 +1,7 @@
 // Change Status When Dragging out of Unschdeuled v1.0
 
+// Name: Change Status When Dragging from Unscheduled
+// Type: Event Action
 // Purpose:
 // If the unscheduled field in DayBack is mapped to a formula field based on "status"
 // this action switches the status when you drag an item out of unscheduled. Pick

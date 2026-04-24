@@ -1,13 +1,12 @@
 // Event Validation and Highlighting v1.00
 
-// Name: Event Validation and Highlighting
+// Name: Event Validation and Highlighting - MedSpa
 // Type: App Action
 //
 // Purpose:
-// This module provides a comprehensive framework for validating and highlighting event 
-// fields in DayBack, supporting both standard and custom fields.Validation rules are defined
-// per field and can include required logic, error / warning tests, and dynamic field visibility.
-// 
+// Validates events on edit and highlights fields with errors or warnings.
+// Also highlights events with errors or warnings in the calendar view.
+//
 // Action Type: Before Calendar Rendered
 // Prevent Default Action: No
 //
@@ -18,7 +17,7 @@
 
 (() => {
 
-    // Declare globals - do not change
+
     let options = {};
     let inputs = {};
 
@@ -72,15 +71,15 @@
         // Query Cache for Salesforce Queries
         // ----------------------------------
         //
-        // If your validation tests need to make API calls (such as to Salesforce),
-        // you can use a query cache to reduce the number of repeated requests.
+        // If your tests require you to run API calls, you can cache query results
+        // to limit the number of Salesforce API calls made.
         //
-        // The queryCache object stores results from previous queries, and queryCacheExpiry
-        // sets how long each cached result remains valid (in milliseconds).
+        // The queryCache object is used to store cached results, and the queryCacheExpiry
+        // property defines how long the cached results are considered valid.
         //
         // To use the cache, call getCachedQuery(key) with a unique key for your query.
-        // If a valid cached result exists, it will be returned. Otherwise, run your query,
-        // save the result to the cache, and use that result.
+        // If a valid cached result is found, it is returned. If not, run your query,
+        // store the result in the cache, and return the result.
         //
         // Example usage:
         //
@@ -97,149 +96,25 @@
         inputs.queryCache = {};
         inputs.queryCacheExpiry = 3 * 60 * 1000; // 3 minutes
 
-        // Global and Calendar-Specific Defaults
-        // -------------------------------------
+        // Event Validation Rules
+        // ------------------------------
         //
-        // This library provides two ways to define configuration rules. One is for global defaults,
-        // which apply to all calendars and calendar sources. The other is for calendar-specific
-        // defaults, which apply only to specific calendars. You can use either or both to define
-        // your preferred validation rules.
+        // The validationRules object contains one property for each field you want to validate.
+        // Each property is an object that defines the validation rules for that field.
+        // You can define rules for standard fields (Title, Description, Start, End,
+        // Location, Calendar, Resource, Status) as well as custom fields by their label name.
         //
-        //      1. Global Defaults - rules that apply to all calendars and calendar sources.
+        // Example:
         //
-        //          inputs.globalDefaults = { ... } ; // for all calendars
+        //     inputs.validationRules = {
+        //         Title: { ... },
+        //         Description: { ... },
+        //         Resource: { ... },
+        //         Status: { ... },
+        //         "Custom Field Label": { ... }
+        //     }
         //
-        //      2. Calendar-Specific Defaults - rules that apply only to specific calendars.
-        //
-        //          inputs.calendarDefaults = [
-        //              { ... }, // for "My Calendar 1"
-        //              { ... }  // for "My Calendar 2"
-        //          ];
-        //
-        // While `globalDefaults` is a single object, `calendarDefaults` is an array
-        // of objects, each containing an identical structure as the `globalDefaults`, but with
-        // an additional `calendars` property to specify the calendar(s) to which the rules apply.
-        //
-        // Each sub-object contains the following properties. All are optional:
-        //
-        //      requiredFields: (array)         An array of field labels that should be marked
-        //                                      as required.
-        //
-        //      hiddenFields: (array)           An array of field labels that should be hidden.
-        //
-        //      calendars: (string or array)    Used in the calendarDefaults object to specify
-        //                                      the calendars to which the rules apply.
-        //
-        //      validationRules: { ... }        An object defining validation rules for
-        //                                      specific fields.
-        //
-        // The most simple way to use this library is to define a set of required or
-        // hidden fields up front. If you define `requiredFields`, the Edit Event popover
-        // will show a red asterisk next to the field label in the popover. It will
-        // automatically add basic validation rules to ensure that the fields are filled in
-        // before a user is allowed to save the event.
-        //
-        // For simple use cases, it is easiest to define your static configuration
-        // as follows:
-        //
-        //      inputs.globalDefaults = {
-        //          requiredFields: ['Title', 'Resource', 'Status', 'Start', 'End'],
-        //          hiddenFields: ['Location'],
-        //      }
-        //
-        //      inputs.calendarDefaults = [
-        //          {
-        //              calendars: ['My Calendar 1', 'My Calendar 2'],
-        //              requiredFields: ['Resource', 'Status', 'Start', 'End'],
-        //              hiddenFields: ['Project', 'Location'],
-        //          },
-        //          { ... }
-        //      ];
-        //
-        // If you *don't* expect these values to change based on the changing nature of an event,
-        // then this is all you need to do.
-        //
-        // However, if you want to show that a field is required or hidden based on the
-        // choices made by the user as they edit the event, you will need to define custom rules.
-        // These allow you to make fields conditionally required or hidden based on a result
-        // of a calculation.
-        //
-        // You do this by defining rules for specific fields in the `validationRules` object.
-        //
-        // Defining Dynamic Validation Rules for Individual Fields:
-        // ------------------------------------------------------
-        //
-        // Whether you use global or calendar-specific validation rules, you can add
-        // a `validationRules` sub-object to either or both objects. This object contains
-        // one property for each field you want to validate.
-        //
-        // This example shows how you can define rules for standard fields (Title,
-        // Description, Start, End, Location, Calendar, Resource, Status) as well as
-        // custom fields, using their label name:
-        //
-        //     inputs.globalDefaults = {
-        //          requiredFields: ['Title', 'Resource', 'Status', 'Start', 'End'],
-        //          hiddenFields: ['Location'],
-        //          validationRules: {
-        //              Resource: { ... },
-        //              Status: { ... },
-        //              "Custom Field Label": { ... }
-        //          }
-        //      }
-        //
-        // Global Rules versus Calendar-specific Rules:
-        // -------------------------------------------
-        //
-        // The `globalDefaults` object can be used to define validation rules that
-        // will apply to all calendars. However, you can add to or override the global
-        // rules by defining calendar-specific rules by specifying the calendar(s) to
-        // which the rules apply within the `calendarDefaults` object.
-        //
-        //      inputs.calendarDefaults = [
-        //          {
-        //              calendars: (string or array) - Calendar name(s) the rules apply to
-        //              validationRules: {
-        //                  Title: { ... },
-        //                  Description: { ... },
-        //                  Resource: { ... },
-        //                  Status: { ... },
-        //                  "Custom Field Label": { ... }
-        //              }
-        //          },
-        //          { ... }
-        //      ];
-        //
-        // The `requiredFields` and `hiddenFields` lists in `calendarDefaults` replace those
-        // defined in `globalDefaults`. If you require ['Title', 'Status'] in the `globalDefaults`,
-        // but ['Resource', 'Status'] in the `calendarDefaults`, only Resource and Status will
-        // be validated in the context of that calendar.
-        //
-        // However, `validationRules` are additive lists. This allows you to define a base set of
-        // validation rules in `globalDefaults`, and then add to or override those rules
-        // in `calendarDefaults`.
-        //
-        // At runtime, this library will merge the `globalDefaults` and the relevant
-        // `calendarDefaults` to create a final set of validation rules for all events.
-        //
-        // Replacing Validation Rules at Runtime
-        // ------------------------------------
-        //
-        // While in most cases, you only need to define your rules when this library first loads
-        // You can also manually override the global and calendar-specific rules from those
-        // retrieved from the database by calling the following methods:
-        //
-        //      sc.get('validationHandler').setGlobalDefaults(globalDefaults);
-        //
-        //      sc.get('validationHandler').setCalendarDefaults(calendarDefaults);
-        //
-        // This allows you to retrieve configuration from an external source, such as a
-        // Salesforce custom setting or custom object, and then pass that configuration
-        // to this library to set the validation rules dynamically.
-        //
-        // Defining the Validation Rules Object
-        // ------------------------------------
-        //
-        // Each field in your `validationRules` represents an object that contains one or more
+        // Each field in your validationRules represents an object that contains one or more
         // of the following properties. All properties are optional.
         //
         //      "Field Label": {
@@ -249,29 +124,7 @@
         //          warningTests: (array)
         //      }
         //
-        // A minimal configuration to make the Title field required, but without any
-        // specific error tests would look like this:
-        //
-        //      inputs.globalDefaults = {
-        //          validationRules: {
-        //              Title: {
-        //                  markRequired: true
-        //              }
-        //          }
-        //      }
-        //
-        // Properties of a Validation Rule for a Field:
-        // --------------------------------------------
-        //
-        // The documentation below explains each property in detail. Some of these properties
-        // are boolean values, while others are function tests, or arrays of function tests.
-        // These functions run in the context of the editEvent object, allowing you to
-        // access event fields, helper methods, and runtime context in order to make a decision
-        // whether an event is required, hidden, or has an error or warning.
-        //
-        // This gives you a great deal of flexibility in defining your validation rules and
-        // change the user experience in the Edit Event popover dynamically based on the
-        // choices made by the user as they edit the event.
+        // Properties:
         //
         //      markRequired: (boolean or function)
         //
@@ -280,15 +133,14 @@
         //
         //          If false or not specified, the field is displayed normally.
         //
-        //          If the value is defined as a function, it assumes the context of the
-        //          editEvent object. You can use `this` to refer to the editEvent object
-        //          and calculate if the field should be marked as required.
-        //
-        //          The function should return true to mark the field as required.
+        //          If the value is defined as a function, it takes the event as
+        //          a parameter to allow you to calculate if the field should be marked
+        //          as required. The function should return true to mark the field
+        //          as required.
         //
         //          Example:
         //
-        //          validationRules: {
+        //          inputs.validationRules = {
         //              Location: {
         //                  markRequired: (event) => event.status[0] == 'Booked'
         //              },
@@ -313,17 +165,17 @@
         //
         //          If false or not specified, the field is displayed normally.
         //
-        //          If the value is defined as a function, it assumes the context of the
-        //          editEvent object. You can use `this` to refer to the editEvent object
-        //          and calculate if the field should be hidden.
+        //          If the value is defined as a function, it takes the event as
+        //          a parameter to allow you to calculate if the field should be hidden.
+        //          The function should return true to hide the field.
         //
         //          Example:
         //
         //          // Make Hours Estimate required and visible only if Event Type is Task
         //
-        //          validationRules: {
+        //          inputs.validationRules = {
         //              "Hours Estimate": {
-        //                  markRequired: (event) => event.getField('Event Type') === 'Task',
+        //                  markRequired: (event) => opt.getField('Event Type') === 'Task',
         //                  hideField: (event) => event.getField('Event Type') !== 'Task'
         //              }
         //          }
@@ -337,19 +189,17 @@
         //
         //          If false, the field is hidden.
         //
-        //          If the value is defined as a function, it assumes the context of the
-        //          editEvent object. You can use `this` to refer to the editEvent object
-        //          and calculate if the field should be shown.
-        //
+        //          If the value is defined as a function, it takes the event as
+        //          a parameter to allow you to calculate if the field should be shown.
         //          The function should return true to show the field.
         //
         //          Example:
         //
         //          // Make Hours Estimate required and visible only if Event Type is Task
         //
-        //          validationRules: {
+        //          inputs.validationRules = {
         //              "Hours Estimate": {
-        //                  markRequired: (event) => event.getField('Event Type') === 'Task',
+        //                  markRequired: (event) => opt.getField('Event Type') === 'Task',
         //                  showField: (event) => event.getField('Event Type') === 'Task'
         //              }
         //          }
@@ -407,7 +257,8 @@
         //                            properties:
         //
         //                  test: (function)
-        //                        A function that returns true if there is an error.
+        //                        A function that takes an event, and an optional options object,
+        //                        (defined below) and returns true if there is an error.
         //
         //                  message: (string)
         //                        The error message to display if the test returns true.
@@ -424,11 +275,11 @@
         //                      markRequired: true,
         //                      errorTests: [
         //                          {
-        //                              test: (event) => !event.title || event.title.trim() === '',
+        //                              test: (event, opt) => !event.title || event.title.trim() === '',
         //                              message: 'Title is missing'
         //                          },
         //                          {
-        //                              test: (event) => event.title.length < 3,
+        //                              test: (event, opt) => event.title.length < 3,
         //                              message: 'Title is too short',
         //                              skipOnError: true
         //                          }
@@ -447,7 +298,8 @@
         //                  Each test object should a similar structure to errorTests:
         //
         //                  test: (function)
-        //                        A function that returns true if there is a warning.
+        //                        A function that takes an event, and an optional options object,
+        //                        (defined below) and returns true if there is an warning.
         //
         //                  message: (string)
         //                        The warning message to display if the test returns true.
@@ -457,69 +309,64 @@
         //                        warnings for this field. This allows certain tests to be
         //                        conditional on others not failing.
         //
-        // Function Tests:
-        // ---------------
+        // Test Function Parameter:
+        // ------------------------
         //
-        // Function tests will run with `this` set to a Proxy of the `editEvent` object,
-        // allowing you to access event fields, helper methods, and runtime context in order
-        // to make a decision whether an event is required, hidden, or has an error or warning.
+        // Each test function takes two parameters: an event, and an options object.
+        // Whether you choose to accept the options object or not is up to you.
         //
-        // Example usage:
+        //      event   - This is the event object for eventRender triggers, and an
+        //                editEvent object for all other trigger types.
         //
-        //     test: (event) => !event.title
+        //      options - An object containing useful information about the context in which
+        //                the validation is running, along with helper functions for
+        //                working with custom field data. It contains:
         //
-        //     test: (event) => !event.getField('Procedure')
+        //                trigger       - (string) The trigger that caused the validation to run.
+        //                                i.e.: 'eventRender', 'eventClick', 'fieldChange', 'eventSave'.
         //
-        //     test: (event) => event.trigger === 'eventSave' && event.fieldChanged('Status')
+        //                event         - (object) The event object.
         //
-        // You can define as a test using two types of functions:
+        //                editEvent     - (object) The editEvent object.
         //
-        //      1. Arrow functions: (event) => {}
-        //      2. Standard functions: function() {}
+        //                changes       - (object) A Changes Object containing the fields that were
+        //                                changed in the current edit session. Note that this
+        //                                object is only available for 'fieldChange' and 'eventSave'
+        //                                triggers.
         //
-        // However, please note that arrow functions do not have their own `this` context,
-        // so if you use an arrow function, you must define an argument to access the event
-        // object. Here are valid ways of defining a test to check if a custom field called
-        // "My Custom Field" is missing:
+        //                errors        - (object) Any errors found so far for any field for the
+        //                                current event.
         //
-        //      test: (event) => !event.getField('My Custom Field')
+        //                warnings      - (object) Any warnings found so far for any field for the
+        //                                current event.
         //
-        //      test: function() { return !this.getField('My Custom Field'); }
+        //                getField      - (function(field)) A function that takes a field label, or a "store
+        //                                in field" name as a parameter and returns the value of that
+        //                                custom field for the current event
         //
-        //      test: function(e) { return !e.getField('My Custom Field'); }
+        //                setField      - (function(field, value)) A function that takes a field label,
+        //                                or a "store in field" name, and a value as parameters and
+        //                                sets the value of that custom field for the current event.
         //
-        // Available Properties and Helper Methods:
-        // ----------------------------------------------
+        //                fieldChanged - (function(field)) A function that takes an optional field label
+        //                                parameter, and checks whether it is present in the changesObject.
+        //                                If no parameter is provided, it returns true if the current field
+        //                                was changed.
         //
-        // Whether using `this` or an argument, the following are available:
+        //              Example:
         //
-        //      trigger       - (string) The trigger that caused validation ('eventRender', 'eventClick', 'fieldChange', 'eventSave')
-        //      event         - (object) The original event object
-        //      editEvent     - (object) The current editEvent object
-        //      changes       - (object) Fields changed in the current edit session (for 'fieldChange' and 'eventSave')
-        //      errors        - (object) Errors found so far for any field
-        //      warnings      - (object) Warnings found so far for any field
-        //      getField(field)      - Returns the value of a custom field by label or "store in field" name
-        //      setField(field, value) - Sets the value of a custom field
-        //      fieldChanged(field)   - Checks whether a field (by label) was changed; if omitted, checks the current field
+        //                                test: (event, opt) => {
         //
-        // Helper Methods for Validation Actions:
+        //                                      // Only run this test if the trigger is eventSave
+        //                                      // and the field we're testing was actually changed.
         //
-        //      If you prefer to set errors and warnings directly on other fields within a test,
-        //      you can use the following helper methods to override errors and warnings:
+        //                                      return opt.trigger === 'eventSave' && !opt.fieldChanged()
         //
-        //      markRequired(field || fields[], isRequired) - Marks a field as required (true/false)
-        //      pushError(field || fields[], message) - Adds an error message to the event
-        //      pushWarning(field || fields[], message) - Adds a warning message to the event
-        //      markRequired(field || fields[], isRequired) - Marks a field as required (true/false)
-        //      showField(field || fields[]) - Shows a field
-        //      hideField(field || fields[]) - Hides a field
+        //                                      // ... rest of test logic ...
+        //                                }
         //
-        // Example:
-        //      test: (event) => event.trigger === 'eventSave' && event.fieldChanged(),
-        //
-        // Writing Tests against Standard Fields and Custom Fields:
-        // --------------------------------------------------------
+        // Writing Tests against Standard Fields and Custom Fields
+        // -------------------------------------------------------
         //
         // The following standard fields are available for validation directly on the event object:
         //
@@ -538,26 +385,26 @@
         //
         // Custom Fields:
         //
-        //      Since Custom Fields are user-defined, and are stored in the editEvent object
-        //      using their numerical ID rather than their `Label Name` or their
-        //      `Store In Field` name you must access an event's custom field values using
+        //      Since Custom Fields are user-defined, and are stored in the event object
+        //      using their numerical id rather than their Label Name or their
+        //      "Store In Field" name you must access an event's custom field values using
         //      a helper function:
         //
-        //          event.getField("Field Label" || "Store In Field Name").
+        //          opt.getField("Field Label" || "Store In Field Name").
         //
         //      This function is aware of the context in which it is running, allowing you
         //      to retrieve values by either their custom field label or their "store in field"
         //      name. For example:
         //
-        //          const truckNumber = event.getField("Truck Number"); // by label
+        //          const truckNumber = opt.getField("Truck Number"); // by label
         //
-        //          const truckNumber = event.getField("Truck_Number__c"); // by "store in field" name
+        //          const truckNumber = opt.getField("Truck_Number__c"); // by "store in field" name
         //
         //      You can also set the value of a custom field in a similar way using:
         //
-        //          event.setField("Truck Number", "TRK-100"); // by label
+        //          opt.setField("Truck Number", "TRK-100"); // by label
         //
-        //          event.setField("Truck_Number__c", "TRK-100"); // by "store in field" name
+        //          opt.setField("Truck_Number__c", "TRK-100"); // by "store in field" name
         //
         // Changes Object:
         //
@@ -586,17 +433,17 @@
         // Skip On Error is set on the second test so that it only runs
         // if the first test did not find an error.
         //
-        //      validationRules: {
+        //      inputs.validationRules = {
         //          Title: {
         //              validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
         //              markRequired: true,
         //              errorTests: [
         //                  {
-        //                      test: (event) => !event.title || event.title.trim() === '',
+        //                      test: (event, opt) => !event.titleEdit || event.titleEdit.trim() === '',
         //                      message: 'Title is missing'
         //                  },
         //                  {
-        //                      test: (event) => event.title && event.title.length < 3,
+        //                      test: (event, opt) => event.titleEdit && event.titleEdit.length < 3,
         //                      message: 'Title is too short',
         //                      skipOnError: true
         //                  }
@@ -617,11 +464,11 @@
         //          markRequired: true,
         //          errorTests: [
         //              {
-        //                  test: (event) => event.trigger !== 'eventSave' && (!event.titleEdit || event.titleEdit.trim() === ''),
+        //                  test: (event, opt) => opt.trigger !== 'eventSave' && (!event.titleEdit || event.titleEdit.trim() === ''),
         //                  message: 'Title is missing'
         //              },
         //              {
-        //                  test: (event) => event.trigger === 'eventSave' && event.titleEdit.length < 3,
+        //                  test: (event, opt) => opt.trigger === 'eventSave' && event.titleEdit.length < 3,
         //                  message: 'Title is too short'
         //              }
         //          ]
@@ -635,15 +482,11 @@
         //          validateOn: ['fieldChange'],
         //          errorTests: [
         //              {
-        //                  test: (event) => {
-        //                      const contractSigned = event.getField('Contract Signed');
-        //                      if (event.status[0] === 'Confirmed' && contractSigned !== true) {
-
+        //                  test: (editEvent, opt) => {
+        //                      const contractSigned = opt.getField('Contract Signed');
+        //                      if (editEvent.status[0] === 'Confirmed' && contractSigned !== true) {
         //                          // Revert status to previous value
-        //                          // `event` already points to `editEvent`
-        //                          // but it can help to use the following for clarity:
-        //
-        //                          event.editEvent.status[0] = event.event.status[0];
+        //                          editEvent.status[0] = opt.event.status[0];
         //                          return true;
         //                      }
         //                      return false;
@@ -663,9 +506,9 @@
         //              {
         //                  // Show a warning on fieldChange if trying to set status to
         //                  // Confirmed but Contract Signed is not true
-        //                  test: (event) => {
-        //                      const contractSigned = event.getField('Contract Signed');
-        //                      return event.trigger === 'fieldChange' && event.status[0] === 'Confirmed' && contractSigned !== true;
+        //                  test: (event, opt) => {
+        //                      const contractSigned = opt.getField('Contract Signed');
+        //                      return opt.trigger === 'fieldChange' && event.status[0] === 'Confirmed' && contractSigned !== true;
         //                  },
         //                  message: 'If you set status to Confirmed, please ensure Contract Signed is true.'
         //              }
@@ -673,9 +516,9 @@
         //          errorTests: [
         //              {
         //                  // Only enforce as an error on eventSave
-        //                  test: (event) => {
-        //                      const contractSigned = event.getField('Contract Signed');
-        //                      return event.trigger === 'eventSave' && event.status[0] === 'Confirmed' && contractSigned !== true;
+        //                  test: (editEvent, opt) => {
+        //                      const contractSigned = opt.getField('Contract Signed');
+        //                      return opt.trigger === 'eventSave' && editEvent.status[0] === 'Confirmed' && contractSigned !== true;
         //                  },
         //                  message: 'Cannot set status to Confirmed unless Contract Signed is true.'
         //              }
@@ -688,18 +531,18 @@
         //
         //      Contract Signed: {
         //          validateOn: ['fieldChange', 'eventSave'],
-        //          markRequired: (event) => event.status[0] === 'Confirmed',
+        //          markRequired: (editEvent, opt) => editEvent.status[0] === 'Confirmed',
         //          warningTests: [
         //              {
-        //                  test: (event) => {
-        //                      const contractSigned = event.getField('Contract Signed');
+        //                  test: (editEvent, opt) => {
+        //                      const contractSigned = opt.getField('Contract Signed');
         //                      // If user unchecked Contract Signed, and status is Confirmed,
         //                      // set status to Pending.
-        //                      if (event.status[0] === 'Confirmed' && contractSigned !== true) {
-        //                          event.status[0] = 'Pending';
-        //                          dbk.refreshEditPopover(event);
+        //                      if (editEvent.status[0] === 'Confirmed' && contractSigned !== true) {
+        //                          editEvent.status[0] = 'Pending';
+        //                          dbk.refreshEditPopover(editEvent);
         //                      }
-        //                      return event.status[0] === 'Confirmed' && contractSigned !== true;
+        //                      return editEvent.status[0] === 'Confirmed' && contractSigned !== true;
         //                  },
         //                  message: 'Contract must be signed if status is Confirmed. Status set to Pending.'
         //              }
@@ -726,10 +569,11 @@
         //          markRequired: true,
         //          errorTests: [
         //              {
-        //                  test: (event) => {
-        //                      const tx = event.getField('Treatment Type');
+        //                  test: (event, opt) => {
+        //                      const changes = opt.getField('changes');
+        //                      const tx = opt.getField('Treatment Type');
         //                      // Only run if user changed this field.
-        //                      if (!(event.changes && event.changes['Treatment Type'])) return false;
+        //                      if (!(changes && changes['Treatment Type'])) return false;
         //                      if (event.start) {
         //                          let mins;
         //                          switch (tx) {
@@ -740,7 +584,7 @@
         //                              case 'IV Drip': mins = 75; break;
         //                              default: mins = 60;
         //                          }
-        //                          // Mutate end to be start + chosen duration
+        //                          // Mutate event.end to be start + chosen duration
         //                          event.end = event.start.clone().add(mins, 'minutes');
         //
         //                          // Update the Event Popover to reflect the new end time
@@ -748,7 +592,7 @@
         //                      }
         //                      return false;
         //                  },
-        //                  message: '' // Not shown, since test() always returns false
+        //                  message: 'Invalid Treatment Type'
         //              }
         //          ]
         //      },
@@ -770,33 +614,31 @@
         // Example of an asynchronous test:
         //
         //      {
-        //          test: async (event) => {
+        //          test: async (event, opt) => {
         //              const result = await someAsyncFunction(event);
         //              return result; // true if error, false otherwise
         //          }
         //      }
         //
         // Behavior notes:
-        //
-        //      For the "Before Event Save" trigger, validation will wait for all async tests to finish before
-        //      allowing save.
-        //
-        //      For other triggers (eventRender, eventClick, fieldChange), validation does not wait for async
-        //      tests. Errors or warnings from async tests will appear after each Promise resolves, so there
-        //      may be a short delay.
+        // - For the "Before Event Save" trigger, validation will wait for all async tests to finish before 
+        //   allowing save.
+        // - For other triggers (eventRender, eventClick, fieldChange), validation does not wait for async 
+        //   tests. Errors or warnings from async tests will appear after each Promise resolves, so there 
+        //   may be a short delay.
         //
         // Comprehensive Example:
         // --------------------------------------------------------------
         //
         // The following is a detailed example configuration for Medical Spa services
         //
-        //      validationRules: {
+        //      inputs.validationRules = {
         //          // ────────────────────────────────────────────────────────────
         //          // STANDARD FIELDS
         //          // ────────────────────────────────────────────────────────────
-        //
+        //      
         //          Title: {
-        //              markRequired: true, // Always show Title as required
+        //              markRequired: true, // Always show Title as required 
         //              validateOn: ['eventClick', 'fieldChange', 'eventSave'], // Validate interactively + on save.
         //              errorTests: [
         //                  {
@@ -818,19 +660,19 @@
         //                  }
         //              ]
         //          },
-        //
+        //      
         //          Description: {
         //              // Only required if a particular Treatment Type is chosen (see custom field below).
-        //              markRequired: (event) => {
-        //                  const tx = event.getField('Treatment Type');
+        //              markRequired: (event, opt) => {
+        //                  const tx = opt.getField('Treatment Type');
         //                  return tx === 'Microneedling' || tx === 'Chemical Peel';
         //              },
         //              validateOn: ['eventClick', 'eventSave'],
         //              errorTests: [
         //                  {
         //                      // If required (from markRequired logic), ensure description exists.
-        //                      test: (event) => {
-        //                          const tx = event.getField('Treatment Type');
+        //                      test: (event, opt) => {
+        //                          const tx = opt.getField('Treatment Type');
         //                          const required = tx === 'Microneedling' || tx === 'Chemical Peel';
         //                          return required && (!event.description || event.description.trim() === '');
         //                      },
@@ -838,18 +680,18 @@
         //                  }
         //              ]
         //          },
-        //
+        //      
         //          Start: {
         //              validateOn: ['eventSave'], // Only validate Start time on Event Save
         //              errorTests: [
         //                  {
         //                      // Fail if start is in the past when saving (but allow viewing/clicking).
-        //                      test: (event) => event.trigger === 'eventSave' && event.start && event.start.isBefore(moment()),
+        //                      test: (event, opt) => opt.trigger === 'eventSave' && event.start && event.start.isBefore(moment()),
         //                      message: 'Start time cannot be in the past.'
         //                  }
         //              ]
         //          },
-        //
+        //      
         //          End: {
         //              validateOn: ['eventSave'],
         //              errorTests: [
@@ -867,10 +709,10 @@
         //                  }
         //              ]
         //          },
-        //
+        //      
         //          Location: {
         //              // Required only for 'Mobile Services' calendar bookings (example of context-aware required flag).
-        //              markRequired: function () { return this?.schedule?.name === 'Mobile Services'; },
+        //              markRequired: (event) => event?.schedule?.name === 'Mobile Services',
         //              validateOn: ['eventClick', 'eventSave'],
         //              errorTests: [
         //                  {
@@ -883,7 +725,7 @@
         //                  }
         //              ]
         //          },
-        //
+        //      
         //          // ────────────────────────────────────────────────────────────
         //          // CUSTOM FIELDS (Medical Spa)
         //          // ────────────────────────────────────────────────────────────
@@ -894,10 +736,13 @@
         //              errorTests: [
         //                  {
         //                      // Auto-set event duration when Treatment Type changes.
-        //                      test: (event) => {
-        //                          const tx = event.getField('Treatment Type');
+        //                      test: (event, opt) => {
+        //
+        //                          const tx = opt.getField('Treatment Type');
+        //
         //                          // Only run if user changed this field.
-        //                          if (!(event.changes && event.changes['Treatment Type'])) return false;
+        //                          if (!(opt.changes && opt.changes['Treatment Type'])) return false;
+        //
         //                          if (event.start) {
         //                              let mins;
         //                              switch (tx) {
@@ -908,11 +753,13 @@
         //                                  case 'IV Drip': mins = 75; break;
         //                                  default: mins = 60;
         //                              }
-        //                              // Mutate end to be start + chosen duration
+        //                              // Mutate event.end to be start + chosen duration
         //                              event.end = event.start.clone().add(mins, 'minutes');
         //                          }
+        //
         //                          // Update the Event Popover to reflect the new end time
-        //                          dbk.refreshEditPopover(event.editEvent);
+        //                          dbk.refreshEditPopover(opt.editEvent);
+        //
         //                          // Return false so this isn’t treated as a validation error.
         //                          return false;
         //                      },
@@ -922,8 +769,8 @@
         //              warningTests: [
         //                  {
         //                      // Warn if “IV Drip” is scheduled < 60 mins (many clinics prefer ~60).
-        //                      test: (event) => {
-        //                          const tx = event.getField('Treatment Type');
+        //                      test: (event, opt) => {
+        //                          const tx = opt.getField('Treatment Type');
         //                          if (tx !== 'IV Drip' || !event.start || !event.end) return false;
         //                          return event.end.diff(event.start, 'minutes') < 60;
         //                      },
@@ -931,7 +778,7 @@
         //                  }
         //              ]
         //          },
-        //
+        //      
         //          'Practitioner License #': {
         //              // Free-text alphanumeric (e.g., WA-123456), required on save when Status is Booked.
         //              markRequired: (event) => event.status[0] === 'Booked',
@@ -939,38 +786,38 @@
         //              errorTests: [
         //                  {
         //                      // If Booked, must have a license number present.
-        //                      test: (event) => {
+        //                      test: (event, opt) => {
         //                          const isBooked = event.status[0] === 'Booked';
-        //                          const val = event.getField('Practitioner License #');
+        //                          const val = opt.getField('Practitioner License #');
         //                          return isBooked && (!val || String(val).trim() === '');
         //                      },
         //                      message: 'Practitioner License # is required for Booked appointments.'
         //                  },
         //                  {
         //                      // Optional format sanity check (very loose: 2–3 letters, dash, 4–8 digits).
-        //                      test: (event) => {
-        //                          const val = String(event.getField('Practitioner License #') || '');
+        //                      test: (event, opt) => {
+        //                          const val = String(opt.getField('Practitioner License #') || '');
         //                          return val && !/^[A-Za-z]{1,3}-?\d{4,8}$/.test(val);
         //                      },
         //                      message: 'Practitioner License # format looks unusual. Double-check entry.'
         //                  }
         //              ]
         //          },
-        //
+        //      
         //          'Consent on File': {
         //              // Boolean: true/false. Required for invasive treatments.
-        //              markRequired: (event) => {
-        //                  const tx = event.getField('Treatment Type');
+        //              markRequired: (event, opt) => {
+        //                  const tx = opt.getField('Treatment Type');
         //                  return ['Microneedling', 'Chemical Peel', 'Laser Hair Removal', 'Botox'].includes(tx);
         //              },
         //              validateOn: ['eventClick', 'eventSave'],
         //              errorTests: [
         //                  {
         //                      // If required for the treatment type, ensure consent is true.
-        //                      test: (event) => {
-        //                          const tx = event.getField('Treatment Type');
+        //                      test: (event, opt) => {
+        //                          const tx = opt.getField('Treatment Type');
         //                          const required = ['Microneedling', 'Chemical Peel', 'Laser Hair Removal', 'Botox'].includes(tx);
-        //                          const consent = !!event.getField('Consent on File');
+        //                          const consent = !!opt.getField('Consent on File');
         //                          return required && !consent;
         //                      },
         //                      message: 'Client consent is required for the selected treatment.'
@@ -979,8 +826,8 @@
         //              warningTests: [
         //                  {
         //                      // Warn if consent was updated in this session but Status is still Pending (remind to finalize).
-        //                      test: (event) => {
-        //                          const changed = event.changes?.hasOwnProperty('Consent on File');
+        //                      test: (event, opt) => {
+        //                          const changed = opt.changes?.hasOwnProperty('Consent on File');
         //                          const isPending = event.status[0] === 'Pending';
         //                          return changed && isPending;
         //                      },
@@ -988,24 +835,24 @@
         //                  }
         //              ]
         //          },
-        //
+        //      
         //          'Pre-Treatment Fasting Hours': {
         //              // Integer number of hours the client fasted (some IV/peel protocols require NPO or light fasting).
         //              validateOn: ['fieldChange', 'eventSave'],
         //              errorTests: [
         //                  {
         //                      // Must be a non-negative number if provided.
-        //                      test: (event) => {
-        //                          const val = event.getField('Pre-Treatment Fasting Hours');
+        //                      test: (event, opt) => {
+        //                          const val = opt.getField('Pre-Treatment Fasting Hours');
         //                          return val == null || isNaN(Number(val)) || Number(val) <= 0;
         //                      },
         //                      message: 'Pre-Treatment Fasting Hours must be a non-negative number.'
         //                  },
         //                  {
         //                      // For “IV Drip (NAD+)” example protocol, require ≥ 4 hours fasting.
-        //                      test: (event) => {
-        //                          const tx = event.getField('Treatment Type');
-        //                          const val = Number(event.getField('Pre-Treatment Fasting Hours') || 0);
+        //                      test: (event, opt) => {
+        //                          const tx = opt.getField('Treatment Type');
+        //                          const val = Number(opt.getField('Pre-Treatment Fasting Hours') || 0);
         //                          return tx === 'IV Drip (NAD+)' && val < 4;
         //                      },
         //                      message: 'NAD+ drips require at least 4 hours of fasting.'
@@ -1014,8 +861,8 @@
         //              warningTests: [
         //                  {
         //                      // Warn if very long fast (≥18h) to prompt a wellness check.
-        //                      test: (event) => {
-        //                          const val = Number(event.getField('Pre-Treatment Fasting Hours') || 0);
+        //                      test: (event, opt) => {
+        //                          const val = Number(opt.getField('Pre-Treatment Fasting Hours') || 0);
         //                          return val >= 18;
         //                      },
         //                      message: 'Extended fasting noted—confirm client comfort and hydration.'
@@ -1024,382 +871,398 @@
         //          }
         //      };
 
+
         // Event Validation Rules
-        // -----------------------------
+        // ------------------------------
+        //
+        // The validationRules object contains one property for each field you want to validate.
+        // Each property is an object that defines the validation rules for that field.
+        // You can define rules for standard fields (Title, Description, Start, End,
+        // Location, Calendar, Resource, Status) as well as custom fields by their label name.
+        //
+        // See the header above in your prompt for full docs on usage and triggers.
+        //
 
-        inputs.globalDefaults = {
-            requiredFields: ['Start', 'End', 'Status', 'Visit Type'],
-            hiddenFields: ['Title'],
-            validationRules: {
-                Start: {
-                    validateOn: ['eventSave', 'fieldChange'],
-                    //markRequired: true,
-                    errorTests: [
-                        {
-                            // Prevent saving if start is in the past
-                            test: (e) => e.fieldChanged('start') && e.fieldChanged() && e.start.isBefore(moment()),
-                            message: '<B>Start</B> time cannot be in the past.',
-                            emoji: '⏰'
-                        }
-                    ]
-                },
+        inputs.validationRules = {
 
-                End: {
-                    validateOn: ['eventSave'],
-                    //markRequired: true,
-                    errorTests: [
-                        {
-                            // Prevent saving if start is in the past
-                            test: (e) => e.fieldChanged('start') && e.fieldChanged() && e.start.isBefore(moment()),
-                            message: '<B>Start</B> time cannot be in the past.',
-                            emoji: '⏰'
-                        }
-                    ]
-                },
+            Title: {
+                hideField: true,
+            },
 
-                Status: {
-                    // Example dependency: cannot mark Confirmed unless safety checks done
-                    validateOn: ['eventClick', 'fieldChange', 'eventSave'],
-                    errorTests: [
-                        {
-                            test: (e) => {
-                                // This is a generic test that applies to eventClick
-                                // in order to pre-populate default values for the event
-                                if (e.trigger === 'eventClick') {
+            Start: {
+                validateOn: ['eventSave'],
+                markRequired: true,
+                errorTests: [
+                    {
+                        // Prevent saving if start is in the past
+                        test: (e, opt) => opt.fieldChanged('start') && e.start.isBefore(moment()),
+                        message: '<B>Start</B> time cannot be in the past.',
+                        emoji: '⏰'
+                    }
+                ]
+            },
 
-                                    let shouldRefresh = false;
+            End: {
+                validateOn: ['eventSave'],
+                markRequired: true,
+                errorTests: [
+                    {
+                        // Prevent saving if start is in the past
+                        test: (e, opt) => opt.fieldChanged('start') && e.start.isBefore(moment()),
+                        message: '<B>Start</B> time cannot be in the past.',
+                        emoji: '⏰'
+                    }
+                ]
+            },
 
-                                    if (e.status[0] === 'Unassigned') {
-                                        e.status[0] = 'Pending';
-                                        shouldRefresh = true;
-                                    }
+            Status: {
+                // Example dependency: cannot mark Confirmed unless safety checks done
+                validateOn: ['eventClick', 'fieldChange', 'eventSave'],
+                errorTests: [
+                    {
+                        test: (e, opt) => {
 
-                                    if (!e.location) {
-                                        e.location = 'Seattle, WA';
-                                        shouldRefresh = true;
-                                    }
+                            // This is a generic test that applies to eventClick
+                            // in order to pre-populate default values for the event
 
-                                    if (shouldRefresh) {
-                                        dbk.refreshEditPopover(e.editEvent);
-                                    }
+                            if (opt.trigger === 'eventClick') {
+
+                                let shouldRefresh = false;
+
+                                if (e.status[0] === 'Unassigned') {
+                                    e.status[0] = 'Pending';
+                                    shouldRefresh = true;
                                 }
 
-                                return false;
-                            },
-                        },
-                        {
-                            test: (e) => {
-                                // Test only applies to On Save
-                                if (e.trigger !== 'eventSave') return false;
-
-                                const tryingToConfirm = e.status && e.status[0] === 'Confirmed';
-                                if (!tryingToConfirm) return false;
-
-                                const consentNeededFor = ['Treatment', 'Post-Op'];
-                                const notes = (e.getField('Contraindications Notes') || '').trim();
-                                const vt = e.getField('Visit Type')?.[0];
-                                const contraindicationsOK = !!e.getField('Contraindications Checked');
-
-                                return consentNeededFor.includes(vt) && !contraindicationsOK && notes.length > 0;
-                            },
-                            message: 'Before <B>Confirming</B> the appointment, please <B>Review Contraindications</B>.',
-                            emoji: '❌'
-                        }
-                    ],
-                },
-
-                'Patient': {
-                    // Require a patient for all but generic holds
-                    validateOn: ['eventSave'],
-                    markRequired: true,
-                    errorTests: [
-                        {
-                            test: (e) => !e.contactName.length,
-                            message: 'Please select a <B>Patient</B> for this appointment.',
-                            emoji: '👤'
-                        }
-                    ]
-                },
-
-                'Guardian Signature Obtained': {
-                    // Require for minors
-                    validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
-                    showField: (e) => ['Treatment', 'Post-Op', 'Follow-Up', 'Package Session'].includes(e.getField('Visit Type')?.[0]) && e.getField('Is Under 18'),
-                    markRequired: (e) => e.getField('Is Under 18') && ['Treatment', 'Post-Op', 'Follow-Up', 'Package Session'].includes(e.getField('Visit Type')?.[0]),
-                    errorTests: [
-                        {
-                            test: (e) => e.getField('Is Under 18') && !e.getField('Guardian Signature Obtained') && ['Treatment', 'Post-Op', 'Follow-Up', 'Package Session'].includes(e.getField('Visit Type')?.[0]),
-                            message: 'A <B>Guardian Signature</B> is required for patients under 18.',
-                            emoji: '🖊️'
-                        }
-                    ]
-                },
-
-                'Visit Type': {
-                    markRequired: true
-                },
-
-                'Procedure': {
-                    validateOn: ['eventClick', 'fieldChange', 'eventSave'],
-                    markRequired: true,
-                    hideField: (e) => !['Treatment', 'Post-Op', 'Package Session', 'Follow-Up'].includes(e.getField('Visit Type')?.[0]),
-                    errorTests: [
-                        {
-                            // Require Procedure for Treatment & Post-Op
-                            test: (e) => ['Treatment', 'Post-Op', 'Package Session', 'Follow-Up'].includes(e.getField('Visit Type')?.[0]) && !e.getField('Procedure')?.[0] && e.trigger === 'eventSave',
-                            message: 'A <B>Procedure Name</B> is required for Treatment or Post-Op visits.',
-                            emoji: '⚠️'
-                        },
-                        {
-                            // Get Procedure information from Salesforce On Field change
-                            test: async (e) => {
-                                // Only run if user changed this field.
-                                const procedure = e.getField('Procedure')?.[0];
-
-                                if (!procedure) {
-
-                                    if (e.fieldChanged()) {
-                                        e.setField('Contraindications Notes', '');
-                                        e.setField('Contraindications Checked', false);
-                                        dbk.refreshEditPopover(e.editEvent);
-                                    }
-
-                                    return false;
+                                if (!e.location) {
+                                    e.location = 'Seattle, WA';
+                                    shouldRefresh = true;
                                 }
 
-                                if (!e.fieldChanged()) return false;
+                                if (shouldRefresh) {
+                                    dbk.refreshEditPopover(opt.editEvent);
+                                }
+                            }
 
-                                const sf = SalesforceClient({ errorMode: "return" });
+                            return false;
+                        },
+                    },
+                    {
+                        test: (e, opt) => {
 
-                                const [resp, rows] = await sf.query(`
-                            SELECT Id, Name, Duration__c, Contraindications__c 
-                            FROM Procedure__c WHERE Name = ${sf.quote(procedure)} 
-                            LIMIT 1
-                            `);
+                            // Test only applies to On Save
+                            if (opt.trigger !== 'eventSave') return false;
 
-                                if (!resp.ok || rows.length === 0) {
-                                    sf.showError(resp);
-                                } else {
+                            const tryingToConfirm = e.status && e.status[0] === 'Confirmed';
+                            if (!tryingToConfirm) return false;
 
-                                    const proc = rows[0];
-                                    const duration = Number(proc.Duration__c) || 60;
-                                    const notes = proc.Contraindications__c || '';
+                            const consentNeededFor = ['Treatment', 'Post-Op'];
+                            const notes = (opt.getField('Contraindications Notes') || '').trim();
+                            const vt = opt.getField('Visit Type')?.[0];
+                            const contraindicationsOK = !!opt.getField('Contraindications Checked');
 
-                                    // Set Duration by updating End time
-                                    if (e.start) {
-                                        e.end = e.start.clone().add(duration, 'minutes');
-                                    }
+                            return consentNeededFor.includes(vt) && !contraindicationsOK && notes.length > 0;
+                        },
+                        message: 'Before <B>Confirming</B> the appointment, please <B>Review Contraindications</B>.',
+                        emoji: '❌'
+                    }
+                ],
+            },
 
-                                    // Set Contraindications_Notes__c field
-                                    e.setField('Contraindications Notes', notes);
-                                    dbk.refreshEditPopover(e.editEvent);
+            'Patient': {
+                // Require a patient for all but generic holds
+                validateOn: ['eventSave'],
+                markRequired: true,
+                errorTests: [
+                    {
+                        test: (e, opt) => !e.contactName.length,
+                        message: 'Please select a <B>Patient</B> for this appointment.',
+                        emoji: '👤'
+                    }
+                ]
+            },
+
+            'Guardian Signature Obtained': {
+                // Require for minors
+                validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
+                showField: (e, opt) => ['Treatment', 'Post-Op', 'Follow-Up', 'Package Session'].includes(opt.getField('Visit Type')?.[0]) && opt.getField('Is Under 18'),
+                markRequired: (e, opt) => opt.getField('Is Under 18') && ['Treatment', 'Post-Op', 'Follow-Up', 'Package Session'].includes(opt.getField('Visit Type')?.[0]),
+                errorTests: [
+                    {
+                        test: (e, opt) => opt.getField('Is Under 18') && !opt.getField('Guardian Signature Obtained') && ['Treatment', 'Post-Op', 'Follow-Up', 'Package Session'].includes(opt.getField('Visit Type')?.[0]),
+                        message: 'A <B>Guardian Signature</B> is required for patients under 18.',
+                        emoji: '🖊️'
+                    }
+                ]
+            },
+
+            'Visit Type': {
+                markRequired: true
+            },
+
+            'Procedure': {
+                validateOn: ['eventClick', 'fieldChange', 'eventSave'],
+                markRequired: true,
+                hideField: (e, opt) => !['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]),
+                errorTests: [
+                    {
+                        // Require Procedure for Treatment & Post-Op
+                        test: (e, opt) => {
+                            return ['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]) && !opt.getField('Procedure')?.[0] && opt.trigger === 'eventSave';
+                        },
+                        message: 'A <B>Procedure Name</B> is required for Treatment or Post-Op visits.',
+                        emoji: '⚠️'
+                    },
+                    {
+                        // Get Procedure information from Salesforce On Field change
+                        test: async (e, opt) => {
+
+                            // Only run if user changed this field.
+                            const procedure = opt.getField('Procedure')?.[0];
+
+                            if (!procedure) {
+
+                                if (opt.fieldChanged()) {
+                                    opt.setField('Contraindications Notes', '');
+                                    opt.setField('Contraindications Checked', false);
+                                    dbk.refreshEditPopover(opt.editEvent);
                                 }
 
                                 return false;
                             }
+
+                            const sf = SalesforceClient({ errorMode: "return" });
+
+                            const q = await sf.query({
+                                soql: `
+                                        SELECT Id, Name, Duration__c, Contraindications__c 
+                                        FROM Procedure__c WHERE Name = ${sf.quote(procedure)} 
+                                        LIMIT 1
+                                    ` });
+
+                            if (!q.ok || q.data.length === 0) {
+                                sf.showError(q.error || q);
+                            } else {
+                                const proc = q.data[0];
+                                const duration = Number(proc.Duration__c) || 60;
+                                const notes = proc.Contraindications__c || '';
+
+                                // Set Duration by updating End time
+                                if (e.start) {
+                                    e.end = e.start.clone().add(duration, 'minutes');
+                                }
+
+                                // Set Contraindications_Notes__c field
+                                opt.setField('Contraindications Notes', notes);
+                                dbk.refreshEditPopover(opt.editEvent);
+                            }
+
+                            return false;
                         }
-                    ]
-                },
+                    }
+                ]
+            },
 
-                'Chief Complaint': {
-                    // Require for Consults
-                    validateOn: ['eventClick', 'eventSave'],
-                    hideField: (e) => e.getField('Visit Type')?.[0] !== 'Consult',
-                    markRequired: (e) => e.getField('Visit Type')?.[0] === 'Consult',
-                    errorTests: [
-                        {
-                            test: (e) => e.getField('Visit Type')?.[0] === 'Consult' && !(e.getField('Chief Complaint') || '').trim(),
-                            message: 'Please fill in a <B>Chief Complaint</B> for Consults.',
-                            emoji: '📋'
-                        }
-                    ]
-                },
+            'Chief Complaint': {
+                // Require for Consults
+                validateOn: ['eventClick', 'eventSave'],
+                hideField: (e, opt) => opt.getField('Visit Type')?.[0] !== 'Consult',
+                markRequired: (e, opt) => opt.getField('Visit Type')?.[0] === 'Consult',
+                errorTests: [
+                    {
+                        test: (e, opt) => opt.getField('Visit Type')?.[0] === 'Consult' && !(opt.getField('Chief Complaint') || '').trim(),
+                        message: 'Please fill in a <B>Chief Complaint</B> for Consults.',
+                        emoji: '📋'
+                    }
+                ]
+            },
 
-                'Anatomic Area': {
-                    validateOn: ['eventRender', 'eventClick', 'eventSave'],
-                    hideField: (e) => !['Treatment', 'Post-Op'].includes(e.getField('Visit Type')?.[0]),
-                    markRequired: (e) => /(laser|inject|tox|filler|peel|sculpt)/i.test(e.getField('Procedure')?.[0]),
-                    errorTests: [
-                        {
-                            test: (e) => {
-                                // Only run on test on eventSave
+            'Anatomic Area': {
+                validateOn: ['eventRender', 'eventClick', 'eventSave'],
+                hideField: (e, opt) => !['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]),
+                markRequired: (e, opt) => /(laser|inject|tox|filler|peel|sculpt)/i.test(opt.getField('Procedure')?.[0]),
+                errorTests: [
+                    {
+                        test: (e, opt) => {
 
-                                const visit = ['Treatment', 'Post-Op'].includes(e.getField('Visit Type')?.[0]);
-                                const req = /(laser|inject|tox|filler|peel|sculpt)/i.test(e.getField('Procedure')?.[0]);
-                                const area = e.getField('Anatomic Area')?.trim() || '';
-                                const empty = !area || (Array.isArray(area) && area.length === 0);
-                                return visit && req && empty;
-                            },
-                            message: 'Please provide the <B>Anatomic Area</B> for the selected procedure.',
-                            emoji: '🧍'
-                        }
-                    ]
-                },
+                            // Only run on test on eventSave
 
-                'Practitioner': {
-                    validateOn: ['eventClick', 'fieldChange', 'eventSave'],
-                    markRequired: true,
-                    errorTests: [
-                        {
-                            critical: true,
-                            test: (e) => {
-                                return e.trigger === 'eventSave' && (e.resource.length === 0 ||
-                                    e.resource[0] === 'Unassigned');
-                            },
-                            message: 'Please select a <B>Practitioner</B> for this appointment.',
-                            emoji: '👩‍⚕️'
+                            const visit = ['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]);
+                            const req = /(laser|inject|tox|filler|peel|sculpt)/i.test(opt.getField('Procedure')?.[0]);
+                            const area = opt.getField('Anatomic Area')?.trim() || '';
+                            const empty = !area || (Array.isArray(area) && area.length === 0);
+                            return visit && req && empty;
                         },
-                        {
-                            test: (e) => {
+                        message: 'Please provide the <B>Anatomic Area</B> for the selected procedure.',
+                        emoji: '🧍'
+                    }
+                ]
+            },
 
-                                if (e.resource[0] == 'none' || !e.resource[0] || e.resource[0] == 'Unassigned') return false;
-
-                                const resource = e.resource[0];
-                                const visit = ['Treatment', 'Post-Op'].includes(e.getField('Visit Type')?.[0]);
-                                const proc = e.getField('Procedure')?.[0];
-
-                                if (!visit || !proc) return false;
-
-                                // Check cached result first
-                                const [cached, result] = getCachedQuery(`${resource}-${proc}`);
-
-                                // Cached result found, return it
-                                if (cached) return result;
-
-                                // Not cached, so we need to run the full query test
-                                return validateResourceCertification(this, resource, proc);
-                            },
-                            message: 'The Practitioner\'s <B>License Type or Credential</B> doesn\'t match the selected Procedure.',
-                            emoji: '🪪'
+            'Practitioner': {
+                validateOn: ['eventClick', 'fieldChange', 'eventSave'],
+                markRequired: true,
+                errorTests: [
+                    {
+                        critical: true,
+                        test: (e, opt) => {
+                            return opt.trigger === 'eventSave' && (e.resource.length === 0 ||
+                                e.resource[0] === 'Unassigned');
                         },
-                        {
-                            skipOnError: true, // Skip this test if prior test already failed
-                            test: (e) => {
-                                if (e.resource[0] == 'none' || !e.resource[0] || e.resource[0] == 'Unassigned') return false;
+                        message: 'Please select a <B>Practitioner</B> for this appointment.',
+                        emoji: '👩‍⚕️'
+                    },
+                    {
+                        test: (e, opt) => {
 
-                                const resource = e.resource[0];
-                                const visit = ['Treatment', 'Post-Op'].includes(e.getField('Visit Type')?.[0]);
-                                const proc = e.getField('Procedure')?.[0];
+                            if (e.resource[0] == 'none' || !e.resource[0] || e.resource[0] == 'Unassigned') return false;
 
-                                if (!visit || !proc) return false;
+                            const resource = e.resource[0];
+                            const visit = ['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]);
+                            const proc = opt.getField('Procedure')?.[0];
 
-                                return validateResourceCertification(e, resource, proc);
-                            },
-                            message: 'The Practitioner\'s <B>License Type or Credential</B> doesn\'t match the selected Procedure.',
-                            emoji: '🪪'
+                            if (!visit || !proc) return false;
+
+                            // Check cached result first
+                            const [cached, result] = getCachedQuery(`${resource}-${proc}`);
+
+                            // Cached result found, return it
+                            if (cached) return result;
+
+                            // Not cached, so we need to run the full query test
+                            return validateResourceCertification(opt, resource, proc);
                         },
-                    ]
-                },
+                        message: 'The Practitioner\'s <B>License Type or Credential</B> doesn\'t match the selected Procedure.',
+                        emoji: '🪪'
+                    },
+                    {
+                        skipOnError: true, // Skip this test if prior test already failed
+                        test: (e, opt) => {
 
-                'Contraindications Notes': {
-                    validateOn: ['eventClick', 'eventSave'],
-                    hideField: (e) => !['Treatment', 'Post-Op'].includes(e.getField('Visit Type')?.[0]),
-                    markRequired: true,
-                    warningTests: [
-                        {
-                            test: (e) => {
-                                const notes = (e.getField('Contraindications Notes') || '').trim();
-                                return !!notes && notes.length < 8;
-                            },
-                            message: 'The <B>Contraindication notes</B> look very brief — please add detail if clinically relevant.',
-                            emoji: '📝'
-                        }
-                    ]
-                },
+                            if (e.resource[0] == 'none' || !e.resource[0] || e.resource[0] == 'Unassigned') return false;
 
-                'Contraindications Checked': {
-                    validateOn: ['fieldChange', 'eventSave'],
-                    markRequired: (e) => { return ['Treatment', 'Post-Op'].includes(e.getField('Visit Type')?.[0]); },
-                    hideField: (e) => { return !['Treatment', 'Post-Op'].includes(e.getField('Visit Type')?.[0]) || !e.getField('Procedure')?.[0]; },
-                    warningTests: [
-                        {
-                            // If notes exist but box not checked, prompt to review
-                            test: (e) => {
-                                if (!e.fieldChanged('Contraindications Notes')) return false;
-                                if (!['Treatment', 'Post-Op'].includes(e.getField('Visit Type')?.[0])) return false;
+                            const resource = e.resource[0];
+                            const visit = ['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]);
+                            const proc = opt.getField('Procedure')?.[0];
 
-                                const notes = e.getField('Contraindications Notes')?.trim();
-                                const checked = !!e.getField('Contraindications Checked');
-                                return !!notes && !checked;
-                            },
-                            message: 'You added <B>contraindication Notes</B> — mark as checked after review.',
-                            emoji: '⚠️'
-                        }
-                    ],
-                    errorTests: [
-                        {
-                            // Enforce when moving to Confirmed
-                            test: (e) => {
-                                const isConfirming = e.status && e.status[0] === 'Confirmed';
-                                const required = ['Treatment', 'Post-Op'].includes(e.getField('Visit Type')?.[0]);
-                                const proc = e.getField('Procedure')?.[0];
-                                return isConfirming && proc && required && !e.getField('Contraindications Checked');
-                            },
-                            message: 'Please ensure <B>Contraindications</B> are checked before confirming the appointment.',
-                            emoji: '⚠️'
-                        }
-                    ]
-                },
+                            if (!visit || !proc) return false;
 
-                'Allergy Notes': {
-                    validateOn: ['eventRender', 'eventClick', 'eventSave'],
-                    markRequired: (e) => { return ['Treatment', 'Post-Op', 'Follow-Up', 'Package Session'].includes(e.getField('Visit Type')?.[0]); },
-                    hideField: (e) => { return !['Treatment', 'Post-Op', 'Follow-Up', 'Package Session'].includes(e.getField('Visit Type')?.[0]); },
-                    warningTests: [
-                        {
-                            // Simple keyword check related to common agents
-                            test: (e) => {
-                                const a = e.getField('Allergy Notes') || '';
-                                const svc = e.getField('Procedure')?.[0] || '';
-                                if (!a || !svc) return false;
-                                const lidocaineRelated = /botox|microneedling/i.test(svc);
-                                return lidocaineRelated && /(lido|lidocaine|caine|novocaine)/i.test(a);
-                            },
-                            message: 'The patient has an <B>allergy</B> that may conflict with local anesthetics - verify protocol.',
-                            emoji: '⚠️'
+                            return validateResourceCertification(opt, resource, proc);
                         },
-                        {
-                            test: (e) => {
-                                const a = e.getField('Allergy Notes') || '';
-                                const proc = e.getField('Procedure')?.[0] || '';
-                                if (!a && proc) return true
-                            },
-                            message: 'Please ask the patient about any <B>allergies</B>.',
-                            emoji: '❓'
-                        }
-                    ]
-                },
+                        message: 'The Practitioner\'s <B>License Type or Credential</B> doesn\'t match the selected Procedure.',
+                        emoji: '🪪'
+                    },
+                ]
+            },
 
-                'Progress Report Complete': {
-                    validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
-                    markRequired: (e) => { return e.getField('Progress Report Required') && ['Follow-Up', 'Post-Op'].includes(e.getField('Visit Type')?.[0]); },
-                    hideField: (e) => { return !e.getField('Progress Report Required') || !['Follow-Up', 'Post-Op'].includes(e.getField('Visit Type')?.[0]); },
-                    warningTests: [
-                        {
-                            test: (e) => {
-                                const hasReport = e.getField('Progress Report Required');
-                                const complete = e.getField('Progress Report Complete');
-                                const tx = ['Follow-Up', 'Post-Op'].includes(e.getField('Visit Type')?.[0]);
-                                return tx && hasReport && !complete && !(e.trigger === 'eventSave' && e.status[0] === 'Complete');
-                            },
-                            message: 'Please confirm that the <B>Progress Report</B> is complete.',
-                            emoji: '✅'
-                        }
-                    ],
-                    errorTests: [
-                        {
-                            critical: true,
-                            test: (e) => {
-                                const hasReport = e.getField('Progress Report Required');
-                                const complete = e.getField('Progress Report Complete');
-                                const tx = ['Follow-Up', 'Post-Op'].includes(e.getField('Visit Type')?.[0]);
-                                return tx && hasReport && !complete && e.trigger === 'eventSave' && e.status[0] === 'Complete';
-                            },
-                            message: 'Please confirm that the <B>Progress Report</B> is complete.',
-                            emoji: '✅'
-                        }
-                    ]
-                },
+            'Contraindications Notes': {
+                validateOn: ['eventClick', 'eventSave'],
+                hideField: (e, opt) => !['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]),
+                markRequired: true,
+                warningTests: [
+                    {
+                        test: (e, opt) => {
+                            const notes = (opt.getField('Contraindications Notes') || '').trim();
+                            return !!notes && notes.length < 8;
+                        },
+                        message: 'The <B>Contraindication notes</B> look very brief — please add detail if clinically relevant.',
+                        emoji: '📝'
+                    }
+                ]
+            },
+
+            'Contraindications Checked': {
+                validateOn: ['fieldChange', 'eventSave'],
+                markRequired: (e, opt) => ['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]),
+                hideField: (e, opt) => !['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]) || !opt.getField('Procedure')?.[0],
+                warningTests: [
+                    {
+                        // If notes exist but box not checked, prompt to review
+                        test: (e, opt) => {
+
+                            if (!opt.fieldChanged('Contraindications Notes')) return false;
+
+                            const notes = opt.getField('Contraindications Notes')?.trim();
+                            const checked = !!opt.getField('Contraindications Checked');
+                            return !!notes && !checked;
+                        },
+                        message: 'You added <B>contraindication Notes</B> — mark as checked after review.',
+                        emoji: '⚠️'
+                    }
+                ],
+                errorTests: [
+                    {
+                        // Enforce when moving to Confirmed
+                        test: (e, opt) => {
+                            const isConfirming = e.status && e.status[0] === 'Confirmed';
+                            const required = ['Treatment', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]);
+                            const proc = opt.getField('Procedure')?.[0];
+                            return isConfirming && proc && required && !opt.getField('Contraindications Checked');
+                        },
+                        message: 'Please ensure <B>Contraindications</B> are checked before confirming the appointment.',
+                        emoji: '⚠️'
+                    }
+                ]
+            },
+
+            'Allergy Notes': {
+                validateOn: ['eventRender', 'eventClick', 'eventSave'],
+                markRequired: (e, opt) => ['Treatment', 'Post-Op', 'Follow-Up', 'Package Session'].includes(opt.getField('Visit Type')?.[0]),
+                hideField: (e, opt) => !['Treatment', 'Post-Op', 'Follow-Up', 'Package Session'].includes(opt.getField('Visit Type')?.[0]),
+                warningTests: [
+                    {
+                        // Simple keyword check related to common agents
+                        test: (e, opt) => {
+                            const a = opt.getField('Allergy Notes') || '';
+                            const svc = opt.getField('Procedure')?.[0] || '';
+                            if (!a || !svc) return false;
+                            const lidocaineRelated = /botox|microneedling/i.test(svc);
+                            return lidocaineRelated && /(lido|lidocaine|caine|novocaine)/i.test(a);
+                        },
+                        message: 'The patient has an <B>allergy</B> that may conflict with local anesthetics - verify protocol.',
+                        emoji: '⚠️'
+                    },
+                    {
+                        test: (e, opt) => {
+                            const a = opt.getField('Allergy Notes') || '';
+                            const proc = opt.getField('Procedure')?.[0] || '';
+                            if (!a && proc) return true
+                        },
+                        message: 'Please ask the patient about any <B>allergies</B>.',
+                        emoji: '❓'
+                    }
+                ]
+            },
+
+            'Progress Report Complete': {
+                validateOn: ['eventRender', 'eventClick', 'fieldChange', 'eventSave'],
+                markRequired: (e, opt) => opt.getField('Progress Report Required') && ['Follow-Up', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]),
+                hideField: (e, opt) => !opt.getField('Progress Report Required') || !['Follow-Up', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]),
+                warningTests: [
+                    {
+                        test: (e, opt) => {
+                            const hasReport = opt.getField('Progress Report Required');
+                            const complete = opt.getField('Progress Report Complete');
+                            const tx = ['Follow-Up', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]);
+                            return tx && hasReport && !complete && !(opt.trigger === 'eventSave' && e.status[0] === 'Complete');
+                        },
+                        message: 'Please confirm that the <B>Progress Report</B> is complete.',
+                        emoji: '✅'
+                    }
+                ],
+                errorTests: [
+                    {
+                        critical: true,
+                        test: (e, opt) => {
+                            const hasReport = opt.getField('Progress Report Required');
+                            const complete = opt.getField('Progress Report Complete');
+                            const tx = ['Follow-Up', 'Post-Op'].includes(opt.getField('Visit Type')?.[0]);
+                            return tx && hasReport && !complete && opt.trigger === 'eventSave' && e.status[0] === 'Complete';
+                        },
+                        message: 'Please confirm that the <B>Progress Report</B> is complete.',
+                        emoji: '✅'
+                    }
+                ]
             }
         };
 
@@ -1520,8 +1383,7 @@
 
         // Reopen Popover
 
-        let revertPopoverChanges = false;
-        let blockOnEventClick = false;
+        let reopenPopover = false;
 
         // Initialize error handling system
         let allEventErrors = {};
@@ -1530,43 +1392,20 @@
         let allEventHidden = { hiddenFields: {} };
 
         // Error handler object for use by other app actions
-        let validationHandler = {
+        let errorHandler = {
             onEventClick: onEventClick,
             onFieldChange: onFieldChange,
             beforeEventRendered: beforeEventRendered,
             beforeEventSave: beforeEventSave,
             onEventSave: onEventSave,
-
-            // Store of current errors/warnings/required fields by eventID
-
             allEventErrors: allEventErrors,
             allEventWarnings: allEventWarnings,
             allEventRequired: allEventRequired,
             allEventHidden: allEventHidden,
-
-            // Function to allow other actions to trigger recalculation of errors
-
-            globalDefaults: inputs.globalDefaults,
-            calendarDefaults: inputs.calendarDefaults,
-
-            setGlobalDefaults: (newDefaults) => {
-                inputs.globalDefaults = newDefaults;
-                compileValidationRules();
-            },
-
-            setCalendarDefaults: (newDefaults) => {
-                inputs.calendarDefaults = newDefaults;
-                compileValidationRules();
-            }
+            inputs: inputs
         };
 
-        // Compile Validation Rules
-
-        compileValidationRules();
-
-        // Register the handler globally so other actions can access it
-
-        sc.init('validationHandler', validationHandler);
+        sc.init('errorHandler', errorHandler);
 
         // -----------------------------------------------------------
         // Event Handlers
@@ -1582,8 +1421,15 @@
             // Cancel the default action to prevent the popover from opening 
             // if another popover is still open
 
-            if (blockOnEventClick) {
+            if (q('.modal-dialog')) {
                 return action?.callbacks?.cancel();
+            }
+
+            if (q('.ng-popover[data-popover-event-id]')) {
+                setTimeout(() => {
+                    onEventClick(event, editEvent, action);
+                }, 500);
+                return;
             }
 
             action?.callbacks?.confirm();
@@ -1661,7 +1507,7 @@
 
                     // Recalculate errors if user clicked on a field
 
-                    if (q('.modal-dialog') || blockOnEventClick) return;
+                    if (q('.modal-dialog')) return;
 
                     // Recalculate changes object
                     let changesObjectNew = dbk.eventChanged(editEvent, event.beforeDrop || event);
@@ -1748,7 +1594,7 @@
 
                 // Name the custom fields
 
-                let labels = popover.querySelectorAll('.ng-popover[data-popover-event-id] .panel-switch li');
+                let labels = popover.querySelectorAll('.panel-switch li');
 
                 labels?.forEach((item) => {
                     let labelNode = item.querySelector('label');
@@ -1762,7 +1608,7 @@
 
                 const changesObject = dbk.eventChanged(editEvent, event.beforeDrop || event);
 
-                popover.querySelectorAll('.ng-popover[data-popover-event-id] .panel-switch:not(.fieldsProcessed)')?.forEach((panelSwitch) => {
+                popover.querySelectorAll('.panel-switch:not(.fieldsProcessed)')?.forEach((panelSwitch) => {
 
                     labels?.forEach((item) => {
                         let label = item?.dataset?.fieldLabel;
@@ -1978,8 +1824,8 @@
 
         function onEventSave(event, editEvent, changesObject, action) {
 
-            if (revertPopoverChanges) {
-                revertPopoverChanges = false;
+            if (reopenPopover) {
+                reopenPopover = false;
                 changesObject = {};
                 action?.callbacks?.cancel();
             } else {
@@ -1991,14 +1837,11 @@
 
         async function beforeEventSave(event, editEvent, action) {
 
-            blockOnEventClick = true;
-
             // Handle field change event
             const changesObject = dbk.eventChanged(editEvent, event.beforeDrop || event);
 
             // If validateUnchangedEvents is false and there are no changes, skip validation
-            if (!inputs.validateUnchangedEvents && Object.keys(changesObject).length === 0) {
-                blockOnEventClick = false;
+            if (inputs.validateUnchangedEvents && Object.keys(changesObject).length === 0) {
                 return action?.callbacks?.confirm();
             }
 
@@ -2007,9 +1850,18 @@
             let errorFields = allEventErrors[event.eventID]?.errorFields || {};
             let warningFields = allEventWarnings[event.eventID]?.warningFields || {};
 
+            // // Remove error/warning classes if none remain
+            // if (!Object.keys(errorFields).length || !Object.keys(warningFields).length) {
+            //     if (!Object.keys(errorFields).length) {
+            //         qa(`[data-id="${event._id}"].hasError`)?.forEach(el => el.classList.remove('hasError'));
+            //     }
+            //     if (!Object.keys(warningFields).length) {
+            //         qa(`[data-id="${event._id}"].hasWarning`)?.forEach(el => el.classList.remove('hasWarning'));
+            //     }
+            // }
+
             // If no errors or warnings, just confirm
             if (Object.keys(errorFields).length === 0 && Object.keys(warningFields).length === 0) {
-                blockOnEventClick = false;
                 return action?.callbacks?.confirm();
             }
 
@@ -2089,7 +1941,7 @@
                             border-color: red;
                         }
 
-                        .modalButtons .btn-primary:active {
+                        .modalButtons .btn-success:active {
                             background-color: darkred;
                             border-color: black;
                         }
@@ -2176,7 +2028,6 @@
                 show: true,
                 class: 'validationModal',
                 cancelButton: function () {
-                    blockOnEventClick = false;
                     return action.callbacks.cancel();
                 },
                 confirmButton: function () {
@@ -2187,24 +2038,16 @@
                             "Confirm Changes",
                             "Are you sure you want to override and save changes anyway?",
                             "No, Fix issues",
-                            () => {
-                                blockOnEventClick = false;
-                                action?.callbacks?.cancel();
-                            },
+                            () => action?.callbacks?.cancel(),
                             "Override and Save",
-                            () => {
-                                blockOnEventClick = false;
-                                action?.callbacks?.confirm();
-                            }
+                            () => action?.callbacks?.confirm()
                         );
                     } else {
-                        blockOnEventClick = false;
                         action?.callbacks?.confirm();
                     }
                 },
                 revertButton: function () {
-                    blockOnEventClick = false;
-                    revertPopoverChanges = true;
+                    reopenPopover = true;
                     return action.callbacks.confirm();
                 },
                 autoHeight: true,
@@ -2240,8 +2083,6 @@
                     </div>
                     `;
 
-            blockOnEventClick = true;
-
             utilities.popover(config, modalHtml);
         }
 
@@ -2268,26 +2109,6 @@
                 delete allEventHidden[event.eventID];
             }
 
-            // Create a field resolution map for custom fields
-            // This will be used by the getCustomFieldValue and setCustomFieldValue functions
-            // to map between field labels, field names, and field ids
-
-            let fieldResolutionMap = {};
-
-            Object.values(event.schedule.customFields)?.forEach(f => {
-                fieldResolutionMap[f.name] = f.id;
-                fieldResolutionMap[f.field] = f.id;
-            });
-
-            if (trigger != 'eventRender') {
-                document.querySelectorAll(`[data-field-label][content-id]`)?.forEach(el => {
-                    const contentId = el.getAttribute('content-id');
-                    const fieldName = contentId?.split('.')?.pop();
-                    if (!fieldName) return;
-                    fieldResolutionMap[el.dataset.fieldLabel] = fieldName;
-                });
-            }
-
             // Map changesObject keys (which may be field ids) to their label names for use in validation
             let changes = {};
             if (editEvent && editEvent.schedule && editEvent.schedule.customFields) {
@@ -2310,55 +2131,28 @@
             let hiddenFields = {};
             let criticalErrors = false;
 
-            // Proxy for editEvent to allow test functions to use 'this'
-
-            function createEditEventProxy(editEvent, context, field) {
-                return new Proxy(editEvent, {
-                    get(target, prop) {
-                        if (prop in context) {
-                            // If fieldChanged is called without a label, use field from context
-                            if (prop === 'fieldChanged') {
-                                return (label) => context.fieldChanged(label !== undefined ? label : field);
-                            }
-                            return context[prop];
-                        }
-                        return target[prop];
-                    }
-                });
-            }
-
-            // Define context for validation functions
-
-            const context = {
-                event: event,
-                editEvent: editEvent,
-                trigger: trigger,
-                changes: changes,
-                errors: errorFields,
-                warnings: warningFields,
-                getField: (name) => getCustomFieldValue(name),
-                setField: (name, value) => setCustomFieldValue(name, value),
-                fieldChanged: (label) => changes.hasOwnProperty(label),
-                pushError: pushError,
-                pushWarning: pushWarning,
-                markRequired: markRequired,
-                showField: showField,
-                hideField: (field) => hideField(field)
-            };
-
             for (const [field, rules] of Object.entries(inputs.validationRules)) {
 
                 let messages = { errors: [], warnings: [] };
-
-                const proxyEditEvent = createEditEventProxy(editEvent, context, field);
 
                 // Required field
 
                 if (rules.hasOwnProperty('markRequired')) {
                     let isRequired = false;
                     if (typeof rules.markRequired === 'function') {
+
                         try {
-                            isRequired = rules.markRequired.call(proxyEditEvent, proxyEditEvent);
+                            isRequired = rules.markRequired(editEvent, {
+                                event: event,
+                                editEvent: editEvent,
+                                trigger: trigger,
+                                changes: changes,
+                                errors: errorFields,
+                                warnings: warningFields,
+                                getField: (field) => getCustomFieldValue(editEvent, field),
+                                setField: (field, value) => setCustomFieldValue(event, editEvent, field, value),
+                                fieldChanged: (label) => { return changes.hasOwnProperty(label ? field : label); }
+                            });
                         } catch (e) {
                             isRequired = false;
                         }
@@ -2373,10 +2167,21 @@
                 // Hidden/Shown field logic
                 let isHidden = false;
                 if (rules.hasOwnProperty('showField')) {
+                    // If showField is present, default to hidden and show only if showField returns true
                     let shouldShow = false;
                     if (typeof rules.showField === 'function') {
                         try {
-                            shouldShow = rules.showField.call(proxyEditEvent, proxyEditEvent);
+                            shouldShow = rules.showField(editEvent, {
+                                event: event,
+                                editEvent: editEvent,
+                                trigger: trigger,
+                                changes: changes,
+                                errors: errorFields,
+                                warnings: warningFields,
+                                getField: (field) => getCustomFieldValue(editEvent, field),
+                                setField: (field, value) => setCustomFieldValue(event, editEvent, field, value),
+                                fieldChanged: (label) => { return changes.hasOwnProperty(label ? field : label); }
+                            });
                         } catch (e) {
                             shouldShow = false;
                         }
@@ -2385,9 +2190,20 @@
                     }
                     isHidden = !shouldShow;
                 } else if (rules.hasOwnProperty('hideField')) {
+                    // If hideField is present, default to visible and hide if hideField returns true
                     if (typeof rules.hideField === 'function') {
                         try {
-                            isHidden = rules.hideField.call(proxyEditEvent, proxyEditEvent);
+                            isHidden = rules.hideField(editEvent, {
+                                event: event,
+                                editEvent: editEvent,
+                                trigger: trigger,
+                                changes: changes,
+                                errors: errorFields,
+                                warnings: warningFields,
+                                getField: (field) => getCustomFieldValue(editEvent, field),
+                                setField: (field, value) => setCustomFieldValue(event, editEvent, field, value),
+                                fieldChanged: (label) => { return changes.hasOwnProperty(label ? field : label); }
+                            });
                         } catch (e) {
                             isHidden = false;
                         }
@@ -2401,13 +2217,36 @@
 
                 // Error tests
 
+                const isAsync = (f) => f[Symbol.toStringTag] === 'AsyncFunction' || f instanceof AsyncFunction;
+
                 if (Array.isArray(rules.errorTests) && (rules.validateOn === undefined || rules.validateOn.includes(trigger))) {
                     for (let t = 0; t < rules.errorTests.length; t++) {
                         try {
                             const _test = rules.errorTests[t];
+                            // If skipOnError is true, skip this test if there are already errors for this field
                             if (!(_test?.skipOnError && messages.errors.length > 0) && typeof _test['test'] === 'function') {
-                                let result = _test['test'].call(proxyEditEvent, proxyEditEvent);
+
+                                let result = _test['test'](editEvent, {
+                                    event: event,
+                                    editEvent: editEvent,
+                                    trigger: trigger,
+                                    changes: changes,
+                                    errors: errorFields,
+                                    warnings: warningFields,
+                                    getField: (field) => getCustomFieldValue(editEvent, field),
+                                    setField: (field, value) => setCustomFieldValue(event, editEvent, field, value),
+                                    fieldChanged: (label) => { return changes.hasOwnProperty(label ? field : label); }
+                                });
+
+                                // --- Promise handling for async errorTests ---
+                                // calculateEventErrors is called in both async (awaited) and sync contexts.
+                                // On 'eventSave', the function is awaited, so we can await any async test directly.
+                                // On other triggers (like eventClick, fieldChange), the function is called synchronously,
+                                // so we cannot await Promises and must handle them with .then().
+                                // This dual handling ensures async errorTests work for both contexts.
+
                                 if (result instanceof Promise && trigger === 'eventSave') {
+                                    // On eventSave, we can await the result
                                     result = await result;
                                 } else if (result instanceof Promise && trigger !== 'eventSave') {
                                     result.then(resolved => {
@@ -2415,8 +2254,10 @@
                                     }).catch(e => {
                                         console.error(`Error in async error validation test for ${field}:`, e);
                                     });
-                                    continue;
+                                    continue; // Skip further processing until promise resolves
                                 }
+
+                                // Handle resolved result (sync or awaited)
                                 if (result == -1 || (result === true && _test['critical'] === true)) {
                                     criticalErrors = true;
                                     if (_test['message']) {
@@ -2429,11 +2270,12 @@
                                 }
                             }
                         } catch (e) {
+                            // If test throws, treat as no error
                             console.error(`Error in error validation test for ${field}:`, e);
                         }
                     }
                     if (messages.errors.length > 0) {
-                        errorFields[field] = messages.errors;
+                        errorFields[field] = messages.errors; // messages.errors.length === 1 ? messages.errors[0] : messages.errors;
                     }
                 }
 
@@ -2443,18 +2285,42 @@
                     for (let t = 0; t < rules.warningTests.length; t++) {
                         const _test = rules.warningTests[t];
                         try {
+                            // If skipOnError is true, skip this test if there are already warnings for this field
                             if (!(_test?.skipOnError && messages.warnings.length > 0) && typeof _test['test'] === 'function') {
-                                let result = _test['test'].call(proxyEditEvent, proxyEditEvent);
+
+                                let result = _test['test'](editEvent, {
+                                    event: event,
+                                    editEvent: editEvent,
+                                    trigger: trigger,
+                                    changes: changes,
+                                    errors: errorFields,
+                                    warnings: warningFields,
+                                    getField: (field) => getCustomFieldValue(editEvent, field),
+                                    setField: (field, value) => setCustomFieldValue(event, editEvent, field, value),
+                                    fieldChanged: (label) => { return changes.hasOwnProperty(label ? field : label); }
+                                });
+
+                                // --- Promise handling for async errorTests ---
+                                // calculateEventErrors is called in both async (awaited) and sync contexts.
+                                // On 'eventSave', the function is awaited, so we can await any async test directly.
+                                // On other triggers (like eventClick, fieldChange), the function is called synchronously,
+                                // so we cannot await Promises and must handle them with .then().
+                                // This dual handling ensures async errorTests work for both contexts.
+
                                 if (result instanceof Promise && trigger === 'eventSave') {
+                                    // On eventSave, we can await the result
                                     result = await result;
                                 } else if (result instanceof Promise && trigger !== 'eventSave') {
+                                    // On other triggers, handle async result with .then()
                                     result.then(resolved => {
                                         throwResult(event, field, resolved, _test['message']);
                                     }).catch(e => {
-                                        console.error(`Error in async warning validation test for ${field}:`, e);
+                                        console.error(`Error in async error validation test for ${field}:`, e);
                                     });
-                                    continue;
+                                    continue; // Skip further processing until promise resolves
                                 }
+
+                                // Handle resolved result (sync or awaited)
                                 if (result == -1 || (result === true && _test['critical'] === true)) {
                                     criticalErrors = true;
                                     if (_test['message']) {
@@ -2467,11 +2333,12 @@
                                 }
                             }
                         } catch (e) {
+                            // If test throws, treat as no warning
                             console.error(`Error in warning validation test for ${field}:`, e);
                         }
                     }
                     if (messages.warnings.length > 0) {
-                        warningFields[field] = messages.warnings;
+                        warningFields[field] = messages.warnings; // messages.warnings.length === 1 ? messages.warnings[0] : messages.warnings;
                     }
                 }
             }
@@ -2493,47 +2360,42 @@
 
             return criticalErrors;
 
-            // -----------------------------------------------------------
-            // Helper functions for validation tests
+            // Helper function to throw or clear an error for a specific field
+            // and repaint visual elements. Returns the result for convenience.
+            // Used only in context of async promise handling.
 
             function throwResult(event, label, result, message) {
+
                 if (allEventErrors[event.eventID] === undefined) {
                     allEventErrors[event.eventID] = { errorFields: {} };
                 }
+
                 if (result) {
                     allEventErrors[event.eventID].errorFields[label] = message;
                 } else {
-                    if (allEventRequired[event.eventID]?.requiredFields?.hasOwnProperty(label)) {
-                        delete allEventErrors[event.eventID].errorFields[label];
-                    }
+                    delete allEventErrors[event.eventID].errorFields[label];
                 }
+
                 paintVisualElements(event);
                 return result;
             }
 
-            function getCustomFieldValue(name) {
-                if (fieldResolutionMap.hasOwnProperty(name)) {
-                    return editEvent[fieldResolutionMap[name]];
-                } else if (editEvent.hasOwnProperty(name.toLowerCase())) {
-                    return editEvent[name.toLowerCase()];
-                }
-                return undefined;
+            // Helper function to get custom field value by name
+            // (either field label or "store in field" name).
+
+            function getCustomFieldValue(event, name) {
+                const id = Object.values(event.schedule.customFields)?.find(f => f.name === name || f.field === name)?.id;
+                return id ? event[id] : undefined;
             }
 
-            function setCustomFieldValue(name, value) {
+            // Helper function to set custom field value by name
 
-                let id;
-                if (fieldResolutionMap.hasOwnProperty(name)) {
-                    id = fieldResolutionMap[name];
-                } else if (editEvent.hasOwnProperty(name.toLowerCase())) {
-                    id = name.toLowerCase();
-                }
-
+            function setCustomFieldValue(event, editEvent, name, value) {
+                const id = Object.values(event.schedule.customFields)?.find(f => f.name === name || f.field === name)?.id;
                 if (id) {
                     editEvent[id] = value;
                     dbk.refreshEditPopover(editEvent);
-
-                    qa(`[data-field-label="${name}"]`)?.forEach(el => {
+                    qa('[data-field-id="' + id + '"]')?.forEach(el => {
                         if (event[id] !== editEvent[id]) {
                             el.classList.add('hasChanged');
                         } else {
@@ -2541,60 +2403,8 @@
                         }
                     });
                 }
-            }
-
-            function markRequired(label, isRequired) {
-                if (isRequired) {
-                    [].concat(label).forEach(l => {
-                        requiredFields[l] = true;
-                    });
-
-                    showField(label);
-                } else {
-                    [].concat(label).forEach(l => {
-                        if (requiredFields.hasOwnProperty(l)) {
-                            delete requiredFields[l];
-                        }
-                    });
-                }
-            }
-
-            function hideField(label) {
-                [].concat(label).forEach(l => {
-                    hiddenFields[l] = true;
-                });
-            }
-
-            function showField(label) {
-                [].concat(label).forEach(l => {
-                    if (hiddenFields.hasOwnProperty(l)) {
-                        delete hiddenFields[l];
-                    }
-                });
-            }
-
-            function pushError(label, message) {
-                if (errorFields[label] === undefined) {
-                    errorFields[label] = [];
-                }
-                if (!errorFields[label].includes(message)) {
-                    errorFields[label].push(message);
-                }
-            }
-
-            function pushWarning(label, message) {
-                if (warningFields[label] === undefined) {
-                    warningFields[label] = [];
-                }
-                if (!warningFields[label].includes(message)) {
-                    warningFields[label].push(message);
-                }
-            }
+            };
         }
-
-        // -----------------------------------------------------------
-        // Helper Functions
-        // -----------------------------------------------------------
 
         // Paint Visual Elements
 
@@ -2702,97 +2512,9 @@
             }
         }
 
-        // Compile Validation Rules
-
-        function compileValidationRules() {
-
-            // Compile the validation rules for each field
-
-            const merged = {};
-
-            let _gd_validationRules = inputs.globalDefaults?.validationRules || {};
-            let _gd_requiredFields = inputs.globalDefaults?.requiredFields || [];
-            let _gd_hiddenFields = inputs.globalDefaults?.hiddenFields || [];
-
-            // Map requiredFields and hiddenFields into validationRules object
-            _gd_requiredFields.forEach((field) => {
-
-                merged[field] = {
-                    markRequired: true,
-                    validateOn: ['eventSave'],
-                    errorTests: [{
-                        test: (e) => {
-                            if (e.trigger !== 'eventSave') return false;
-                            const value = e.getField(field);
-                            // Check if the field is empty
-                            if (value instanceof moment) return false;
-                            console.log("Checking required field", field, "value:", value);
-                            if (Array.isArray(value) && (value.length === 0 || value[0] === 'none' || value[0] === "Unassigned")) return true;
-                            if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) return true;
-                            return false;
-                        },
-                        message: `Please complete the <B>${field}</B> field.`,
-                        emoji: '🚫'
-                    }]
-                };
-            });
-
-            _gd_hiddenFields.forEach((field) => {
-                if (!merged[field]) merged[field] = {};
-                merged[field]['hideField'] = true;
-            });
-
-            // Now merge in any specific validation rules from globalDefaults.validationRules
-            // These will add to or override the defaults set above
-
-            if (_gd_validationRules && Object.keys(_gd_validationRules).length) {
-
-                Object.keys(_gd_validationRules).forEach((field) => {
-
-                    // Get existing rule or create new
-                    if (!merged[field]) merged[field] = {};
-
-                    // Get rule we are merging in from
-                    let rule = _gd_validationRules[field];
-
-                    let validateOn = rule['validateOn'] ? rule['validateOn'] : [];
-
-                    // Merge validateOn arrays, ensuring uniqueness
-                    if (Array.isArray(merged[field]['validateOn'])) {
-                        merged[field]['validateOn'] = [...new Set([...validateOn, ...merged[field]['validateOn']])];
-                    } else {
-                        merged[field]['validateOn'] = validateOn;
-                    }
-
-                    // Merge in other properties, with rule taking precedence
-                    if (rule['markRequired'] !== undefined) {
-                        merged[field]['markRequired'] = rule['markRequired'];
-                    }
-
-                    if (rule.hasOwnProperty('hideField')) {
-                        merged[field]['hideField'] = rule['hideField'];
-                    }
-
-                    if (rule.hasOwnProperty('showField')) {
-                        merged[field]['showField'] = rule['showField'];
-                    }
-
-                    if (merged[field].hasOwnProperty('errorTests') && rule.hasOwnProperty('errorTests')) {
-                        merged[field]['errorTests'] = [...merged[field]['errorTests'], ...rule['errorTests']];
-                    } else if (!merged[field].hasOwnProperty('errorTests') && rule.hasOwnProperty('errorTests')) {
-                        merged[field]['errorTests'] = [...rule['errorTests']];
-                    }
-
-                    if (merged[field].hasOwnProperty('warningTests') && rule.hasOwnProperty('warningTests')) {
-                        merged[field]['warningTests'] = [...merged[field]['warningTests'], ...rule['warningTests']];
-                    } else if (!merged[field].hasOwnProperty('warningTests') && rule.hasOwnProperty('warningTests')) {
-                        merged[field]['warningTests'] = [...rule['warningTests']];
-                    }
-                });
-            }
-
-            inputs.validationRules = merged;
-        }
+        // -----------------------------------------------------------
+        // Helper Functions
+        // -----------------------------------------------------------
 
         // Helper function to limit number of simultaneous call requests
         // Useful to prevent multiple rapid calls to the same function
@@ -2807,6 +2529,14 @@
                 }, wait);
             };
         }
+
+        // Helper function to get client events
+        // Optionally filter by calendar name
+
+        const getClientEvents = (cal) => {
+            const events = sc.get('element').fullCalendar('clientEvents');
+            return cal ? events?.filter(e => e.schedule.name === cal) : events;
+        };
 
     }
 

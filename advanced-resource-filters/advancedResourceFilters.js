@@ -1,5 +1,7 @@
 // Advanced Resource Filters - v1.1
 
+// Name: Advanced Resource Filters
+// Type: App Action
 // Purpose:
 
 // Creates toggle buttons and multi-select boxes
@@ -18,7 +20,7 @@
 (() => {
 	// Declare global imports
 	// @ts-ignore
-	const globals = {action, dbk, seedcodeCalendar, utilities, fbk};
+	const globals = { action, dbk, seedcodeCalendar, utilities, fbk };
 
 	const options = {};
 	const inputs = {};
@@ -316,9 +318,9 @@
 
 		function injectTagFilters(container) {
 			const /** @type HTMLInputElement | null */ filterBox =
-					document.querySelector(
-						".filters-resource [ng-model='filterText']"
-					);
+				document.querySelector(
+					".filters-resource [ng-model='filterText']"
+				);
 			const xtimes = document.querySelector(
 				'.filters-resource .dbk_icon_times'
 			);
@@ -423,7 +425,7 @@
 					const selectWrapperDiv = document.createElement('DIV');
 					// @ts-ignore
 					const /** @type HTMLSelectElement */ selectBox =
-							document.createElement('SELECT');
+						document.createElement('SELECT');
 
 					tagGroupDiv.className = 'tagGroup';
 					label.className = 'tagGroupLabel';
@@ -436,7 +438,7 @@
 
 					// @ts-ignore
 					const /** @type HTMLOptionElement */ oOption =
-							document.createElement('OPTION');
+						document.createElement('OPTION');
 					oOption.value = '';
 					oOption.innerText = group.boxtitle;
 					selectBox.appendChild(oOption);
@@ -446,7 +448,7 @@
 						const filter = group.tags[tagName];
 						// @ts-ignore
 						const /** @type HTMLOptionElement */ oOption =
-								document.createElement('OPTION');
+							document.createElement('OPTION');
 						oOption.value = tagName;
 						oOption.innerText = filter.name ? filter.name : tagName;
 						oOption.dataset.tagfilter = '1';
@@ -752,11 +754,11 @@
 
 							const selectedItems = optionsList.join(', ');
 							const /** @type HTMLSelectElement | null */ selectedItemsList =
-									document.querySelector(
-										'div.selectedItemsList[data-sbtagfiltergroup="' +
-											selectBox.dataset.tagfiltergroup +
-											'"]'
-									);
+								document.querySelector(
+									'div.selectedItemsList[data-sbtagfiltergroup="' +
+									selectBox.dataset.tagfiltergroup +
+									'"]'
+								);
 
 							if (selectedItemsList) {
 								selectedItemsList.innerText = selectedItems;

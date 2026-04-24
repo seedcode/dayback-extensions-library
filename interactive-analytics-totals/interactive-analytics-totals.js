@@ -1,5 +1,7 @@
 // Interactive Analytics Totals: Click to Highlight Resource v1.0
 
+// Name: Interactive Analytics Totals
+// Type: App Action
 // Purpose:
 //
 // This code enables clickable analytics totals. When a user 

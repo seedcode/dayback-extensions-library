@@ -1,5 +1,7 @@
 // DayBack Custom Action Template v1.0.5
 
+// Name: Map Core - Resource Buttons
+// Type: App Action
 // Purpose: Creates mapping buttons for resources
 // Action Type: On Resources Fetched
 // Prevent Default Action: No
@@ -14,7 +16,7 @@
 (() => {
 	// Declare global imports
 	// @ts-ignore
-	const globals = {action, dbk, seedcodeCalendar, utilities, $rootScope};
+	const globals = { action, dbk, seedcodeCalendar, utilities, $rootScope };
 
 	const options = {};
 	const inputs = {};
@@ -190,13 +192,11 @@
 	 */
 	function reportError(error) {
 		const errorTitle = 'Error Running Custom Action';
-		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${
-			globals.action.name?.length > 0
+		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${globals.action.name?.length > 0
 				? globals.action.name
 				: globals.action.type
-		}</span>"</p><p>Error: ${
-			error.message
-		}.</p><p>This may result in unexpected behavior of the calendar.</p>`;
+			}</span>"</p><p>Error: ${error.message
+			}.</p><p>This may result in unexpected behavior of the calendar.</p>`;
 		if (
 			globals.action.preventDefault &&
 			globals.action.category !== 'event' &&

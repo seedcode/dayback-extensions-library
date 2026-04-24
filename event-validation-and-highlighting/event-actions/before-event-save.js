@@ -1,4 +1,7 @@
 // Event Validation - Before Event Save - v1.0
+
+// Name: Event Validation - Before Event Save
+// Type: Event Action
 //
 // Purpose:
 // Validates event fields when they are

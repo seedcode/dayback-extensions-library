@@ -1,5 +1,7 @@
 // Load Resources From Objects - Salesforce v1.50
 
+// Name: Load Resources From Objects - Salesforce
+// Type: App Action
 // Purpose:
 // Loads resources in DayBack from Salesforce objects
 // Action Type: On Resources Fetched
@@ -12,7 +14,7 @@
 
 // Declare global imports
 // @ts-ignore
-const globals = {action, dbk, seedcodeCalendar, utilities, fbk, dbk, Sfdc};
+const globals = { action, dbk, seedcodeCalendar, utilities, fbk, dbk, Sfdc };
 
 const options = {};
 const inputs = {};
@@ -115,7 +117,7 @@ function run() {
 	globals.seedcodeCalendar.init('resources', resources);
 
 	//add none resource
-	resources.push(createResource({Name: 'None'}, {resourceFieldName: 'Name'}));
+	resources.push(createResource({ Name: 'None' }, { resourceFieldName: 'Name' }));
 	resourceCount++;
 
 	//loop through each resource object
@@ -339,7 +341,7 @@ function run() {
 			newResource.tags = [];
 			tags.split(',').forEach(function (tag) {
 				if (tag && tag !== '') {
-					newResource.tags.push({name: tag});
+					newResource.tags.push({ name: tag });
 				}
 			});
 		}

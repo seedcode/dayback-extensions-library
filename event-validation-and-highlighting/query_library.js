@@ -1,4 +1,8 @@
 // Salesforce Client for Canvas + Direct REST (sfApi.ajaxRequest)
+
+// Name: Event Validation - Salesforce Query Library
+// Type: App Action
+
 // --------------------------------------------------------------
 // Usage:
 //   const sf = SalesforceClient({ mode: 'canvas' }); // inside Canvas app

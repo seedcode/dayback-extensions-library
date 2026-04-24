@@ -1,5 +1,7 @@
 // Select A Single Calendar Source v1.0
 
+// Name: Select A Single Calendar Source
+// Type: App Action
 // Purpose:
 // This app action will allow you to single select a calendar source. 
 // So you will only be able to view one calendar source on the calendar at a time. 
@@ -21,7 +23,7 @@ try {
 
 	// Seconds to wait to allow this action to run before reporting an error (set to 0 to deactivate)
 	options.runTimeout = 8;
-	
+
 	// Array of account emails for whom this action will run. Leave blank to allow the action to run for everyone.
 	// Example: ['person@domain.com', 'someone@domain.com']
 	options.restrictedToAccounts = [];
@@ -43,16 +45,16 @@ function run() {
 	var schedules = seedcodeCalendar.get('schedules');
 
 	if (!seedcodeCalendar.get("updatingSchedules") && params.data.isLast && params.data.item && params.data.item.status && params.data.item.status.selected) {
-    	//Deselect all other sources
-  		seedcodeCalendar.init("updatingSchedules", true); 
-  		schedules.forEach(function(schedule) {
-    	if (schedule !== params.data.item && schedule.status.selected) { 
-      		dbk.toggleCalendar(schedule); 
-    	}
-  	});
+		//Deselect all other sources
+		seedcodeCalendar.init("updatingSchedules", true);
+		schedules.forEach(function (schedule) {
+			if (schedule !== params.data.item && schedule.status.selected) {
+				dbk.toggleCalendar(schedule);
+			}
+		});
 
-  	seedcodeCalendar.init("updatingSchedules", false); 
-}
+		seedcodeCalendar.init("updatingSchedules", false);
+	}
 
 }
 

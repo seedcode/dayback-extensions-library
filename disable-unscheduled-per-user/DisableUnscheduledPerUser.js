@@ -1,5 +1,7 @@
 // Disable the Unscheduled List for Specific Users
 
+// Name: Disable Unscheduled List for Specific Users
+// Type: App Action
 // Purpose:
 // Turns off the Unscheduled List for specific accounts.
 // This turns off the display of the list: if unschesheduled is enabled, events where unscheduled=true that 
@@ -46,10 +48,10 @@ function run() {
 	const account = seedcodeCalendar.get('config').account;
 
 	if (disableForAccounts.includes(account)) {
-  		seedcodeCalendar.init('alt-view', {
-      	enabled: false,
-      	show: false,
- 	 });
+		seedcodeCalendar.init('alt-view', {
+			enabled: false,
+			show: false,
+		});
 	}
 }
 

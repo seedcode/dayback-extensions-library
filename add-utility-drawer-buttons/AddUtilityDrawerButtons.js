@@ -1,5 +1,7 @@
 // Add Utility Drawer Buttons v1.0
 
+// Name: Add Utility Drawer Buttons
+// Type: Event Action
 // Purpose:
 // Allows you to add one or more custom buttons
 // to any of the event popover utility drawers.

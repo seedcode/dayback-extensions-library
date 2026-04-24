@@ -1,5 +1,7 @@
 // Check Resource Capacity v1.0
 
+// Name: Check Resource Capacity
+// Type: Event Action
 // Purpose:
 // This function enforces daily limits on a resource established in the below config object
 // e.g. The resource 'Jason Young' cannot have more than 8 events scheduled per day
@@ -153,9 +155,9 @@ function run() {
 			utilities.showModal(
 				'Resource Over Limit',
 				'This ' +
-					objectNameForDialog +
-					' puts this resource over capacity on the following dates:\n' +
-					errorMessage.join(', '),
+				objectNameForDialog +
+				' puts this resource over capacity on the following dates:\n' +
+				errorMessage.join(', '),
 				'OK',
 				function () {
 					action.callbacks.cancel();

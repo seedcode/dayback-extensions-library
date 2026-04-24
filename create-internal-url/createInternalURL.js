@@ -1,5 +1,7 @@
 // Create Internal URL v1.6
 
+// Name: Create Internal URL
+// Type: Button Action
 // Purpose:
 // Gets a list of active filters and builds a URL to share
 // your current view with internal users of the organization
@@ -88,12 +90,12 @@ function run() {
 	//A dd the required filter parameters to the URL
 	calendarURL = encodeURI(
 		calendarURL +
-			getActiveFilterItemsString('source', sourceList) +
-			getActiveFilterItemsString('filterStatuses', statusList) +
-			getActiveFilterItemsString('filterResources', resourceList) +
-			getActiveFilterItemsString('filterContacts', contactList) +
-			getActiveFilterItemsString('filterProjects', projectList) +
-			textFilter
+		getActiveFilterItemsString('source', sourceList) +
+		getActiveFilterItemsString('filterStatuses', statusList) +
+		getActiveFilterItemsString('filterResources', resourceList) +
+		getActiveFilterItemsString('filterContacts', contactList) +
+		getActiveFilterItemsString('filterProjects', projectList) +
+		textFilter
 	);
 
 	// Copy the link to the clipboard

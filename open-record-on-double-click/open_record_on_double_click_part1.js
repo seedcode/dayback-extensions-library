@@ -1,4 +1,7 @@
 // Open Record On Double Click v1.0 - Part 1
+
+// Name: Open Record On Double Click - Part 1
+// Type: App Action
 //
 // Purpose:
 // Double clicking an event will open up the native
@@ -66,7 +69,7 @@ try {
 
 		options.runOnDoubleClick = (calendarName, eventID) => {
 			// Opens up the native Salesforce record for the event
-			fbk.publish('dbk.navigate', {url: '/' + eventID, new: true});
+			fbk.publish('dbk.navigate', { url: '/' + eventID, new: true });
 		};
 
 		//----------- End Configuration -------------------
@@ -219,7 +222,7 @@ try {
 
 	options.runOnDoubleClick = (calendarName, recordId) => {
 		// Opens up the native Salesforce record for the event
-		fbk.publish('dbk.navigate', {url: '/' + recordId, new: true});
+		fbk.publish('dbk.navigate', { url: '/' + recordId, new: true });
 	};
 
 	//----------- End Configuration -------------------

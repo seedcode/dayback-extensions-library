@@ -1,5 +1,7 @@
 // DayBack Mutation Observer Library - v1.0
 
+// Name: DayBack Mutation Observer Library
+// Type: App Action
 // Purpose:
 // Installs a mutation observer library for
 // monitoring real-time DOM changes. This
@@ -29,189 +31,189 @@ try {
 
 	/******************************************************************************************
 
-    Mutation Observer Library Usage Instructions
-    --------------------------------------------
+	Mutation Observer Library Usage Instructions
+	--------------------------------------------
 
-    App action installs seedcodeCalendar.get("dbkObserver") object
-    which contains a .new() constructor function. Each new observer 
-    instance must be given four parameters. 
+	App action installs seedcodeCalendar.get("dbkObserver") object
+	which contains a .new() constructor function. Each new observer 
+	instance must be given four parameters. 
 
-    seedcodeCalendar.get("dbkObserver").new({
-        name:   "uniqueNameForObserver",
-        watch:  document.getElementById("The Dom Element We are Observering"),
-        until:  "#query .selector .condition-that-triggers .custom-code-injection",
-        then:   functionToRunWhenConditionIsMet
-    });
+	seedcodeCalendar.get("dbkObserver").new({
+		name:   "uniqueNameForObserver",
+		watch:  document.getElementById("The Dom Element We are Observering"),
+		until:  "#query .selector .condition-that-triggers .custom-code-injection",
+		then:   functionToRunWhenConditionIsMet
+	});
 
-    function functionToRunWhenConditionIsMet(observer) {
+	function functionToRunWhenConditionIsMet(observer) {
 
-        // The most important functions inside observer are
+		// The most important functions inside observer are
 
-        observer.stop();        // Stops further observation, if you only need
-                                // to run the first time something happens
+		observer.stop();        // Stops further observation, if you only need
+								// to run the first time something happens
 
-        observer.destroy();     // Stops further observation, and destroys
-                                // named observer, in case you want to reuse
-                                // the same name's observer. Can be used in
-                                // place of stop
+		observer.destroy();     // Stops further observation, and destroys
+								// named observer, in case you want to reuse
+								// the same name's observer. Can be used in
+								// place of stop
 
-        observer.restart();     // Restarts observation of the same node, if 
-                                // you expect your injects to go away, and they
-                                // need to be plugged in each time the node is changed
+		observer.restart();     // Restarts observation of the same node, if 
+								// you expect your injects to go away, and they
+								// need to be plugged in each time the node is changed
 
-        // You also have access to the entire node tree and the last
-        // mutation that returned true
+		// You also have access to the entire node tree and the last
+		// mutation that returned true
 
-        observer.lastMutation;
+		observer.lastMutation;
 
-        observer.mutationList;
+		observer.mutationList;
 
-        // If you used a query selector for your 'until' clause, and you want to grab
-        // it to issue events on that node, you can reference it using
+		// If you used a query selector for your 'until' clause, and you want to grab
+		// it to issue events on that node, you can reference it using
 
-        observer.foundNode;
-    }
+		observer.foundNode;
+	}
 
-    Example Scenario:
-    -----------------
+	Example Scenario:
+	-----------------
 
-    // Change Text Filter in sidebar to have a red background
+	// Change Text Filter in sidebar to have a red background
 
-    seedcodeCalendar.get("dbkObserver").new({
-        name: "modifySidebar",
-        watch: document.getElementById("sidebar"),
-        until: "#sidebar .filters-popover-container text-filter .header-block-content",
-        then: injectCustomCode,
-    });
+	seedcodeCalendar.get("dbkObserver").new({
+		name: "modifySidebar",
+		watch: document.getElementById("sidebar"),
+		until: "#sidebar .filters-popover-container text-filter .header-block-content",
+		then: injectCustomCode,
+	});
 
-    function injectCustomCode(observer) {
-        if (!observer.foundNode.classList.contains("tag-filters-container")) {
-            observer.stop();
-            observer.foundNode.classList.add("tag-filters-container");
-            observer.foundNode.style.backgroundColor = "red";
-            observer.restart();
-        }
-    }        
+	function injectCustomCode(observer) {
+		if (!observer.foundNode.classList.contains("tag-filters-container")) {
+			observer.stop();
+			observer.foundNode.classList.add("tag-filters-container");
+			observer.foundNode.style.backgroundColor = "red";
+			observer.restart();
+		}
+	}        
 
-    Contents of Observer Object:
-    ----------------------------
+	Contents of Observer Object:
+	----------------------------
 
-    The following are the most useful functions and values you can access in the object
-    that will be passed to your injectCustomCode(observer) function when your stop
-    condition is triggered
+	The following are the most useful functions and values you can access in the object
+	that will be passed to your injectCustomCode(observer) function when your stop
+	condition is triggered
 
-    observer.stop()
-    observer.start()
-    observer.restart()
-    observer.destroy()
+	observer.stop()
+	observer.start()
+	observer.restart()
+	observer.destroy()
 
-    observer.foundNode      // A reference to the node element matching your querySelector, if you used one
-    observer.foundOnStart   // True if we did not need to start observer, as node was present
-    observer.lastMutation   // Last mutation that triggered your custom code function
-    observer.mutationList   // The full list of node changes that trigged the lastMutation
-    observer.params         // Your original parameters that you passed
-    observer                // True browser's native mutation object
+	observer.foundNode      // A reference to the node element matching your querySelector, if you used one
+	observer.foundOnStart   // True if we did not need to start observer, as node was present
+	observer.lastMutation   // Last mutation that triggered your custom code function
+	observer.mutationList   // The full list of node changes that trigged the lastMutation
+	observer.params         // Your original parameters that you passed
+	observer                // True browser's native mutation object
 
-    Configuration Options:
-    ----------------------
+	Configuration Options:
+	----------------------
 
-    name: "uniqueName"
+	name: "uniqueName"
 
-        A unique short string identifying the observer. 
-        Prevents collision if app actions start multiple observers
+		A unique short string identifying the observer. 
+		Prevents collision if app actions start multiple observers
 
-    watch: node
+	watch: node
 
-        The DOM node element that is being observed. Constructor
-        will return undefined if node is undefined
+		The DOM node element that is being observed. Constructor
+		will return undefined if node is undefined
 
-    until: conditionCheck() or querySelector string 
+	until: conditionCheck() or querySelector string 
 
-        You can specify a function that checks whether the mutation matches
-        a truth condition, such as the modification of an event or editEvent 
-        value, or you can use a simple querySelector string to identify
-        if a node has been built (probably the most common usage)
+		You can specify a function that checks whether the mutation matches
+		a truth condition, such as the modification of an event or editEvent 
+		value, or you can use a simple querySelector string to identify
+		if a node has been built (probably the most common usage)
 
-    then: functionToRun
+	then: functionToRun
 
-        The function will be passed the observer object configuration collection
-        including stop/start/restart/destroy functions as well as the
-        last matched mutation, and mutation observer object itself.
-        Details on this collection provided later
+		The function will be passed the observer object configuration collection
+		including stop/start/restart/destroy functions as well as the
+		last matched mutation, and mutation observer object itself.
+		Details on this collection provided later
 
-    Optional Parameters:
-    --------------------
+	Optional Parameters:
+	--------------------
 
-    The following prameters provide advanced flow control for your mutation
-    observer. All of these have defaults, so you may not need to use these
-    settings.
+	The following prameters provide advanced flow control for your mutation
+	observer. All of these have defaults, so you may not need to use these
+	settings.
 
 
-    checkStopConditionOnStart: true
+	checkStopConditionOnStart: true
 
-        Immediately run stop condition check on start, in case the DOM tree
-        matches your stop condition and we don't need to start the observer
+		Immediately run stop condition check on start, in case the DOM tree
+		matches your stop condition and we don't need to start the observer
 
-    whenFoundStopObserving: false
+	whenFoundStopObserving: false
 
-        By default, if a mutation is found, we will continue to observe for
-        future mutations, unless the stop condition is met, and the user
-        calls observer.stop() inside of their code injection function.
+		By default, if a mutation is found, we will continue to observe for
+		future mutations, unless the stop condition is met, and the user
+		calls observer.stop() inside of their code injection function.
 
-        observer.stop() should always be ran inside of the code injection
-        function if you are injecting code into the node that is being
-        observed. If you don't call observer.stop(), you will trigger an
-        infinate loop. You can always call observer.restart() if you
-        wish to continue to observe the node after you have  applied
-        your changes.
+		observer.stop() should always be ran inside of the code injection
+		function if you are injecting code into the node that is being
+		observed. If you don't call observer.stop(), you will trigger an
+		infinate loop. You can always call observer.restart() if you
+		wish to continue to observe the node after you have  applied
+		your changes.
 
-    whenFoundStopProcessing: true
+	whenFoundStopProcessing: true
 
-        Each DOM change to will include an array of all mutations. If we 
-        find a stop condition, we very likely do not need to loop through the 
-        remaining mutations. Leave this set to true to save CPU cycles.
+		Each DOM change to will include an array of all mutations. If we 
+		find a stop condition, we very likely do not need to loop through the 
+		remaining mutations. Leave this set to true to save CPU cycles.
 
-    autoStart: true
-    startDelay: 0
+	autoStart: true
+	startDelay: 0
 
-        By default we will start observing right away and not wait. You
-        can optionally have the mutation observer start after a delay of a
-        set number of milliseconds, or you can start your observer manually
-        as follows:
+		By default we will start observing right away and not wait. You
+		can optionally have the mutation observer start after a delay of a
+		set number of milliseconds, or you can start your observer manually
+		as follows:
 
-        let observer = seedcodeCalendar.get("dbkObserver").new({
-            name:   ...,
-            watch:  ...,
-            until:  ...,
-            then:   ...,
+		let observer = seedcodeCalendar.get("dbkObserver").new({
+			name:   ...,
+			watch:  ...,
+			until:  ...,
+			then:   ...,
 
-            autoStart: false
+			autoStart: false
 
-        });        
+		});        
 
-        ... do stuff ...
+		... do stuff ...
 
-        observer.start();
+		observer.start();
 
-    debug: false
+	debug: false
 
-        If true will print debug statements to console at each major
-        stage of mutation observation
+		If true will print debug statements to console at each major
+		stage of mutation observation
 
-    options: { attributes: false, childList: true, subtree: true }
+	options: { attributes: false, childList: true, subtree: true }
 
-        The above specifies what type of DOM changes are monitored. 
-        The most common scenario is that we want to monitor change in
-        immediate child nodes, as well as the subtree of nodes. 
-        You may only need to change this if you want to observe attribute
+		The above specifies what type of DOM changes are monitored. 
+		The most common scenario is that we want to monitor change in
+		immediate child nodes, as well as the subtree of nodes. 
+		You may only need to change this if you want to observe attribute
 
-    mutationType: "childList" || "attribute" || "both"      Default: childList
+	mutationType: "childList" || "attribute" || "both"      Default: childList
 
-        If the mutation type is one of the above types of mutations,
-        then check whether the stop condition meets the mutation type.
-        You will likely not need to change this.
+		If the mutation type is one of the above types of mutations,
+		then check whether the stop condition meets the mutation type.
+		You will likely not need to change this.
 
-    *******************************************************************************************/
+	*******************************************************************************************/
 } catch (error) {
 	reportError(error);
 }
@@ -268,13 +270,13 @@ function run() {
 		observerObj.until = params.hasOwnProperty('until')
 			? params.until
 			: function () {
-					return true;
-			  };
+				return true;
+			};
 		observerObj.then = params.hasOwnProperty('then')
 			? params.then
 			: function () {
-					return true;
-			  };
+				return true;
+			};
 
 		// Observer Mutation Type Configuration Options. By default the observer will watch
 		// the child list and all subtree changes. You do not need to modify these defaults
@@ -288,7 +290,7 @@ function run() {
 
 		observerObj.options = params.hasOwnProperty('options')
 			? params.options
-			: {attributes: false, childList: true, subtree: true};
+			: { attributes: false, childList: true, subtree: true };
 
 		// Process child list changes by default
 		observerObj.mutationType = params.hasOwnProperty('mutationType')

@@ -1,4 +1,7 @@
 // Unscheduled To Do Items v1.0 - Part 3 of 6
+
+// Name: Unscheduled To Do Items - Part 3
+// Type: Event Action
 //
 // Purpose:
 // Sorts To Do objects above regular unscheduled objects using the 

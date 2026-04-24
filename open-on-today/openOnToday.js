@@ -1,5 +1,7 @@
 // Open DayBack On Today v1.0
 
+// Name: Open DayBack On Today
+// Type: App Action
 // Purpose:
 // Makes DayBack land on the current date regardless of what the last visited date is.
 

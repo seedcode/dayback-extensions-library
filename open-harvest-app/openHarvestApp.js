@@ -1,5 +1,7 @@
 // Open Harvest App v1.1
 
+// Name: Open Harvest App
+// Type: Button Action
 // Purpose:
 // The following button action will launch a time
 // tracking modal using the Harvest app. You will
@@ -97,10 +99,10 @@ function run() {
 	// Attach event listener to close model when clicking the close button
 	$(
 		'#closeModal-' +
-			event.eventID +
-			', #closeModal-' +
-			event.eventID +
-			'-Btn'
+		event.eventID +
+		', #closeModal-' +
+		event.eventID +
+		'-Btn'
 	).on('click', function (e) {
 		e.stopPropagation();
 		closeModal();

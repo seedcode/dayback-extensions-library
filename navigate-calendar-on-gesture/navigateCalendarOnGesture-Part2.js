@@ -1,5 +1,7 @@
 // Navigate Calendar on Gesture v2.7 - After Events Rendered Component
 
+// Name: Navigate Calendar on Gesture - Part 2
+// Type: App Action
 // Purpose:
 
 // Navigates the calendar forward or backward a page with swipe gestures or horizontal scroll
@@ -26,7 +28,7 @@ try {
 
   // Array of account emails for whom this action will run. Leave blank to allow the action to run for everyone.
   // Example: ['person@domain.com', 'someone@domain.com']
-  
+
   // Enable track pad support. Default is set to off
   options.trackpadSupport = false;
 
@@ -84,40 +86,40 @@ function run() {
 
   var calendarContainer = document.querySelector('.calendar');
   var headerContainer = document.getElementById('header');
-  
+
   // Register wheel and swipe handlers
-    if (calendarContainer && !seedcodeCalendar.get('calendarOnWheel')) {
-        calendarContainer.onwheel = function (e) {
+  if (calendarContainer && !seedcodeCalendar.get('calendarOnWheel')) {
+    calendarContainer.onwheel = function (e) {
 
-        // Directionality detection
-        ySum += e.deltaY;
-        xSum += e.deltaX;
-        clearTimeout(holdTimeout);
-        holdTimeout = setTimeout(function () {           
+      // Directionality detection
+      ySum += e.deltaY;
+      xSum += e.deltaX;
+      clearTimeout(holdTimeout);
+      holdTimeout = setTimeout(function () {
 
-            if ((options.trackpadSupport == true && ySum != 0 && Math.abs(xSum) * .5 > Math.abs(ySum)) || (options.trackpadSupport == false && ySum == 0)) {
-            
-                if (xSum < -1) {
-                    document.getElementById('dbkswn_container_left').classList.toggle('active');
-                    pageDate('back', 'wheel');              
-                    setTimeout(function() {
-                        document.getElementById('dbkswn_container_left').classList.toggle('active');
-                    }, 300);                   
-                } else if (xSum > 1) {
-                    document.getElementById('dbkswn_container_right').classList.toggle('active');
-                    pageDate('fwd', 'wheel');
-                    setTimeout(function() {
-                        document.getElementById('dbkswn_container_right').classList.toggle('active');
-                    }, 300);
-                }
-            }
-            xSum = 0; ySum = 0;
-        }, options.trackpadTimeout);                
+        if ((options.trackpadSupport == true && ySum != 0 && Math.abs(xSum) * .5 > Math.abs(ySum)) || (options.trackpadSupport == false && ySum == 0)) {
 
-        clearTimeout(wheelTimeout);
-            wheelTimeout = setTimeout(function () {
-            moveTimeout = false;
-        }, options.wheelTimeout);
+          if (xSum < -1) {
+            document.getElementById('dbkswn_container_left').classList.toggle('active');
+            pageDate('back', 'wheel');
+            setTimeout(function () {
+              document.getElementById('dbkswn_container_left').classList.toggle('active');
+            }, 300);
+          } else if (xSum > 1) {
+            document.getElementById('dbkswn_container_right').classList.toggle('active');
+            pageDate('fwd', 'wheel');
+            setTimeout(function () {
+              document.getElementById('dbkswn_container_right').classList.toggle('active');
+            }, 300);
+          }
+        }
+        xSum = 0; ySum = 0;
+      }, options.trackpadTimeout);
+
+      clearTimeout(wheelTimeout);
+      wheelTimeout = setTimeout(function () {
+        moveTimeout = false;
+      }, options.wheelTimeout);
     };
     seedcodeCalendar.init('calendarOnWheel', calendarContainer.onwheel);
 
@@ -132,14 +134,14 @@ function run() {
           if (swipedir === 'left' || swipedir === 'right') {
             if (swipedir === 'left') {
               document.getElementById('dbkswn_container_right').classList.toggle('active');
-              pageDate('fwd','swipe');
-              setTimeout(function() {
-                  document.getElementById('dbkswn_container_right').classList.toggle('active');
-              }, 300);                   
+              pageDate('fwd', 'swipe');
+              setTimeout(function () {
+                document.getElementById('dbkswn_container_right').classList.toggle('active');
+              }, 300);
             } else {
               document.getElementById('dbkswn_container_left').classList.toggle('active');
-              pageDate('back','swipe');
-              setTimeout(function() {
+              pageDate('back', 'swipe');
+              setTimeout(function () {
                 document.getElementById('dbkswn_container_left').classList.toggle('active');
               }, 300);
             }
@@ -197,7 +199,7 @@ function run() {
       distY,
       elapsedTime,
       startTime,
-      handleswipe = callback || function (swipedir) {},
+      handleswipe = callback || function (swipedir) { },
       threshold = refresh ? options.refreshThreshold : options.threshold,
       restraint = refresh ? 0.99 : options.restraint,
       allowedTime = refresh ? options.refreshAllowedTime : options.allowedTime;
@@ -223,15 +225,15 @@ function run() {
             ? screen.width * restraint
             : restraint
           : threshold < 1
-          ? Math.min(screen.width, screen.height) * threshold
-          : threshold;
+            ? Math.min(screen.width, screen.height) * threshold
+            : threshold;
         var vThreshold = refresh
           ? threshold < 1
             ? screen.height * threshold
             : threshold
           : restraint < 1
-          ? screen.height * restraint
-          : restraint;
+            ? screen.height * restraint
+            : restraint;
 
         // 1st condition for swipe met
         if (Math.abs(distX) >= hThreshold && Math.abs(distY) <= vThreshold) {

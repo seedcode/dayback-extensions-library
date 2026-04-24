@@ -1,4 +1,7 @@
 // Read Only Past Events - Part 2 - v1.0
+
+// Name: Read Only Past Events - Part 2
+// Type: Event Action
 //
 // Purpose:
 // If the item start is in the past, then this action will make the popover read-only

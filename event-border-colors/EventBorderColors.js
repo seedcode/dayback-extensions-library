@@ -1,4 +1,7 @@
 // Event Border Colors v1.0
+
+// Name: Event Border Colors
+// Type: App Action
 // 
 // Purpose:
 // Set Event Border Color based on Custom Field Value.
@@ -16,41 +19,41 @@ var options = {}; var inputs = {};
 try {
     //----------- Configuration -------------------
 
-        // Seconds to wait to allow this action to run before reporting an error (set to 0 to deactivate)
-        // Leave this set to 0 to avoid unexpected behavior
+    // Seconds to wait to allow this action to run before reporting an error (set to 0 to deactivate)
+    // Leave this set to 0 to avoid unexpected behavior
 
-        options.runTimeout = 0; 
+    options.runTimeout = 0;
 
-        // Define the Calendar Sources that should be
-        // scanned for specific Custom Field values
+    // Define the Calendar Sources that should be
+    // scanned for specific Custom Field values
 
-        inputs.reminderCalendar = [ 'SeedCode Shared' ];
+    inputs.reminderCalendar = ['SeedCode Shared'];
 
-        // Set the Custom Field that contains information 
-        // that can be used to style an Event. Set this to the
-        // "Store in Field" name of your Custom Field
+    // Set the Custom Field that contains information 
+    // that can be used to style an Event. Set this to the
+    // "Store in Field" name of your Custom Field
 
-        inputs.customFieldName = 'reminderType';
-            
-        // If we find events where this Custom Field is defined, 
-        // apply a CSS class to the Event based on the value
-        // stored in the Custom Field. If a field is empty, or
-        // does not contain a value defined in this list, the
-        // event will simply assume DayBack's default Event style
+    inputs.customFieldName = 'reminderType';
 
-        inputs.eventStyleByFieldValue = {
-            
-            // Field Value:   // CSS Class Name:
+    // If we find events where this Custom Field is defined, 
+    // apply a CSS class to the Event based on the value
+    // stored in the Custom Field. If a field is empty, or
+    // does not contain a value defined in this list, the
+    // event will simply assume DayBack's default Event style
 
-            'Check-in':       'reminderType_checkin_class',
-            'Estimate':       'reminderType_estimate_class',
-            'Troubleshoot':   'reminderType_troubleshoot_class',
-            'Other':          'reminderType_other_class'
-        };
+    inputs.eventStyleByFieldValue = {
 
-   //----------- End Configuration -------------------        
+        // Field Value:   // CSS Class Name:
+
+        'Check-in': 'reminderType_checkin_class',
+        'Estimate': 'reminderType_estimate_class',
+        'Troubleshoot': 'reminderType_troubleshoot_class',
+        'Other': 'reminderType_other_class'
+    };
+
+    //----------- End Configuration -------------------        
 }
-catch(error) {
+catch (error) {
     reportError(error);
 }
 
@@ -63,7 +66,7 @@ function run() {
 
     // Get a list of calendars, and all calendar events
     var schedules = seedcodeCalendar.get('schedules');
-    var events    = seedcodeCalendar.get('element').fullCalendar('clientEvents');
+    var events = seedcodeCalendar.get('element').fullCalendar('clientEvents');
 
     // Loop through all schedules
     schedules.forEach(schedule => {
@@ -76,11 +79,11 @@ function run() {
 
             // Find all events that contain a filled-in Custom Field value
             var reminders = events.filter(event => {
-                return event.hasOwnProperty(customFieldId) && 
-                        event[customFieldId] !== undefined && 
-                        event[customFieldId] !== "";
+                return event.hasOwnProperty(customFieldId) &&
+                    event[customFieldId] !== undefined &&
+                    event[customFieldId] !== "";
             });
-            
+
             // Loop through all matching reminder events and apply a custom CSS 
             // class based on the value of the Custom Field
             reminders.forEach(event => {
@@ -94,7 +97,7 @@ function run() {
                 }
             });
         }
-    });     
+    });
 }
 
 //----------- Run function wrapper and helpers - you shouldn’t need to edit below this line. -------------------
@@ -105,8 +108,8 @@ var timeout;
 // Execute the run function as defined above
 try {
 
-    if (!options.restrictedToAccounts || 
-        !options.restrictedToAccounts.length || 
+    if (!options.restrictedToAccounts ||
+        !options.restrictedToAccounts.length ||
         (options.restrictedToAccounts && options.restrictedToAccounts.indexOf(inputs.account) > -1)
     ) {
         if (action.preventDefault && options.runTimeout) {
@@ -118,7 +121,7 @@ try {
         confirmCallback();
     }
 }
-catch(error) {
+catch (error) {
     reportError(error);
 }
 
@@ -140,7 +143,7 @@ function cancelCallback() {
 
 // Check if the action has run within the specified time limit when preventDefault is enabled
 function timeoutCheck() {
-    timeout = setTimeout(function() {
+    timeout = setTimeout(function () {
         var error = {
             name: 'Timeout',
             message: 'The action was unable to execute within the allotted time and has been stopped'
@@ -164,11 +167,11 @@ function reportError(error) {
         confirmCallback();
     }
     else {
-        cancelCallback();  
+        cancelCallback();
     }
-    
-    setTimeout(function() {
+
+    setTimeout(function () {
         utilities.showModal(errorTitle, errorMessage, null, null, 'OK', null, null, null, true, null, true);
     }, 1000);
-}  
+}
 

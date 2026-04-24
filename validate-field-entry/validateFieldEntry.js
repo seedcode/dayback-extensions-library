@@ -1,5 +1,7 @@
 // Validate Field Entry v1.2
 
+// Name: Validate Field Entry
+// Type: Event Action
 // Purpose:
 // Verifies that specified additional fields have a value entered
 // Prevents saving the event if the specified additional field's value is empty
@@ -65,8 +67,8 @@ function run() {
 	utilities.showModal(
 		'Additional field value is empty',
 		'The following fields have empty values: ' +
-			emptyFields +
-			'.  Would you like to continue saving the event?',
+		emptyFields +
+		'.  Would you like to continue saving the event?',
 		'Cancel',
 		function () {
 			// More info on the action object here:

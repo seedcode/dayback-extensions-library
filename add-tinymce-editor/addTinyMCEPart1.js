@@ -1,4 +1,7 @@
 // Add TinyMCE Text Editor - Part 1 - v1.0
+
+// Name: Add TinyMCE Text Editor - Part 1
+// Type: App Action
 //
 // Purpose:
 // Adds the tinyMCE rich text editor into DayBack for use in custom actions

@@ -1,4 +1,7 @@
 // Set Status on Click - Part 2 v1.0
+
+// Name: Set Status on Click - Part 2
+// Type: App Action
 //
 // Purpose:
 // Allows point and click Status changes when a key is

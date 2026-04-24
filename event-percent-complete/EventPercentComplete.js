@@ -1,4 +1,7 @@
 // Event Percent Complete v1.0
+
+// Name: Event Percent Complete
+// Type: App Action
 // 
 // Purpose:
 // Set Event Color in Horizon View to reflect a percentage
@@ -17,92 +20,92 @@ var options = {}; var inputs = {};
 try {
     //----------- Configuration -------------------
 
-        // Seconds to wait to allow this action to run before reporting an error (set to 0 to deactivate)
-        // Leave this set to 0 to avoid unexpected behavior
+    // Seconds to wait to allow this action to run before reporting an error (set to 0 to deactivate)
+    // Leave this set to 0 to avoid unexpected behavior
 
-        options.runTimeout = 0; 
+    options.runTimeout = 0;
 
-        // Percentage Calculation: 
-        // -----------------------
-        //
-        // This action will color each event's resizable box based on the
-        // existing color, but apply an opacity of 10% to the percentage of
-        // the event that is incomplete. Please note that this app action only
-        // applies to events in any of the Horizon views. 
-        //
-        // You may specify more than one calculation in this app action.
-        // Each calculation should be added to the eventProgressCalculations 
-        // array and must contain the following:
-        //
-        //      eventFilter:       A function that accepts an array of
-        //                         event objects, and return a list of
-        //                         events that match certain criteria.
-        //                         
-        //      percentComplete:   A function that accepts a single event
-        //                         and uses custom fields in the event to
-        //                         calculate a number from 0 to 100+.
-        //                         This number will be used to display
-        //                         a horizontal indication of the total
-        //                         percent of completion.
-        //                         
-        //      overageColor:      A color name, #hex code, or rgb() color
-        //                         to apply to the event's resizable box
-        //                         if the percentage of completion is over
-        //                         100%. This field is optional, so if an
-        //                         event is over 100% and you do not
-        //                         specify an overage Color, the default
-        //                         fill color will apply.
-        //
-        //  overageContentClass:   An optional class to apply to the gray
-        //                         border around the text description of 
-        //                         the event if the event's calculation is
-        //                         over 100%. If you do not specify this
-        //                         parameter, the default border color will
-        //                         apply.
- 
-        inputs.eventProgressCalculations = [
-            {
-                'eventFilter': function(events) {
+    // Percentage Calculation: 
+    // -----------------------
+    //
+    // This action will color each event's resizable box based on the
+    // existing color, but apply an opacity of 10% to the percentage of
+    // the event that is incomplete. Please note that this app action only
+    // applies to events in any of the Horizon views. 
+    //
+    // You may specify more than one calculation in this app action.
+    // Each calculation should be added to the eventProgressCalculations 
+    // array and must contain the following:
+    //
+    //      eventFilter:       A function that accepts an array of
+    //                         event objects, and return a list of
+    //                         events that match certain criteria.
+    //                         
+    //      percentComplete:   A function that accepts a single event
+    //                         and uses custom fields in the event to
+    //                         calculate a number from 0 to 100+.
+    //                         This number will be used to display
+    //                         a horizontal indication of the total
+    //                         percent of completion.
+    //                         
+    //      overageColor:      A color name, #hex code, or rgb() color
+    //                         to apply to the event's resizable box
+    //                         if the percentage of completion is over
+    //                         100%. This field is optional, so if an
+    //                         event is over 100% and you do not
+    //                         specify an overage Color, the default
+    //                         fill color will apply.
+    //
+    //  overageContentClass:   An optional class to apply to the gray
+    //                         border around the text description of 
+    //                         the event if the event's calculation is
+    //                         over 100%. If you do not specify this
+    //                         parameter, the default border color will
+    //                         apply.
 
-                    // Function accepts an array of events and returns an filtered array of
-                    // events if the result of a calculation is true. In this example
-                    // the filter will apply to all events belonging to Project Management
-                    // calendar. You may also check for status, or the existence of
-                    // certain values in a custom field.
+    inputs.eventProgressCalculations = [
+        {
+            'eventFilter': function (events) {
 
-                    return events.filter(event => {
-                            return event.schedule.name == 'Project Management';
-                    });
-                },
-                'percentComplete': function(event) {
-                    
-                    // Function accepts a single event and returns an integer from
-                    // 0 to 100 or more indicating a percentage of completion based
-                    // on a custom calculation. In this example we retrieve two
-                    // custom fields named "Elapsed" and "Estimate" and determine
-                    // how many hours have been booked on a project versus the 
-                    // estimated number of hours. 
+                // Function accepts an array of events and returns an filtered array of
+                // events if the result of a calculation is true. In this example
+                // the filter will apply to all events belonging to Project Management
+                // calendar. You may also check for status, or the existence of
+                // certain values in a custom field.
 
-                    let Elapsed  = event[dbk.getCustomFieldIdByName('Elapsed',  event.schedule)];
-                    let Estimate = event[dbk.getCustomFieldIdByName('Estimate', event.schedule)];
+                return events.filter(event => {
+                    return event.schedule.name == 'Project Management';
+                });
+            },
+            'percentComplete': function (event) {
 
-                    // Ensure to check that the denominator is not zero so as to
-                    // avoid a divide by zero error. Round result to a whole integer                    
+                // Function accepts a single event and returns an integer from
+                // 0 to 100 or more indicating a percentage of completion based
+                // on a custom calculation. In this example we retrieve two
+                // custom fields named "Elapsed" and "Estimate" and determine
+                // how many hours have been booked on a project versus the 
+                // estimated number of hours. 
 
-                    return Elapsed <= 0 ? 0 : Math.round((Elapsed / Estimate) * 100);
-                },
-                
-                // Optionally color the event red if we are over 100% 
-                'overageColor': 'red',  
+                let Elapsed = event[dbk.getCustomFieldIdByName('Elapsed', event.schedule)];
+                let Estimate = event[dbk.getCustomFieldIdByName('Estimate', event.schedule)];
 
-                // Optionally apply a style to the event container if we are over 100%
-                'overageContentClass': 'event_percent_overage_nub_content'
-            },          
-        ];
+                // Ensure to check that the denominator is not zero so as to
+                // avoid a divide by zero error. Round result to a whole integer                    
 
-   //----------- End Configuration -------------------        
+                return Elapsed <= 0 ? 0 : Math.round((Elapsed / Estimate) * 100);
+            },
+
+            // Optionally color the event red if we are over 100% 
+            'overageColor': 'red',
+
+            // Optionally apply a style to the event container if we are over 100%
+            'overageContentClass': 'event_percent_overage_nub_content'
+        },
+    ];
+
+    //----------- End Configuration -------------------        
 }
-catch(error) {
+catch (error) {
     reportError(error);
 }
 
@@ -114,7 +117,7 @@ catch(error) {
 function run() {
 
     // Get current view and ensure action only applies to Horizon view
-    var calendarView  = seedcodeCalendar.get('view');  
+    var calendarView = seedcodeCalendar.get('view');
     if (!calendarView.name.includes('Horizon')) {
         return action.callbacks.confirm();
     }
@@ -139,7 +142,7 @@ function run() {
                     // Extract current RGB color
                     let rgb = cell.style.backgroundColor.match(/[.?\d]+/g);
 
-                    if (percentComplete > 100) { 
+                    if (percentComplete > 100) {
 
                         // Assign overage color if one was specified
                         if (filter.overageColor) {
@@ -155,9 +158,9 @@ function run() {
                         }
 
                     } else if (rgb) {
-                        cell.style.background = 'linear-gradient(90deg,rgba(' + rgb[0] +',' + rgb[1] + ',' + rgb[2] + ',1) ' + percentComplete + '%, rgba(' + rgb[0] +',' + rgb[1] + ',' + rgb[2] + ',0.1) ' + percentComplete + '%)';
+                        cell.style.background = 'linear-gradient(90deg,rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',1) ' + percentComplete + '%, rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',0.1) ' + percentComplete + '%)';
                     }
-                    
+
                     cell.dataset.hasGradient = true;
                 }
             }
@@ -175,8 +178,8 @@ var timeout;
 // Execute the run function as defined above
 try {
 
-    if (!options.restrictedToAccounts || 
-        !options.restrictedToAccounts.length || 
+    if (!options.restrictedToAccounts ||
+        !options.restrictedToAccounts.length ||
         (options.restrictedToAccounts && options.restrictedToAccounts.indexOf(inputs.account) > -1)
     ) {
         if (action.preventDefault && options.runTimeout) {
@@ -188,7 +191,7 @@ try {
         confirmCallback();
     }
 }
-catch(error) {
+catch (error) {
     reportError(error);
 }
 
@@ -210,7 +213,7 @@ function cancelCallback() {
 
 // Check if the action has run within the specified time limit when preventDefault is enabled
 function timeoutCheck() {
-    timeout = setTimeout(function() {
+    timeout = setTimeout(function () {
         var error = {
             name: 'Timeout',
             message: 'The action was unable to execute within the allotted time and has been stopped'
@@ -234,10 +237,10 @@ function reportError(error) {
         confirmCallback();
     }
     else {
-        cancelCallback();  
+        cancelCallback();
     }
-    
-    setTimeout(function() {
+
+    setTimeout(function () {
         utilities.showModal(errorTitle, errorMessage, null, null, 'OK', null, null, null, true, null, true);
     }, 1000);
 }  

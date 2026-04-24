@@ -1,5 +1,7 @@
 // Post Event to Slack v1.1
 
+// Name: Post Event to Slack
+// Type: Button Action
 // Purpose:
 // This button action will copy the details of an event and post
 // them to a Slack Channel. You will need to modify the configuraiton
@@ -33,7 +35,7 @@ try {
     inputs.apiUrl = 'YourSlackWebHookURL';
 
     // The currently signed in account email
-    
+
     inputs.account = seedcodeCalendar.get('config').account;
 
     //----------- End Configuration -------------------
@@ -50,7 +52,7 @@ function run() {
     var allDay = "[[allDay]]";
 
     // Moment.js date and time formats - http://momentjs.com
-    
+
     if (allDay === "true") {
         // Moment localized date format
         // Could be "MM/DD/YYY" for example "l" will auto detect date format
@@ -58,7 +60,7 @@ function run() {
     } else {
         // Moment localized date and time format
         // Could be "MM/DD/YYY h:m" for example "LLLL" will auto detect date format
-        dateFormat = "LLLL"; 
+        dateFormat = "LLLL";
     }
 
     // Create slack request
@@ -76,15 +78,15 @@ function run() {
     // Your WebHook URL
 
     $.ajax(inputs.apiUrl, {
-        type : "POST",
-        data : JSON.stringify(sendData),
-        success: function(data){
+        type: "POST",
+        data: JSON.stringify(sendData),
+        success: function (data) {
             dbk.showMessage("Message Sent: " + data);
         },
-        failure: function(errMsg) {
+        failure: function (errMsg) {
             dbk.showMessage(errMsg);
         }
-    }); 
+    });
 }
 
 //----------- Run function wrapper and helpers - you shouldn’t need to edit below this line. -------------------

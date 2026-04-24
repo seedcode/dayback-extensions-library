@@ -1,4 +1,7 @@
 // Set Status on Click - Part 1 v1.0
+
+// Name: Set Status on Click - Part 1
+// Type: Event Action
 //
 // Purpose:
 // Allows point and click Status changes when a key is
@@ -306,7 +309,7 @@ function run() {
 			setTimeout(function () {
 				dbk.updateEvent(
 					event,
-					{status: [statusCode]},
+					{ status: [statusCode] },
 					function () {
 						// Revert function
 						seedcodeCalendar.init(
@@ -328,7 +331,7 @@ function run() {
 							false
 						);
 					},
-					{isCustomAction: true}
+					{ isCustomAction: true }
 				);
 			}, 0);
 		}
@@ -368,8 +371,8 @@ function run() {
 				statusCode
 			)
 			? inputs.sounds[
-					inputs.userPreferences[inputs.account].sounds[statusCode]
-			  ]
+			inputs.userPreferences[inputs.account].sounds[statusCode]
+			]
 			: defaultSound;
 	}
 

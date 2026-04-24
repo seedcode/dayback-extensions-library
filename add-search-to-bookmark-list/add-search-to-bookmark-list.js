@@ -1,5 +1,7 @@
 // Add Search to Bookmark List v1.0
 
+// Name: Add Search to Bookmark List
+// Type: App Action
 // Purpose:
 // Adds the ability to search bookmarks
 // Action Type: After Calendar Rendered
@@ -158,7 +160,7 @@ function run() {
                     filterInput.style.fontSize = '13px';
                     filterInput.style.paddingLeft = '10px';
                     filterInput.style.border = '1px solid rgba(155,155,155)';
-					filterInput.style.borderRadius = '8px';
+                    filterInput.style.borderRadius = '8px';
                     filterInput.placeholder = 'Search';
 
                     let closeIcon = document.createElement('i');
@@ -182,8 +184,8 @@ function run() {
                     setTimeout(() => { filterInput.focus(); }, 200);
 
                     filterInput.onkeyup = filterBookmarks;
-                    
-                    function filterBookmarks (ev) {
+
+                    function filterBookmarks(ev) {
                         var bookmarkElements = document.querySelectorAll(
                             '[ng-repeat="item in share.list"]'
                         );
@@ -191,7 +193,7 @@ function run() {
                             var title = bookmark.querySelector(
                                 '.modal-select-list-title'
                             ).innerText;
-                            if (!ev || 
+                            if (!ev ||
                                 title
                                     .toLowerCase()
                                     .includes(ev.target.value.toLowerCase())

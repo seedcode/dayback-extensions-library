@@ -1,5 +1,7 @@
 // Set CSS by User v1.1
 
+// Name: Set CSS by User
+// Type: App Action
 // Purpose:
 // Adds a CSS class to the calendar container based on
 // a specific logged in user, or the logged in user's
@@ -16,7 +18,7 @@
 
 // Declare global imports
 // @ts-ignore
-const globals = {action, dbk, seedcodeCalendar, utilities};
+const globals = { action, dbk, seedcodeCalendar, utilities };
 
 const options = {};
 const inputs = {};
@@ -183,7 +185,7 @@ function run() {
 		);
 		let resourceTags =
 			typeof foundResource === 'object' &&
-			Array.isArray(foundResource.tags)
+				Array.isArray(foundResource.tags)
 				? foundResource.tags
 				: [];
 		let cssTagDirective = resourceTags.filter((item) =>

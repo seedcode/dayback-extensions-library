@@ -1,5 +1,7 @@
 // Pull Filters from FileMaker in JSON format v1.01
 
+// Name: Pull Filters from FileMaker in JSON Format
+// Type: App Action
 // Purpose:
 // Pulls resource or status filters from a table in FileMaker and displays them in DayBack Calendar.
 // Action Type: On Resources Fetched/On Statuses Fetched
@@ -46,7 +48,7 @@ try {
 function run() {
 	var filterItems = [];
 	var item;
-// Added dbkfmwd to if to capture for WebDirect
+	// Added dbkfmwd to if to capture for WebDirect
 	if (utilities.getDBKPlatform() === 'dbkfmjs' || utilities.getDBKPlatform() === 'dbkfmwd') {
 		dbk.performFileMakerScript(inputs.scriptName, null, function (result) {
 			if (result && result.payload) {
