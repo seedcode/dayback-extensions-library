@@ -1,6 +1,3 @@
-// Name: Open Chatter Button Action
-// Type: Button Action
-
 fbk.publish('dbk.openModal', {
     url: '/apex/EventChatter?id=' + event.eventID,
     title: 'Event Chatter Activity',

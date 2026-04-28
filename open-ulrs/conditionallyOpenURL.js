@@ -1,7 +1,5 @@
 // Conditionally Open URL v1.0
 
-// Name: Conditionally Open URL
-// Type: Button Action
 // Purpose:
 // This button action will open the URL stored in
 // the location field. If no URL is found, it will

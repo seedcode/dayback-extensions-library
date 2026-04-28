@@ -1,7 +1,4 @@
 // Drag to Sort Unscheduled Events v1.0 - Part 1 of 5
-
-// Name: Drag to Sort Unscheduled Events - Part 1
-// Type: App Action
 //
 // Purpose:
 // Adds support for Unscheduled Event sorting 

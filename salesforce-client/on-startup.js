@@ -1,7 +1,4 @@
 // Salesforce Client for Canvas and Salesforce Connect - v2.0 (Object Response API)
-
-// Name: Salesforce Client
-// Type: App Action
 //
 // Purpose:
 // Unified client for Salesforce API calls in both Canvas (Sfdc.canvas.client.ajax)

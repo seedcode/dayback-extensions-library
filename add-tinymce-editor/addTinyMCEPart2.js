@@ -1,7 +1,4 @@
 // Add TinyMCE Text Editor - Part 2 - v1.0
-
-// Name: Add TinyMCE Text Editor - Part 2
-// Type: Button Action
 //
 // Purpose:
 // Allows you to modify an event property in a rich text editor
@@ -79,15 +76,15 @@ function run() {
 			: 'btn-success dbk_button_success';
 		var cancelButton = cancelButtonText
 			? '<button ng-click="popover.config.cancelFunction();" class="btn btn-xs btn-secondary">' +
-			cancelButtonText +
-			'</button>'
+			  cancelButtonText +
+			  '</button>'
 			: '';
 		var confirmButton = confirmButtonText
 			? '<button ng-click="popover.config.confirmFunction();" class="btn btn-xs  ' +
-			confirmButtonStyle +
-			'">' +
-			confirmButtonText +
-			'</button>'
+			  confirmButtonStyle +
+			  '">' +
+			  confirmButtonText +
+			  '</button>'
 			: '';
 
 		var template =
@@ -114,8 +111,8 @@ function run() {
 			container: modalContainer
 				? modalContainer
 				: document.querySelector('#calendar-container')
-					? '#calendar-container'
-					: '#app-container',
+				? '#calendar-container'
+				: '#app-container',
 			type: 'modal', // modal or popover
 			destroy: true,
 			width: 600,
@@ -136,7 +133,7 @@ function run() {
 			if (confirmFunction) {
 				confirmFunction(
 					tinyMCE && tinyMCE.activeEditor
-						? tinyMCE.activeEditor.getContent({ format: 'raw' })
+						? tinyMCE.activeEditor.getContent({format: 'raw'})
 						: document.getElementById('inputModalInput').value
 				);
 			}

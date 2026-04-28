@@ -1,5 +1,3 @@
-// Name: Override Start Edit
-// Type: Event Action
 // Override Start Edit v1.0
 // Salesforce-only
 

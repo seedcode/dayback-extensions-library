@@ -1,7 +1,4 @@
 // Drag to Sort Unscheduled Events v1.0 - Part 5 of 5
-
-// Name: Drag to Sort Unscheduled Events - Part 5
-// Type: Event Action
 //
 // Purpose:
 // Re-attach drag drop event listeners to newly-created

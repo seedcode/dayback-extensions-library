@@ -1,7 +1,5 @@
 // Navigate Calendar on Gesture v2.7 - Add Nav Buttons Component
 
-// Name: Navigate Calendar on Gesture - Part 1
-// Type: App Action
 // Purpose:
 //
 // Add Swipe Pagination Buttons to the root Calendar container.
@@ -36,9 +34,9 @@ try {
 
 // Action code goes inside this function
 function run() {
-
+ 
   var maxRetries = 20;
-  var retries = 0;
+  var retries    = 0;
 
   addPaginationGraphics();
 
@@ -54,21 +52,21 @@ function run() {
     var rightBtnWrap;
     var rightBtnI;
 
-    var calenderDiv = document.querySelector('.calendar');
+    var calenderDiv = document.querySelector('.calendar');  
 
-    if (calenderDiv) {
+    if (calenderDiv) {                        
 
       // Add Left Button
-      leftBtnContainer = document.createElement('div');
-      leftBtnWrap = document.createElement('div');
-      leftBtn = document.createElement('div');
-      leftBtnI = document.createElement('i');
+      leftBtnContainer               = document.createElement('div');
+      leftBtnWrap                    = document.createElement('div');
+      leftBtn                        = document.createElement('div');
+      leftBtnI                       = document.createElement('i');
 
-      leftBtnContainer.classList = cssGroupName + '_container_left';
-      leftBtnContainer.id = cssGroupName + '_container_left';
-      leftBtnWrap.classList = cssGroupName + '_btn_left';
-      leftBtn.classList = cssGroupName + '_icon_holder_left';
-      leftBtnI.classList = 'fa fa-chevron-left';
+      leftBtnContainer.classList     = cssGroupName + '_container_left';
+      leftBtnContainer.id            = cssGroupName + '_container_left';
+      leftBtnWrap.classList          = cssGroupName + '_btn_left';
+      leftBtn.classList              = cssGroupName + '_icon_holder_left';
+      leftBtnI.classList             = 'fa fa-chevron-left';
 
       // Add Button Icon to Container
       leftBtn.append(leftBtnI);
@@ -77,16 +75,16 @@ function run() {
       calenderDiv.append(leftBtnContainer);
 
       // Add Right Button
-      rightBtnContainer = document.createElement('div');
-      rightBtnWrap = document.createElement('div');
-      rightBtn = document.createElement('div');
-      rightBtnI = document.createElement('i');
+      rightBtnContainer               = document.createElement('div');
+      rightBtnWrap                    = document.createElement('div');
+      rightBtn                        = document.createElement('div');
+      rightBtnI                       = document.createElement('i');
 
-      rightBtnContainer.classList = cssGroupName + '_container_right';
-      rightBtnContainer.id = cssGroupName + '_container_right';
-      rightBtnWrap.classList = cssGroupName + '_btn_right';
-      rightBtn.classList = cssGroupName + '_icon_holder_right';
-      rightBtnI.classList = 'fa fa-chevron-right';
+      rightBtnContainer.classList     = cssGroupName + '_container_right';
+      rightBtnContainer.id            = cssGroupName + '_container_right';
+      rightBtnWrap.classList          = cssGroupName + '_btn_right';
+      rightBtn.classList              = cssGroupName + '_icon_holder_right';
+      rightBtnI.classList             = 'fa fa-chevron-right';
 
       // Add Button Icon to Container
       rightBtn.append(rightBtnI);
@@ -94,10 +92,10 @@ function run() {
       rightBtnContainer.append(rightBtnWrap);
       calenderDiv.append(rightBtnContainer);
 
-    } else if (++retries <= maxRetries) {
+    } else if(++retries <= maxRetries) {
       setTimeout(addPaginationGraphics, 200);
     }
-  }
+  }    
 }
 
 //----------- Run function wrapper and helpers - you shouldn’t need to edit below this line. -------------------

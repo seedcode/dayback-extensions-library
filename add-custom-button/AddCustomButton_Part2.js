@@ -1,7 +1,4 @@
 // Add Custom Button - Part 2 v1.0
-
-// Name: Add Custom Button - Part 2
-// Type: App Action
 //
 // Purpose:
 // This is a Part 2 of the Add Custom Button custom app action.
@@ -99,7 +96,7 @@ function run() {
 			(calendarView.name.includes('Resource') ||
 				(calendarView.name.includes('Horizon') &&
 					seedcodeCalendar.get('config').horizonBreakoutField ===
-					'resource'))
+						'resource'))
 		);
 	}
 

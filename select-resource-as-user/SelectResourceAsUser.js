@@ -1,7 +1,5 @@
 // Select Resource To Current User v1.0
 
-// Name: Select Resource As Current User
-// Type: App Action
 // Purpose:
 // Sets the resource selection to match the currently logged in user
 // Action Type: Before Calendar Rendered
@@ -38,17 +36,17 @@ try {
 // Action code goes inside this function
 function run() {
 
-  //get loaded resources and loop through them to select the one matching the logged in user
-  //and deselecting all the others
-  var resources = seedcodeCalendar.get("resources");
-  for (var i = 0; i < resources.length; i++) {
-    if (resources[i].name === inputs.user) {
-      resources[i].status.selected = true;
+    //get loaded resources and loop through them to select the one matching the logged in user
+    //and deselecting all the others
+    var resources = seedcodeCalendar.get("resources");
+    for ( var i = 0 ; i < resources.length ; i++ ){
+        if(resources[i].name===inputs.user){
+            resources[i].status.selected = true;
+        }
+        else{
+            resources[i].status.selected = false;
+        }
     }
-    else {
-      resources[i].status.selected = false;
-    }
-  }
 
 }
 

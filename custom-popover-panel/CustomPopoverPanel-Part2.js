@@ -1,7 +1,4 @@
 // Custom Popover Panel v1.0 - Part 2
-
-// Name: Custom Popover Panel - Part 2
-// Type: Event Action
 //
 // Purpose:
 // This is part 2 of the app action allows you to build structured

@@ -1,7 +1,5 @@
 // Default Popover Drawer for Root Level v1.0
 
-// Name: Default Popover Drawer for Root Level
-// Type: Event Action
 // Purpose:
 // Automatically opens the specified drawer on click
 // This is to be applied at the root calendar level (M365 or Google only)
@@ -16,7 +14,7 @@
 
 // Declare global imports
 // @ts-ignore
-const globals = { action, dbk, seedcodeCalendar, utilities };
+const globals = {action, dbk, seedcodeCalendar, utilities};
 
 const options = {};
 const inputs = {};

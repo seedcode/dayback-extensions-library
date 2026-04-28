@@ -1,8 +1,5 @@
 // Subscribe Modal Closure Events  - v1.0
-
-// Name: Subscribe to Modal Closure Events
-// Type: App Action
-// Purpose:
+//
 // This app action subscribes to the 'dbk.modalClosed' event
 // that is sent from the Visualforce page when a modal dialog
 // is closed. It can be used to perform actions based on the

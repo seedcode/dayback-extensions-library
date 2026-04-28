@@ -1,7 +1,4 @@
 // Unscheduled To Do Items v1.0 - Part 2 of 6
-
-// Name: Unscheduled To Do Items - Part 2
-// Type: App Action
 //
 // Purpose:
 // Converts Unscheduled Items to To Do items and adds

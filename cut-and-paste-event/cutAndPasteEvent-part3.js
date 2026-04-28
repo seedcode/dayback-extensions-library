@@ -1,7 +1,4 @@
 // Cut and Paste Event v1.0 - Part 3
-
-// Name: Cut and Paste Event - Part 3
-// Type: Event Action
 //
 // Purpose:
 // Adds an Event Button function which temporarily
@@ -83,20 +80,20 @@ function run() {
             var minDiff = old_event.end.diff(old_event.start, "minutes");
             var start = editEvent.start.clone();
             var end = editEvent.start.clone();
-
+        
             end.add(minDiff, "minutes");
-
+          
             changesObject = {
                 start: start,
                 end: end,
-                allDay: old_event.allDay
+                allDay: old_event.allDay 
             };
 
         } else {
-            var minDiff = Math.ceil(editEvent.start.diff(old_event.start, "days", true));
-            var start = old_event.start.clone();
-            var end = old_event.end.clone();
-
+            var minDiff = Math.ceil(editEvent.start.diff(old_event.start, "days",true));
+            var start   = old_event.start.clone();
+            var end     = old_event.end.clone();
+            
             start.add(minDiff, "days");
             end.add(minDiff, "days");
 
@@ -156,12 +153,12 @@ function run() {
                     error.error && error.error.message
                         ? error.error.message
                         : error.message
-                            ? error.message
-                            : error.ERRORCODE
-                                ? error.ERRORCODE + " - " + error.DESCRIPTION
-                                : error.errorCode
-                                    ? error.errorCode
-                                    : "Unknown";
+                        ? error.message
+                        : error.ERRORCODE
+                        ? error.ERRORCODE + " - " + error.DESCRIPTION
+                        : error.errorCode
+                        ? error.errorCode
+                        : "Unknown";
 
                 // One or more updates failed, revert all changes
                 utilities.showModal(
@@ -224,7 +221,7 @@ function run() {
 
                 let domLocationChanged =
                     afterMoveLocation.top == beforeMoveLocation.top &&
-                        afterMoveLocation.left == beforeMoveLocation.left
+                    afterMoveLocation.left == beforeMoveLocation.left
                         ? false
                         : true;
                 var e = document.querySelector('[data-id="' + domID + '"]');
@@ -266,12 +263,12 @@ function run() {
                     error.error && error.error.message
                         ? error.error.message
                         : error.message
-                            ? error.message
-                            : error.ERRORCODE
-                                ? error.ERRORCODE + " - " + error.DESCRIPTION
-                                : error.errorCode
-                                    ? error.errorCode
-                                    : "Unknown";
+                        ? error.message
+                        : error.ERRORCODE
+                        ? error.ERRORCODE + " - " + error.DESCRIPTION
+                        : error.errorCode
+                        ? error.errorCode
+                        : "Unknown";
 
                 //One or more updates failed, revert all changes
                 utilities.showModal(

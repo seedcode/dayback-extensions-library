@@ -1,7 +1,4 @@
 // Pie Chart Analytics v1.0
-
-// Name: Pie Chart Analytics
-// Type: App Action
 //
 // Purpose:
 // App action adds a new Pie Chart button to the 

@@ -1,9 +1,6 @@
-// Name: Open Chatter on Click
-// Type: App Action
-// Trigger: After Events Rendered
+// After Events Rendered
 //
-// Purpose:
-// This app action adds a click handler to the pills that will open the chatter activity modal
+// Add a click handler to the pills that will open the chatter activity modal
 
 seedcodeCalendar
     ?.get('element')

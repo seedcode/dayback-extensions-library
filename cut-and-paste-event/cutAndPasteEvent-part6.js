@@ -1,7 +1,4 @@
 // Cut and Paste Event v1.0 - Part 6
-
-// Name: Cut and Paste Event - Part 6
-// Type: App Action
 //
 // Purpose:
 // Adds an Event Button function which temporarily

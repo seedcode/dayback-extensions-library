@@ -1,7 +1,5 @@
 // Load Resources From Objects - Salesforce v1.3
 
-// Name: Load Resources From Objects - Salesforce
-// Type: App Action
 // Purpose:
 // Loads resources in DayBack from Salesforce objects
 // Action Type: On Resources Fetched
@@ -67,7 +65,6 @@ try {
 function run() {
     var folders;
     var addedFolders = [];
-    var folderIndex = {};
     var processedRequests = 0;
     var resourceCount = 0;
 
@@ -95,6 +92,7 @@ function run() {
         if (data.status == 200) {
             //build array pf folder names
             folders = buildFolders(data, folders, resourceObject.folderFieldName);
+            var folderIndex = {};
 
             var records = data.payload.records;
             var resource;

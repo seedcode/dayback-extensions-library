@@ -1,7 +1,4 @@
 // KeyDown On Event Click v1.00
-
-// Name: KeyDown On Event Click
-// Type: Event Action
 //
 // Purpose:
 // Works with the KeyDownLister.js to process

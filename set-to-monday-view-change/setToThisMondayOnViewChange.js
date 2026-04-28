@@ -1,7 +1,5 @@
 // Set to This Monday on View Change v1.0
 
-// Name: Set to This Monday on View Change
-// Type: App Action
 // Purpose:
 // Changes DayBack's focus date to the current week's Monday
 // when landing on one of the specified views

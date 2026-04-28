@@ -1,7 +1,5 @@
 // Sidebar resource selector v1.00
 
-// Name: Sidebar Resource Selector - Part 2
-// Type: App Action
 // Purpose:
 // Updates the resource selector in the sidebar when the view changes
 // Action Type: On View Changed
@@ -45,10 +43,10 @@ try {
 // Action code goes inside this function
 function run() {
 
-  var select = document.querySelector("#" + inputs.selectClass);
-  if (select) {
-    select.value = seedcodeCalendar.get("config").resourceColumns
-  }
+    var select = document.querySelector("#" + inputs.selectClass);
+    if (select){
+        select.value = seedcodeCalendar.get("config").resourceColumns
+    }
 }
 
 //----------- Run function wrapper and helpers - you shouldn’t need to edit below this line. -------------------

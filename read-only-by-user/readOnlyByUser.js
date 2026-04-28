@@ -1,7 +1,5 @@
 // Select Resource To Current User v1.0
 
-// Name: Select Resource As Current User
-// Type: App Action
 // Purpose:
 // Sets the resource selection to match the currently logged in user
 // Action Type: Before Calendar Rendered

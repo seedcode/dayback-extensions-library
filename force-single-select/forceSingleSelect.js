@@ -1,7 +1,5 @@
 // Force Single Select v1.0
 
-// Name: Force Single Select
-// Type: Event Action
 // Purpose:
 // Forces Single Selection for the status and/or resource fields
 // Particularily useful on mobile where multi-select is the default behavior

@@ -1,7 +1,5 @@
 // Enhanced Keyboard Shortcuts v1.0
 
-// Name: Enhanced Keyboard Shortcuts
-// Type: App Action
 // Purpose:
 // Adds various keyboard shortcuts. Requires
 // a CSS addition for a Help Menu triggered

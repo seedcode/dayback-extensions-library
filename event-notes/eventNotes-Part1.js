@@ -1,7 +1,4 @@
 // Event Notes - Part 1 v1.00
-
-// Name: Event Notes - Part 1
-// Type: App Action
 //
 // Purpose:
 // Adds event notes feature to events in any view
@@ -142,8 +139,8 @@ function run() {
 
 			let micropills = document.querySelectorAll(
 				'[data-id="' +
-				event._id +
-				'"]>div.fc-event-inner.event-constrain'
+					event._id +
+					'"]>div.fc-event-inner.event-constrain'
 			);
 
 			if (inputs.isHorizonView) {
@@ -290,7 +287,7 @@ function run() {
 					const showDelay = trigger == 'click' ? 0 : 350;
 
 					var tooltip = tooltipFunction(notesText, {
-						delay: { show: showDelay, hide: 100 },
+						delay: {show: showDelay, hide: 100},
 						targetElement: div,
 						postRenderFunction: postRenderFunction,
 						postDestroyFunction: postDestroyFunction,
@@ -478,7 +475,7 @@ function run() {
 								changes,
 								null,
 								verifyFinished,
-								{ isCustomAction: true }
+								{isCustomAction: true}
 							);
 
 							function verifyFinished() {
@@ -523,9 +520,9 @@ function run() {
 								setTimeout(function () {
 									helpers.showMessage(
 										'<span class="message-icon-separator success">' +
-										'<i class="fa fa-lg fa-check"></i>' +
-										'</span>' +
-										'<span translate>Changes Reverted</span>'
+											'<i class="fa fa-lg fa-check"></i>' +
+											'</span>' +
+											'<span translate>Changes Reverted</span>'
 									);
 								}, 100);
 							}

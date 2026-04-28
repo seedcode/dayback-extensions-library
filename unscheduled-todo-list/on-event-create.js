@@ -1,7 +1,4 @@
 // Unscheduled To Do Items v1.0 - Part 6 of 6
-
-// Name: Unscheduled To Do Items - Part 6
-// Type: Event Action
 //
 // Purpose:
 // Assigns the next sequence number for a newly-created 

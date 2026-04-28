@@ -1,10 +1,9 @@
-// DayBack Custom Action Template v1.0.5
+// Reset zoom values v1
 
-// Purpose: Updates routes and clears mapping data when appropriate after rendering changed events
-// Action Type: After Events Rendered
+// Purpose:
+// Clear zoom fields on create for duplication
+// Action Type: On Event Create
 // Prevent Default Action: No
-// Requires: Map core functions
-// Version: v1.0.1
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -15,10 +14,14 @@
 	// Declare global imports
 	// prettier-ignore
 	// @ts-ignore
-	const globals = {action, params, dbk, seedcodeCalendar, utilities};
+	const globals = {action, dbk, seedcodeCalendar, utilities, moment, Sfdc, fbk, event, editEvent};
 
 	const options = {};
 	const inputs = {};
+
+	const /** @type Object */ dbkEvent = globals.event;
+	const /** @type Object */ dbkEditEvent = globals.editEvent;
+	const sc = globals.seedcodeCalendar;
 
 	try {
 		//----------- Configuration -------------------
@@ -38,11 +41,13 @@
 		 */
 		options.restrictedToAccounts = [];
 
+		// Any input data for the action should be specified here
+
 		/**
 		 * The currently signed in account email
 		 * @type {string}
 		 */
-		inputs.account = globals.seedcodeCalendar.get('config').account;
+		inputs.account = sc.get('config').account;
 
 		//----------- End Configuration -------------------
 	} catch (error) {
@@ -51,32 +56,41 @@
 
 	//----------- The action itself: you may not need to edit this. -------------------
 
-	let unscheduledFilterActivated = false;
-
 	// Action code goes inside this function
 	function run() {
-		// Global prefix
-		const globalPrefix = 'dbk_maps_';
+		let zoomFieldMapObj = globals.seedcodeCalendar.get(
+			'zoom-fieldsBySource'
+		);
+		let calendarName = dbkEvent.schedule.name;
+		let zoomFields = zoomFieldMapObj[calendarName];
+		if (!zoomFields) {
+			//don't do anything
+		} else {
+			let zoomLinkFieldId = globals.dbk.getCustomFieldIdByName(
+				zoomFields.zoomLinkField,
+				dbkEvent.schedule
+			);
 
-		// Global imports
-		const reRouteResource = globals.seedcodeCalendar.get(
-			`${globalPrefix}reRouteResource`
-		);
-		const resetAll = globals.seedcodeCalendar.get(
-			`${globalPrefix}resetAll`
-		);
-		const scheduleRunner = globals.seedcodeCalendar.get(
-			`${globalPrefix}scheduleRunner`
-		);
+			let zoomIdField = globals.dbk.getCustomFieldIdByName(
+				zoomFields.zoomIdField,
+				dbkEvent.schedule
+			);
 
-		if (
-			globals.params.data.fromFilterChange ||
-			globals.params.data.fromViewStateChange
-		) {
-			resetAll();
-		} else if (!globals.params.data.fromResize) {
-			// Will schedule to run after the markers have updated
-			scheduleRunner('afterUpdate', reRouteResource);
+			let zoomPasswordField = globals.dbk.getCustomFieldIdByName(
+				zoomFields.zoomPasswordField,
+				dbkEvent.schedule
+			);
+			if (zoomLinkFieldId) {
+				dbkEvent[zoomLinkFieldId] = '';
+			}
+			if (zoomIdField) {
+				dbkEvent[zoomIdField] = '';
+			}
+			if (zoomPasswordField) {
+				dbkEvent[zoomPasswordField] = '';
+			}
+
+			//dbkEvent.description = '';
 		}
 	}
 

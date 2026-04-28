@@ -1,7 +1,5 @@
 // Sidebar resource selector v1.00
 
-// Name: Sidebar Resource Selector - Part 1
-// Type: App Action
 // Purpose:
 // Adds a resource selector to the Resource Filters section of the sidebar
 // Action Type: After Calendar Rendered
@@ -80,13 +78,13 @@ function run() {
     );
 
     if (filtersButton) {
-      filtersButton.onclick = function () {
+      filtersButton.onclick = function(){
         setTimeout(addResourceColumnsSelector, 50);
       }
-      mainResourceColumnSelect.onchange = function (e) {
+      mainResourceColumnSelect.onchange = function(e){
         var select = document.querySelector("#" + inputs.selectClass);
-        if (select) {
-          select.value = e.target.value;
+        if (select){
+            select.value = e.target.value;
         }
       }
 

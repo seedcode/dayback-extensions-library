@@ -1,5 +1,3 @@
-// Name: Drive Time Check
-// Type: Event Action
 // Purpose: Check Drive Times between events that are close and warn if the events are closer than the required travel time
 // Action Type: On Event Save, Button Action
 // Prevent Default Action: No

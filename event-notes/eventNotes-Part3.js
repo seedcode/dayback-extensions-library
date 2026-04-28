@@ -1,7 +1,4 @@
 // Event Notes - Part 3 v1.00
-
-// Name: Event Notes - Part 3
-// Type: Event Action
 //
 // Purpose:
 // Adds event notes feature to events in large pill view.

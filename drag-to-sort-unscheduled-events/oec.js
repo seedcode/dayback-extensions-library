@@ -1,7 +1,4 @@
 // Drag to Sort Unscheduled Events v1.0 - Part 4 of 5
-
-// Name: Drag to Sort Unscheduled Events - Part 4
-// Type: Event Action
 //
 // Purpose:
 // Assigns the next sequence number for a newly-created 

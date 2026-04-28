@@ -1,7 +1,5 @@
 // Key Combination Batch Edit v1.1
 
-// Name: Key Combination Batch Edit
-// Type: App Action
 // Purpose:
 // Applies changes to selected events when a key combination is held
 // and one of the selected events is clicked
@@ -239,12 +237,12 @@ function run() {
             var failedEvents;
             var matchingEvent =
                 multiSelect[
-                Object.keys(multiSelect).filter(function (mi) {
-                    return (
-                        multiSelect[mi].event.eventID ===
-                        updatedEvent.eventID
-                    );
-                })
+                    Object.keys(multiSelect).filter(function (mi) {
+                        return (
+                            multiSelect[mi].event.eventID ===
+                            updatedEvent.eventID
+                        );
+                    })
                 ];
 
             if (updatedEvent && matchingEvent) {
@@ -255,12 +253,12 @@ function run() {
                         error.error && error.error.message
                             ? error.error.message
                             : error.message
-                                ? error.message
-                                : error.ERRORCODE
-                                    ? error.ERRORCODE + " - " + error.DESCRIPTION
-                                    : error.errorCode
-                                        ? error.errorCode
-                                        : "Unknown";
+                            ? error.message
+                            : error.ERRORCODE
+                            ? error.ERRORCODE + " - " + error.DESCRIPTION
+                            : error.errorCode
+                            ? error.errorCode
+                            : "Unknown";
                 } else {
                     matchingEvent.updated = true;
                     matchingEvent.sourceEvent = updatedEvent;
@@ -286,7 +284,7 @@ function run() {
                             utilities.showModal(
                                 "Error during save",
                                 failedEvents[0].error +
-                                ". Changes will be reverted.",
+                                    ". Changes will be reverted.",
                                 "continue",
                                 revertChanges
                             );

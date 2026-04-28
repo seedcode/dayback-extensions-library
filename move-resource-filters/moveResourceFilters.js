@@ -1,7 +1,4 @@
 // Move Resource Filters in Sidebar v1.0
-
-// Name: Move Resource Filters in Sidebar
-// Type: App Action
 //
 // Purpose:
 // Moves the resource filters in the side bar
@@ -43,34 +40,34 @@ function run() {
   // sidebar is already upon for possible code injection
 
   if (!observer) {
-    startSidebarObserver();
-    checkNodesForInjections();
+      startSidebarObserver();
+      checkNodesForInjections();
   }
 
   action.callbacks.confirm();
 
   function startSidebarObserver() {
 
-    // Get sidebar element to observe
-    let sideBarContainer = document.getElementById('sidebar');
+      // Get sidebar element to observe
+      let sideBarContainer = document.getElementById('sidebar');
 
-    if (!sideBarContainer)
-      return;
+      if (!sideBarContainer) 
+          return;
 
-    const callback = function (mutationsList, observer) {
-      for (const mutation of mutationsList) {
-        if (mutation.type === 'childList') {
-          if (sideBarContainer.hasChildNodes() == true) {
-            checkNodesForInjections();
+      const callback = function(mutationsList, observer) {
+          for(const mutation of mutationsList) {
+              if (mutation.type === 'childList') {
+                  if (sideBarContainer.hasChildNodes() == true) {
+                      checkNodesForInjections();
+                  }
+              }
           }
-        }
-      }
-    };
+      };
 
-    // Start observer and save to seedCodeCalendar object
-    observer = new MutationObserver(callback);
-    observer.observe(sideBarContainer, { attributes: false, childList: true, subtree: true });
-    seedcodeCalendar.init("sidebarObserver", observer);
+      // Start observer and save to seedCodeCalendar object
+      observer = new MutationObserver(callback);
+      observer.observe(sideBarContainer, { attributes: false, childList: true, subtree: true });
+      seedcodeCalendar.init("sidebarObserver", observer);
   }
 
   // Function checks for existance of filters container
@@ -79,28 +76,28 @@ function run() {
 
   function checkNodesForInjections() {
 
-    let menubar = document.querySelector(".filters-popover-container");
-    if (menubar && !menubar.classList.contains('reordered')) {
-      switchMenu(menubar);
-    }
+      let menubar = document.querySelector(".filters-popover-container");
+      if (menubar && !menubar.classList.contains('reordered')) {
+          switchMenu(menubar);
+      }
   }
 
   function switchMenu(menubar) {
 
-    // Disconnect observer while we perform the DOM change
-    observer.disconnect();
+      // Disconnect observer while we perform the DOM change
+      observer.disconnect();
 
-    // Set the class which records that we have re-ordered the sidebar
-    menubar.classList.add('reordered');
+      // Set the class which records that we have re-ordered the sidebar
+      menubar.classList.add('reordered');
 
-    // Get currently active child nodes
-    let mkids = menubar.childNodes;
+      // Get currently active child nodes
+      let mkids = menubar.childNodes;
 
-    // Move the 7th element down
-    moveElementTo(mkids[7], 1);
+      // Move the 7th element down
+      moveElementTo(mkids[7], 1);
 
-    // Restart observer
-    startSidebarObserver();
+      // Restart observer
+      startSidebarObserver();    
   }
 
   // Function reorders an element 1=up or -1=down
@@ -108,15 +105,15 @@ function run() {
 
   function moveElementTo(selected_element, direction) {
 
-    var element_to_move = selected_element,
-      td = element_to_move.parentNode;
-
-    if (direction === -1 && element_to_move.previousElementSibling) {
-      td.insertBefore(element_to_move, element_to_move.previousElementSibling);
-    } else if (direction === 1 && element_to_move.nextElementSibling) {
-      td.insertBefore(element_to_move, element_to_move.nextElementSibling.nextElementSibling)
-    }
-  }
+      var element_to_move = selected_element,
+          td = element_to_move.parentNode;
+  
+      if (direction === -1 && element_to_move.previousElementSibling) {
+          td.insertBefore(element_to_move, element_to_move.previousElementSibling);
+      } else if (direction === 1 && element_to_move.nextElementSibling) {
+          td.insertBefore(element_to_move, element_to_move.nextElementSibling.nextElementSibling)
+      }
+  }    
 }
 
 //----------- Run function wrapper and helpers - you shouldn’t need to edit below this line. -------------------

@@ -1,7 +1,5 @@
 // Email Support Example v1.1
 
-// Name: Email Support Example
-// Type: Button Action
 // Purpose:
 // This button action will open your computer's default email client
 // start the process of writing a new email. The email will include

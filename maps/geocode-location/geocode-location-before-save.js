@@ -1,5 +1,3 @@
-// Name: Geocode Location - Before Event Save
-// Type: Event Action
 // Purpose: Creates and sets a geocode value in the event based on location when the event is being saved
 // Action Type: Before Event Save
 // Prevent Default Action: Yes

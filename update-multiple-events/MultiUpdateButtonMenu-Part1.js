@@ -1,7 +1,4 @@
 // Multi Update Button Menu - Part 1 v1.0
-
-// Name: Multi Update Button Menu - Part 1
-// Type: App Action
 //
 // Purpose:
 // Adds a single button, multiple buttons, or container
@@ -24,165 +21,165 @@ try {
 
     //----------- Configuration -------------------
 
-    // Seconds to wait to allow this action to run before reporting an error (set to 0 to deactivate)
-    // Leave this set to 0 to avoid unexpected behavior
+        // Seconds to wait to allow this action to run before reporting an error (set to 0 to deactivate)
+        // Leave this set to 0 to avoid unexpected behavior
 
-    options.runTimeout = 0;
+        options.runTimeout = 0; 
+        
+        // If you only intend to create one group of buttons, you may leave this option 
+        // set to 'custom_btn' by default. If you want multiple collapsible button groups,
+        // define the CSS class group name used for styling this particular button group.
+        //
+        // If creating multple button groups, you may duplicate this app action multiple 
+        // times with a whole new list of button definitions, and unique cssGroupName. 
+        // the CSS will need to be modified to align multiple groups on the screen.
 
-    // If you only intend to create one group of buttons, you may leave this option 
-    // set to 'custom_btn' by default. If you want multiple collapsible button groups,
-    // define the CSS class group name used for styling this particular button group.
-    //
-    // If creating multple button groups, you may duplicate this app action multiple 
-    // times with a whole new list of button definitions, and unique cssGroupName. 
-    // the CSS will need to be modified to align multiple groups on the screen.
+        options.cssGroupName = 'custom_btn';
 
-    options.cssGroupName = 'custom_btn';
+        // Defines the current account name running this action. Leave this defined
+        // to the default. You may use the inputs.accountName to restrict buttons to 
+        // certain individuals.
+        
+        inputs.accountName = seedcodeCalendar.get('config').accountName;
 
-    // Defines the current account name running this action. Leave this defined
-    // to the default. You may use the inputs.accountName to restrict buttons to 
-    // certain individuals.
+        // Defines whether you wish to have a parent button that acts like a container
+        // drawer for multiple grouped buttons. By default this is set to false. 
+        // Containers work best if you are defining more than 1 button and don't want to 
+        // clutter your screen.
+        //
+        // If you don't mind having multiple buttons that always appear on the screen, 
+        // or you just have a single button leave this set to false.
 
-    inputs.accountName = seedcodeCalendar.get('config').accountName;
+        inputs.showContainer = true;
 
-    // Defines whether you wish to have a parent button that acts like a container
-    // drawer for multiple grouped buttons. By default this is set to false. 
-    // Containers work best if you are defining more than 1 button and don't want to 
-    // clutter your screen.
-    //
-    // If you don't mind having multiple buttons that always appear on the screen, 
-    // or you just have a single button leave this set to false.
+        // If showing button container drawer, specify if the button should be 
+        // closed, or open when DayBack loads. The default is to show the container
+        // as closed so the buttons appear when you hover over the container.
+        
+        inputs.showContainerAsOpen = false;
 
-    inputs.showContainer = true;
+        // Define Your Buttons:
+        // --------------------
+        //
+        // Define an array of buttons. Available parameters are as follows:
+        // An asterisk denoted a required parameter:
+        // 
+        //      * icon:     Specify the icon you want shown for a given button. 
+        //                  Instructions provided below.
+        //
+        //      * action:   Defines the JavaScript function the button should run
+        //                  when clicked. You will need to define each function 
+        //                  in the specific section below.
+        //
+        //      label:      Define a label name that should appear next to your button.
+        //                  This is optional, and does not need to be defined if 
+        //                  you don't need a label next to your button.
+        //
+        //      color:      Specify a button's color (e.g., #FFFFF or white, or 
+        //                  rgb(256,256,256)). The color is optional. If you omit
+        //                  color the default color will be used.
+        //      
+        //      restrict:   By default a button will be shown to all users. If you 
+        //                  want to restrict who sees this button, you can specify a 
+        //                  JavaScript function that returns true if a button is 
+        //                  allowed, and false if it should be hidden.
+        //
+        //      uniqueId:   Specify a unique ID of the button. This ID can be used
+        //                  Custom App Actions to show/hide a button on specific 
+        //                  pages. To specify which buttons show on which view pages
+        //                  please also install the Hide Custom Button On View Change
+        //                  custom app action.
 
-    // If showing button container drawer, specify if the button should be 
-    // closed, or open when DayBack loads. The default is to show the container
-    // as closed so the buttons appear when you hover over the container.
+        // Example JavaScript Action:
+        // --------------------------
+        //
+        // By default, we provide an example customButtonAction_goToBookmark() function
+        // which will accept a Bookmark ID as a parameter. DayBack will open the Bookmark
+        // when the button is clicked. You can use this as an outline for how to hook
+        // functions. 
+        //
+        // How to specify button icons:
+        // ----------------------------
+        //
+        // Find your Icon's Unicode definition:
+        //
+        // 1. Locate icon on cheat sheet: https://fontawesome.com/v4.7/icons/
+        // 2. Specify the icon using 'fa-' followed by the english name. 
+        //    For example: check mark should be specified as fa-check
 
-    inputs.showContainerAsOpen = false;
+        // Specify buttons from bottom up
 
-    // Define Your Buttons:
-    // --------------------
-    //
-    // Define an array of buttons. Available parameters are as follows:
-    // An asterisk denoted a required parameter:
-    // 
-    //      * icon:     Specify the icon you want shown for a given button. 
-    //                  Instructions provided below.
-    //
-    //      * action:   Defines the JavaScript function the button should run
-    //                  when clicked. You will need to define each function 
-    //                  in the specific section below.
-    //
-    //      label:      Define a label name that should appear next to your button.
-    //                  This is optional, and does not need to be defined if 
-    //                  you don't need a label next to your button.
-    //
-    //      color:      Specify a button's color (e.g., #FFFFF or white, or 
-    //                  rgb(256,256,256)). The color is optional. If you omit
-    //                  color the default color will be used.
-    //      
-    //      restrict:   By default a button will be shown to all users. If you 
-    //                  want to restrict who sees this button, you can specify a 
-    //                  JavaScript function that returns true if a button is 
-    //                  allowed, and false if it should be hidden.
-    //
-    //      uniqueId:   Specify a unique ID of the button. This ID can be used
-    //                  Custom App Actions to show/hide a button on specific 
-    //                  pages. To specify which buttons show on which view pages
-    //                  please also install the Hide Custom Button On View Change
-    //                  custom app action.
+        inputs.buttonList = [        
+            {
+                'label': 'Set Status: Done',
+                'icon': 'fa-check',
+                'color': '#3164d2',
+                'action': function() { 
 
-    // Example JavaScript Action:
-    // --------------------------
-    //
-    // By default, we provide an example customButtonAction_goToBookmark() function
-    // which will accept a Bookmark ID as a parameter. DayBack will open the Bookmark
-    // when the button is clicked. You can use this as an outline for how to hook
-    // functions. 
-    //
-    // How to specify button icons:
-    // ----------------------------
-    //
-    // Find your Icon's Unicode definition:
-    //
-    // 1. Locate icon on cheat sheet: https://fontawesome.com/v4.7/icons/
-    // 2. Specify the icon using 'fa-' followed by the english name. 
-    //    For example: check mark should be specified as fa-check
+                    // Define a list of changes that should be made in the editEvent
+                    // object when this button is clicked. Please see this reference
+                    // for a collection of editable fields inside the editEvent object
+                    // https://docs.dayback.com/article/124-action-objects-methods#editEvent
+                    
+                    let eventChanges = {
+                        status: ['Done']
+                    };
 
-    // Specify buttons from bottom up
-
-    inputs.buttonList = [
-        {
-            'label': 'Set Status: Done',
-            'icon': 'fa-check',
-            'color': '#3164d2',
-            'action': function () {
-
-                // Define a list of changes that should be made in the editEvent
-                // object when this button is clicked. Please see this reference
-                // for a collection of editable fields inside the editEvent object
-                // https://docs.dayback.com/article/124-action-objects-methods#editEvent
-
-                let eventChanges = {
-                    status: ['Done']
-                };
-
-                return confirmEventChanges(eventChanges);
+                    return confirmEventChanges(eventChanges); 
+                },
             },
-        },
-        {
-            'label': 'Set Status: Pending',
-            'icon': 'fa-calendar',
-            'color': '#00AA00',
-            'action': function () {
+            {
+                'label': 'Set Status: Pending',
+                'icon': 'fa-calendar',
+                'color': '#00AA00',
+                'action': function() { 
 
-                let eventChanges = {
-                    status: ['Pending']
-                };
+                    let eventChanges = {
+                        status: ['Pending']
+                    };
 
-                return confirmEventChanges(eventChanges);
+                    return confirmEventChanges(eventChanges); 
+                },
             },
-        },
-    ];
+        ];
 
-    //----------- Define Custom Button functions here -----------
+        //----------- Define Custom Button functions here -----------
+    
+        // Generic Event changes confirmation function that takes an object
+        // of values that should be applied to the editEvent object for all
+        // selected events
 
-    // Generic Event changes confirmation function that takes an object
-    // of values that should be applied to the editEvent object for all
-    // selected events
+        function confirmEventChanges(eventChanges) {
+            
+            var multiSelect = seedcodeCalendar.get("multiSelect");
+            var itemCount   = multiSelect !== undefined ? Object.keys(multiSelect).length : 0;
 
-    function confirmEventChanges(eventChanges) {
-
-        var multiSelect = seedcodeCalendar.get("multiSelect");
-        var itemCount = multiSelect !== undefined ? Object.keys(multiSelect).length : 0;
-
-        if (itemCount > 0) {
-            utilities.showModal(
-                "Confirm Changes",
-                "Please confirm you want to update " + itemCount + " events",
-                'Cancel',
-                function () { },
-                'Confirm',
-                function () { updateEvents(multiSelect, eventChanges); }
-            );
-        } else {
-            helpers.showMessage("Please select one or more events", 0, 3000);
+            if (itemCount > 0) {
+                utilities.showModal(
+                    "Confirm Changes", 
+                    "Please confirm you want to update " + itemCount + " events",
+                    'Cancel', 
+                    function() {}, 
+                    'Confirm', 
+                    function() { updateEvents(multiSelect, eventChanges); }
+                );
+            } else {
+                helpers.showMessage("Please select one or more events", 0, 3000);
+            }        
         }
-    }
+     
+        // Example button access restriciton function that checks if a button should be shown or not
 
-    // Example button access restriciton function that checks if a button should be shown or not
-
-    function restrictButtonAccess(buttonName) {
-        // Validate access for specific named buttons
-        if (buttonName === 'Sales Workflow' && inputs.accountName !== 'Michael Dabrowski') {
-            // Hide Button
-            return false;
+        function restrictButtonAccess(buttonName) {
+            // Validate access for specific named buttons
+            if (buttonName === 'Sales Workflow' && inputs.accountName !== 'Michael Dabrowski') {                
+                // Hide Button
+                return false;
+            }
+            
+            // Show button
+            return true;
         }
-
-        // Show button
-        return true;
-    }
 
     //----------- End Configuration --------------------  
 
@@ -219,7 +216,7 @@ try {
             '<span class="message-icon-separator" style="opacity: 0.8;"><i class="fa fa-lg fa-undo"></i></span>';
 
         showUpdatingModal();
-
+    
         Object.keys(multiSelect).forEach(function (ce) {
             var changesObject = {};
             Object.keys(changes).forEach(function (property) {
@@ -227,7 +224,7 @@ try {
                     if (moment.isDuration(changes[property])) {
                         changesObject[property] = multiSelect[ce].event[property].clone().add(moment.duration(changes[property]));
                     }
-                    else {
+                    else{
                         changesObject[property] = moment(changes[property]);
                     }
                 }
@@ -239,7 +236,7 @@ try {
             Object.keys(changesObject).forEach(function (pk) {
                 multiSelect[ce].revertObject[pk] = multiSelect[ce].event[pk];
             });
-
+    
             setUpdatingTimeout(
                 "Error occurred during save. Reverting changes.",
                 true
@@ -248,12 +245,12 @@ try {
                 multiSelect[ce].event,
                 changesObject,
                 recordFailedEdit,
-                verifyFinished, {
-                isCustomAction: true,
-            }
+                verifyFinished,{
+                    isCustomAction: true,
+                }
             );
         });
-
+    
         function setUpdatingTimeout(message, revert) {
             clearTimeout(updatingTimeout);
             updatingTimeout = setTimeout(function () {
@@ -265,7 +262,7 @@ try {
                 }
             }, 10000);
         }
-
+    
         function verifyFinished(
             updatedEvent,
             changesObject,
@@ -286,15 +283,15 @@ try {
 
                 if (error) {
                     matchingEvent.error =
-                        error.error && error.error.message
-                            ? error.error.message
-                            : error.message
-                                ? error.message
-                                : error.ERRORCODE
-                                    ? error.ERRORCODE + " - " + error.DESCRIPTION
-                                    : error.errorCode
-                                        ? error.errorCode
-                                        : "Unknown";
+                    error.error && error.error.message
+                        ? error.error.message
+                        : error.message
+                        ? error.message
+                        : error.ERRORCODE
+                        ? error.ERRORCODE + " - " + error.DESCRIPTION
+                        : error.errorCode
+                        ? error.errorCode
+                        : "Unknown";
                 } else {
                     matchingEvent.updated = true;
                     matchingEvent.sourceEvent = updatedEvent;
@@ -318,19 +315,19 @@ try {
                         if (failedEvents.length > 0) {
                             //One or more updates failed, revert all changes
                             utilities.showModal(
-                                "Error during save",
-                                failedEvents[0].error + ". Changes will be reverted.",
-                                "continue",
-                                revertChanges
+                            "Error during save",
+                            failedEvents[0].error + ". Changes will be reverted.",
+                            "continue",
+                            revertChanges
                             );
                         } else {
                             //show a custom undo modal
                             helpers.showMessage(
-                                revertMessage,
-                                0,
-                                5000,
-                                null,
-                                revertChanges
+                            revertMessage,
+                            0,
+                            5000,
+                            null,
+                            revertChanges
                             );
                         }
                     }
@@ -367,7 +364,7 @@ try {
         function recordFailedEdit(callback, targetEvent, error) {
             verifyFinished(targetEvent, null, null, null, null, error);
         }
-
+    
         function revertChanges(showError) {
             isUndo = true;
             showUpdatingModal("Reverting Changes...");
@@ -386,16 +383,16 @@ try {
             if (eventCount > 0) {
                 for (var key in multiSelect) {
                     if (multiSelect[key].updated) {
-                        multiSelect[key].changesObject = multiSelect[key].revertObject;
-                        dbk.updateEvent(
-                            multiSelect[key].event,
-                            multiSelect[key].changesObject,
-                            null,
-                            verifyFinished,
-                            {
-                                isCustomAction: true,
-                            }
-                        );
+                    multiSelect[key].changesObject = multiSelect[key].revertObject;
+                    dbk.updateEvent(
+                        multiSelect[key].event,
+                        multiSelect[key].changesObject,
+                        null,
+                        verifyFinished,
+                        {
+                        isCustomAction: true,
+                        }
+                    );
                     }
                 }
             } else {
@@ -441,14 +438,14 @@ try {
                 document.body.removeChild(updatingModalDiv);
             }
             setTimeout(function () {
-                config.suppressEditEventMessages = false;
+              config.suppressEditEventMessages = false;
             }, 500);
         }
     }
 
     // End Multi Select Update Code
 }
-catch (error) {
+catch(error) {
     reportError(error);
 }
 
@@ -461,7 +458,7 @@ function run() {
 
     // Define variables that wait for parent CSS page element to be loaded
     var maxRetries = 20;
-    var retries = 0;
+    var retries    = 0;
 
     // Create the button drawer while checking CSS parent element load status
     createButtonDrawer();
@@ -477,28 +474,28 @@ function run() {
         var drawerBtn;
         var drawerBtnI;
         var drawerBtnUlList;
-
+        
         var rootBtnContainer = document.querySelector('.calendar-button-container');
 
-        if (rootBtnContainer) {
+        if (rootBtnContainer) {                        
 
             // Add Drawer Container
-            drawerBtnContainer = document.createElement('div');
-            drawerBtnContainer.id = options.cssGroupName + "_containerId";
-            drawerBtnContainer.classList = inputs.showContainer ? cssGroupName + '_container' : cssGroupName + '_container_static';
-            drawerBtnContainer.style.cursor = 'pointer';
+            drawerBtnContainer               = document.createElement('div');
+            drawerBtnContainer.id            = options.cssGroupName + "_containerId";
+            drawerBtnContainer.classList     = inputs.showContainer ? cssGroupName + '_container' : cssGroupName + '_container_static';
+            drawerBtnContainer.style.cursor  = 'pointer';
 
             // Add Drawer Button
-            drawerBtn = document.createElement('div');
-            drawerBtn.id = cssGroupName + 'Icon';
-            drawerBtn.dataset.rotatedFlag = 0;
-            drawerBtn.classList = cssGroupName + ' ' + cssGroupName + '_icon_holder';
-            drawerBtn.onclick = drawerButtonClick;
+            drawerBtn                        = document.createElement('div');
+            drawerBtn.id                     = cssGroupName + 'Icon';
+            drawerBtn.dataset.rotatedFlag    = 0;
+            drawerBtn.classList              = cssGroupName + ' ' + cssGroupName + '_icon_holder';
+            drawerBtn.onclick                = drawerButtonClick;
 
             // Add Drawer Button Icon
-            drawerBtnI = document.createElement('i');
-            drawerBtnI.id = cssGroupName + 'IconClass';
-            drawerBtnI.classList = 'fa';
+            drawerBtnI                       = document.createElement('i');
+            drawerBtnI.id                    = cssGroupName + 'IconClass';
+            drawerBtnI.classList             = 'fa';
 
             // Add a Button Container Drawer if we have a multi-button group
             // Otherwise allow users to display a static list of buttons, or 
@@ -511,20 +508,20 @@ function run() {
                 drawerBtnContainer.append(drawerBtn);
 
                 // Add Sub List to Container
-                drawerBtnUlList = document.createElement('ul');
-                drawerBtnUlList.id = cssGroupName + 'IconOptionList';
-                drawerBtnUlList.classList = cssGroupName + '_options ' + cssGroupName + '_option_hidden';
+                drawerBtnUlList              = document.createElement('ul');
+                drawerBtnUlList.id           = cssGroupName + 'IconOptionList';
+                drawerBtnUlList.classList    = cssGroupName + '_options ' + cssGroupName + '_option_hidden'; 
 
             } else {
 
                 // Add Sub List to Container
-                drawerBtnUlList = document.createElement('ul');
-                drawerBtnUlList.id = cssGroupName + 'IconOptionList';
-                drawerBtnUlList.classList = cssGroupName + '_options_static';
+                drawerBtnUlList              = document.createElement('ul');
+                drawerBtnUlList.id           = cssGroupName + 'IconOptionList';
+                drawerBtnUlList.classList    = cssGroupName + '_options_static'; 
             }
 
             // Build buttons from bottom to top
-            for (var i = inputs.buttonList.length - 1; i >= 0; i--) {
+            for (var i = inputs.buttonList.length -1; i >= 0; i--) {                        
 
                 // Grab button object
                 var bObj = inputs.buttonList[i];
@@ -535,16 +532,16 @@ function run() {
                 }
 
                 // Make list element containing sub-buttons
-                var btnLi = document.createElement('il');
-                var btnLi_span = document.createElement('span');
-                var btnLi_contDiv = document.createElement('div');
-                var btnLi_div = document.createElement('div');
-                var btnLi_i = document.createElement('i');
-                var labelId = cssGroupName + '_IconLabel_' + i;
+                var btnLi                   = document.createElement('il');
+                var btnLi_span              = document.createElement('span'); 
+                var btnLi_contDiv           = document.createElement('div');
+                var btnLi_div               = document.createElement('div');
+                var btnLi_i                 = document.createElement('i');
+                var labelId                 = cssGroupName + '_IconLabel_' + i;
                 var labelText;
 
-                btnLi_div.id = cssGroupName + '_IconDiv_' + i;
-                btnLi.classList = inputs.showContainer ? cssGroupName + '_options_li' : cssGroupName + '_options_li_static';
+                btnLi_div.id                = cssGroupName + '_IconDiv_' + i;
+                btnLi.classList             = inputs.showContainer ? cssGroupName + '_options_li' : cssGroupName + '_options_li_static';
 
                 if (bObj.hasOwnProperty('uniqueId') && bObj.id !== null) {
                     btnLi.id = bObj.uniqueId;
@@ -556,27 +553,27 @@ function run() {
 
                 if (bObj.hasOwnProperty('label') && bObj.label !== null) {
                     btnLi_span.id = labelId;
-                    labelText = bObj.label;
+                    labelText     = bObj.label; 
 
                     if (inputs.showContainer) {
-                        btnLi_span.innerText = labelText;
-                        btnLi_span.classList = cssGroupName + '_label ';
-                        btnLi_contDiv.classList = cssGroupName + '_sub_icon_container';
-                        btnLi_div.classList = cssGroupName + '_sub_icon_holder';
-                        btnLi_i.classList = 'fa ' + bObj.icon;
-                    } else {
-                        btnLi_span.classList = cssGroupName + '_label_locked ';
-                        btnLi_contDiv.classList = cssGroupName + '_sub_icon_container_static';
-                        btnLi_div.classList = cssGroupName + '_sub_icon_holder_static';
-                        btnLi_i.classList = 'fa ' + bObj.icon;
+                        btnLi_span.innerText        = labelText;
+                        btnLi_span.classList        = cssGroupName + '_label ';
+                        btnLi_contDiv.classList     = cssGroupName + '_sub_icon_container';
+                        btnLi_div.classList         = cssGroupName + '_sub_icon_holder';
+                        btnLi_i.classList           = 'fa ' + bObj.icon;
+                    } else {                        
+                        btnLi_span.classList        = cssGroupName + '_label_locked ';
+                        btnLi_contDiv.classList     = cssGroupName + '_sub_icon_container_static';
+                        btnLi_div.classList         = cssGroupName + '_sub_icon_holder_static';
+                        btnLi_i.classList           = 'fa ' + bObj.icon;
 
-                        btnLi_div.addEventListener('mouseover', (function (l_id, l_text) { return function (e) { toggleLabel(e, l_id, l_text); }; })(labelId, labelText), false);
-                        btnLi_div.addEventListener('mouseout', (function (l_id, l_text) { return function (e) { toggleLabel(e, l_id, l_text); }; })(labelId, ''), false);
+                        btnLi_div.addEventListener('mouseover', (function(l_id, l_text) { return function(e) { toggleLabel(e, l_id, l_text); }; }) (labelId, labelText), false);
+                        btnLi_div.addEventListener('mouseout',  (function(l_id, l_text) { return function(e) { toggleLabel(e, l_id, l_text); }; }) (labelId, ''), false);
                     }
                 }
 
                 // Add Button click listener
-                btnLi_div.addEventListener("click", bObj.action, false);
+                btnLi_div.addEventListener("click", bObj.action, false);                
 
                 // Add Button to button
                 btnLi_div.append(btnLi_i);
@@ -591,21 +588,21 @@ function run() {
 
             // Append button list to final container
             drawerBtnContainer.append(drawerBtnUlList);
-            rootBtnContainer.append(drawerBtnContainer);
-
+             rootBtnContainer.append(drawerBtnContainer);
+        
             // Open the button drawer if we are using the container 
             // drawer and user specified it should be open by default
             if (inputs.showContainer == true && inputs.showContainerAsOpen == true) {
                 drawerButtonClick();
             }
 
-        } else if (++retries <= maxRetries) {
+        } else if(++retries <= maxRetries){
             setTimeout(createButtonDrawer, 200);
         }
     }
-
+    
     // Mouseover Label Making 
-    function toggleLabel(e, labelId, labelText) {
+    function toggleLabel (e, labelId, labelText) {   
         var lObj = document.getElementById(labelId);
 
         if (lObj === null) {
@@ -613,10 +610,10 @@ function run() {
         }
 
         lObj.innerText = labelText;
-        lObj.classList.toggle(options.cssGroupName + '_label_div_hover');
+        lObj.classList.toggle(options.cssGroupName + '_label_div_hover'); 
     }
 
-    function toggleLabelDynamic(e, labelId, labelText, wbIcon) {
+    function toggleLabelDynamic (e, labelId, labelText, wbIcon) {   
         if (wbIcon.dataset.rotatedFlag != 1) {
             return;
         }
@@ -627,14 +624,14 @@ function run() {
         }
 
         lObj.innerText = labelText;
-        lObj.classList.toggle(options.cssGroupName + '_label_locked');
+        lObj.classList.toggle(options.cssGroupName + '_label_locked'); 
     }
 
     // Handle drawer click to add lock icon
     function drawerButtonClick() {
-        var cssGroupName = options.cssGroupName;
-        var wbIcon = document.getElementById(cssGroupName + 'Icon');
-        var wbIconOptionList = document.getElementById(cssGroupName + 'IconOptionList');
+        var cssGroupName        = options.cssGroupName;
+        var wbIcon              = document.getElementById(cssGroupName + 'Icon');
+        var wbIconOptionList    = document.getElementById(cssGroupName + 'IconOptionList');
 
         // Change icon to lock and rotate
         if (!wbIcon.dataset.rotatedFlag || wbIcon.dataset.rotatedFlag == 0) {
@@ -648,25 +645,25 @@ function run() {
         }
 
         // Remove labels
-        for (var i = inputs.buttonList.length - 1; i >= 0; i--) {
-            var labelId = cssGroupName + '_IconLabel_' + i;
-            var bObj = inputs.buttonList[i];
-            var lObj = document.getElementById(labelId);
-            var dObj = document.getElementById(cssGroupName + '_IconDiv_' + i);
+        for (var i = inputs.buttonList.length -1; i >= 0; i--) {           
+            var labelId     = cssGroupName + '_IconLabel_' + i;
+            var bObj        = inputs.buttonList[i];
+            var lObj        = document.getElementById(labelId);
+            var dObj        = document.getElementById(cssGroupName + '_IconDiv_' + i);
 
             if (lObj === null) {
                 continue;
             }
 
-            var labelText = bObj.hasOwnProperty('label') && bObj.label !== null ? bObj.label : null;
-            lObj.innerText = labelText !== null && lObj.innerText == '' ? labelText : null;
+            var labelText   = bObj.hasOwnProperty('label') && bObj.label !== null ? bObj.label : null;
+            lObj.innerText  = labelText !== null && lObj.innerText == '' ? labelText : null;
 
             // Add mouseover handing functions to remove label text 
-            var mOverHandler = (function (l_id, l_text, l_rot) { return function (e) { toggleLabelDynamic(e, l_id, l_text, l_rot); }; })(labelId, labelText, wbIcon);
-            var mOutHandler = (function (l_id, l_text, l_rot) { return function (e) { toggleLabelDynamic(e, l_id, l_text, l_rot); }; })(labelId, '', wbIcon);
+            var mOverHandler = (function(l_id, l_text, l_rot) { return function(e) { toggleLabelDynamic(e, l_id, l_text, l_rot); }; }) (labelId, labelText, wbIcon);
+            var mOutHandler  = (function(l_id, l_text, l_rot) { return function(e) { toggleLabelDynamic(e, l_id, l_text, l_rot); }; }) (labelId, '', wbIcon);
 
             dObj.addEventListener('mouseover', mOverHandler, false);
-            dObj.addEventListener('mouseout', mOutHandler, false);
+            dObj.addEventListener('mouseout',  mOutHandler, false);
             lObj.classList.toggle(cssGroupName + '_label_locked');
         }
     }
@@ -679,8 +676,8 @@ var timeout;
 
 // Execute the run function as defined above
 try {
-    if (!options.restrictedToAccounts ||
-        !options.restrictedToAccounts.length ||
+    if (!options.restrictedToAccounts || 
+        !options.restrictedToAccounts.length || 
         (options.restrictedToAccounts && options.restrictedToAccounts.indexOf(inputs.account) > -1)
     ) {
         if (action.preventDefault && options.runTimeout) {
@@ -692,7 +689,7 @@ try {
         confirmCallback();
     }
 }
-catch (error) {
+catch(error) {
     reportError(error);
 }
 
@@ -714,7 +711,7 @@ function cancelCallback() {
 
 // Check if the action has run within the specified time limit when preventDefault is enabled
 function timeoutCheck() {
-    timeout = setTimeout(function () {
+    timeout = setTimeout(function() {
         var error = {
             name: 'Timeout',
             message: 'The action was unable to execute within the allotted time and has been stopped'
@@ -738,10 +735,10 @@ function reportError(error) {
         confirmCallback();
     }
     else {
-        cancelCallback();
+        cancelCallback();  
     }
-
-    setTimeout(function () {
+    
+    setTimeout(function() {
         utilities.showModal(errorTitle, errorMessage, null, null, 'OK', null, null, null, true, null, true);
     }, 1000);
 }  

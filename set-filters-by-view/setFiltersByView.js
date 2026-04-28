@@ -1,8 +1,6 @@
 // Set Filters by View v1.0
 // Salesforce only
 
-// Name: Set Filters by View
-// Type: App Action
 // Purpose:
 // Sets the resource filters based on the current view when resources are mapped to the Owner.Name field
 // When the user lands on a Resource view they and all resources sharing the same folder are selected

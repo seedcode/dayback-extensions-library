@@ -1,7 +1,5 @@
 // In The Past Warning v1.0
 
-// Name: In The Past Warning
-// Type: Event Action
 // Purpose:
 // This function will generate a modal warning if the new even is in the past
 // The user can choose to continue or cancel

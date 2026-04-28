@@ -1,7 +1,4 @@
 // Custom Popover Panel v1.0 - Part 1
-
-// Name: Custom Popover Panel - Part 3
-// Type: App Action
 //
 // Purpose:
 // This app action loads the google charts library
@@ -15,6 +12,6 @@
 // More info on custom actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
 
-var script = document.createElement('script');
-script.setAttribute('src', 'https://www.gstatic.com/charts/loader.js');
+var script = document.createElement('script');  
+script.setAttribute('src','https://www.gstatic.com/charts/loader.js');
 document.head.appendChild(script);

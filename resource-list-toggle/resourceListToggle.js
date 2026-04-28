@@ -1,7 +1,5 @@
 // Resource list filter
 
-// Name: Resource List Toggle
-// Type: Event Action
 // Purpose:
 // Filters the list of available resources based on resource tags
 // Action Type: On Event Click

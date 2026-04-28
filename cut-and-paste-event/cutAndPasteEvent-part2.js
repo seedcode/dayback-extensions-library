@@ -1,7 +1,4 @@
 // Cut and Paste Event v1.0 - Part 2
-
-// Name: Cut and Paste Event - Part 2
-// Type: Event Action
 //
 // Purpose:
 // Adds an Event Button function which temporarily

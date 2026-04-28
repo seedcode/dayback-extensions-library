@@ -1,7 +1,4 @@
 // Add Custom Button - Part 1 v1.0
-
-// Name: Add Custom Button - Part 1
-// Type: App Action
 //
 // Purpose:
 // Adds a single button, multiple buttons, or container

@@ -1,7 +1,7 @@
+
+
 //Horizontal mouse scroll to page change
 
-// Name: Horizontal Mouse Scroll
-// Type: App Action
 //Purpose:
 //Listens to mouse scroll horizontal clicks and translates that to paging back and forth on the calendar
 

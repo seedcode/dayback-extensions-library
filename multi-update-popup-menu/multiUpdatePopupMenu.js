@@ -1,7 +1,4 @@
 // Multi Update Button Menu - Part 1 v1.1
-
-// Name: Multi Update Popup Menu
-// Type: App Action
 //
 // Purpose:
 // Adds a single button, multiple buttons, or container
@@ -177,7 +174,7 @@ try {
                 "Confirm Changes",
                 "Please confirm you want to delete " + itemCount + " events",
                 "Cancel",
-                function () { },
+                function () {},
                 "Confirm Delete",
                 function () {
                     deleteEvents(multiSelect);
@@ -454,8 +451,8 @@ try {
                 );
                 let folderItemList = tabItems.querySelectorAll(
                     ".item[data-folder-sort-i-d='" +
-                    item.dataset.folderSortID +
-                    "'][data-is-folder='0'][data-item-selected='1']"
+                        item.dataset.folderSortID +
+                        "'][data-is-folder='0'][data-item-selected='1']"
                 );
 
                 let tabIcon = document.querySelector(
@@ -463,8 +460,8 @@ try {
                 );
                 let parentFolder = tabItems.querySelector(
                     ".item[data-folder-sort-i-d='" +
-                    item.dataset.folderSortID +
-                    "'][data-is-folder='1']"
+                        item.dataset.folderSortID +
+                        "'][data-is-folder='1']"
                 );
 
                 if (selectedItems.length > 0) {
@@ -501,7 +498,7 @@ try {
                 if (btn) {
                     btn.style.display = 'none';
                 }
-
+                
                 var openFolders = document.querySelectorAll(".item.folderBackgroundColor.open");
 
                 if (openFolders && openFolders.length > 0) {
@@ -780,7 +777,7 @@ try {
                                         resource.isFolder == true ? 1 : 0;
                                     item.dataset.isFolderOpen =
                                         resource.isFolder == true &&
-                                            resource.status.folderExpanded == true
+                                        resource.status.folderExpanded == true
                                             ? 1
                                             : 0;
 
@@ -789,7 +786,7 @@ try {
                                     if (
                                         inputs.multiUpdatePanel
                                             .allowAddRemoveNoneResource ==
-                                        false &&
+                                            false &&
                                         tabName != "setResources" &&
                                         item.dataset.isNone == 1
                                     ) {
@@ -805,7 +802,7 @@ try {
                                         item.dataset.isNone == "0" &&
                                         item.dataset.isFolder == "0" &&
                                         resourceFolders[
-                                        item.dataset.folderSortID
+                                            item.dataset.folderSortID
                                         ] == "0"
                                     ) {
                                         item.style.display = "none";
@@ -833,9 +830,9 @@ try {
                                             let folderItems =
                                                 scrollableDiv.querySelectorAll(
                                                     ".item[data-folder-sort-i-d='" +
-                                                    item.dataset
-                                                        .folderSortID +
-                                                    "']"
+                                                        item.dataset
+                                                            .folderSortID +
+                                                        "']"
                                                 );
 
                                             let selectedItems = 0;
@@ -989,7 +986,7 @@ try {
                 "Confirm Changes",
                 "Please confirm you want to update " + itemCount + " events",
                 "Cancel",
-                function () { },
+                function () {},
                 "Confirm",
                 function () {
                     updateEvents(multiSelect, eventChanges);
@@ -1164,12 +1161,12 @@ try {
             var failedEvents;
             var matchingEvent =
                 multiSelect[
-                Object.keys(multiSelect).filter(function (mi) {
-                    return (
-                        multiSelect[mi].event.eventID ===
-                        updatedEvent.eventID
-                    );
-                })
+                    Object.keys(multiSelect).filter(function (mi) {
+                        return (
+                            multiSelect[mi].event.eventID ===
+                            updatedEvent.eventID
+                        );
+                    })
                 ];
 
             if (updatedEvent && matchingEvent) {
@@ -1180,12 +1177,12 @@ try {
                         error.error && error.error.message
                             ? error.error.message
                             : error.message
-                                ? error.message
-                                : error.ERRORCODE
-                                    ? error.ERRORCODE + " - " + error.DESCRIPTION
-                                    : error.errorCode
-                                        ? error.errorCode
-                                        : "Unknown";
+                            ? error.message
+                            : error.ERRORCODE
+                            ? error.ERRORCODE + " - " + error.DESCRIPTION
+                            : error.errorCode
+                            ? error.errorCode
+                            : "Unknown";
                 } else {
                     matchingEvent.updated = true;
                     matchingEvent.sourceEvent = updatedEvent;
@@ -1211,7 +1208,7 @@ try {
                             utilities.showModal(
                                 "Error during save",
                                 failedEvents[0].error +
-                                ". Changes will be reverted.",
+                                    ". Changes will be reverted.",
                                 "continue",
                                 revertChanges
                             );
@@ -1409,12 +1406,12 @@ try {
                     error.error && error.error.message
                         ? error.error.message
                         : error.message
-                            ? error.message
-                            : error.ERRORCODE
-                                ? error.ERRORCODE + " - " + error.DESCRIPTION
-                                : error.errorCode
-                                    ? error.errorCode
-                                    : "Unknown"
+                        ? error.message
+                        : error.ERRORCODE
+                        ? error.ERRORCODE + " - " + error.DESCRIPTION
+                        : error.errorCode
+                        ? error.errorCode
+                        : "Unknown"
                 );
             }
 
@@ -1494,7 +1491,7 @@ try {
                         0,
                         3000
                     );
-
+                    
                     seedcodeCalendar.init("multiSelect", undefined);
                     return;
                 }

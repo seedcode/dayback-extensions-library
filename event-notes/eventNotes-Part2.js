@@ -1,7 +1,4 @@
 // Event Notes - Part 2 v1.00
-
-// Name: Event Notes - Part 2
-// Type: App Action
 //
 // Purpose:
 // Adds event notes feature to events in any view

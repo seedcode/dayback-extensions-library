@@ -1,7 +1,4 @@
 // KeyDown Listener v1.00
-
-// Name: KeyDown Listener
-// Type: App Action
 //
 // Purpose:
 // Records actively held down keys for reference in other actions

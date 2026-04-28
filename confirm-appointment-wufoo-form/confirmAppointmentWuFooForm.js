@@ -1,7 +1,5 @@
 // Confirm Appointment WuForm v1.1
 
-// Name: Confirm Appointment WuFoo Form
-// Type: Event Action
 // Purpose:
 // Shows a simple wufoo form that lets a share recipient click on an event and respond
 // This shows how to pass event data to a wufoo form via URL Modifications

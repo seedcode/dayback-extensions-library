@@ -1,7 +1,5 @@
 // Filter Resources with Events Action v1.05
 
-// Name: Filter Resources with Events - Part 1
-// Type: App Action
 // Purpose:
 // Filters the calendar for only resources with events in the date range
 // Only enabled in resource views

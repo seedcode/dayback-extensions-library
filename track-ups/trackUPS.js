@@ -1,7 +1,5 @@
 // Track UPS Packages v1.1
 
-// Name: Track UPS Packages
-// Type: Button Action
 // Purpose:
 // This button action will look through an event's
 // description and will automatically open the first
