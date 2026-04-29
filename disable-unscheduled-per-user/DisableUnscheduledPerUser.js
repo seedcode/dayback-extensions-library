@@ -1,5 +1,7 @@
 // Disable the Unscheduled List for Specific Users
 
+// Name: Disable Unscheduled Per User
+// Type: App Action
 // Purpose:
 // Turns off the Unscheduled List for specific accounts.
 // This turns off the display of the list: if unschesheduled is enabled, events where unscheduled=true that 

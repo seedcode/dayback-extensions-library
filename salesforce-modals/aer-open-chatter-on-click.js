@@ -1,4 +1,13 @@
-// After Events Rendered
+
+// Aer Open Chatter on Click v1.0
+
+// Name: Aer Open Chatter on Click
+// Type: Event Action
+// Purpose:
+// Add a click handler to the pills that will open the chatter activity modal
+
+// Trigger: After Events Rendered
+// Prevent Default Action: No
 //
 // Add a click handler to the pills that will open the chatter activity modal
 

@@ -1,5 +1,7 @@
 // Multi Update Button Menu - Part 2 v1.0
 //
+// Name: Multi Update Button Menu
+// Type: Button Action
 // Purpose:
 // This is a Part 2 of the Multi Update Button Menu custom app action.
 // It moves the Custom Button bar down when we do not

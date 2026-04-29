@@ -1,5 +1,7 @@
 // Open Record On Double Click v1.0 - Part 1
 //
+// Name: Open Record On Double Click
+// Type: Event Action
 // Purpose:
 // Double clicking an event will open up the native
 // Salesforce or Filemaker record. Single clicking

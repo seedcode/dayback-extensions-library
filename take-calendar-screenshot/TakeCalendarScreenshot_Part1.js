@@ -1,5 +1,7 @@
 // Take Calendar Screenshot - Part 1 v2.0
 //
+// Name: Take Calendar Screenshot
+// Type: Button Action
 // Purpose:
 // Adds a button which allows you to take a screen shot of the
 // calendar and save it as a PNG. Screenshot can be configured for

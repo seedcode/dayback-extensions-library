@@ -1,5 +1,7 @@
 // Unscheduled To Do Items v1.0 - Part 5 of 6
 //
+// Name: Unscheduled To Do Items
+// Type: Event Action
 // Purpose:
 // Prevents the opening of the Event Popover if the user is 
 // clicking on a To Do item's Check Box.

@@ -1,9 +1,8 @@
 // DayBack Cascading Events v1.1
 // License: MIT
-// Type: Event Action
 // Name: Cascading Events
-
-//Purpose:
+// Type: Event Action
+// Purpose:
 //Looks for future events related by the defined criteria on lines 21-128 and
 //adjusts them according to the change in the current event
 
@@ -18,7 +17,7 @@
 	// Declare global imports
 	// prettier-ignore
 	// @ts-ignore
-	const globals = {action, dbk, seedcodeCalendar, utilities, moment, Sfdc, fbk, event, editEvent, changesObject, revertObject};
+	const globals = { action, dbk, seedcodeCalendar, utilities, moment, Sfdc, fbk, event, editEvent, changesObject, revertObject };
 
 	const options = {};
 	const inputs = {};
@@ -229,7 +228,7 @@
 				globals.utilities.showModal(
 					'Advanced Filter Logic Error',
 					'Parsing error in advancedFilterLogic string: ' +
-						(e && e.message ? e.message : e),
+					(e && e.message ? e.message : e),
 					'OK'
 				);
 				cascadeOptions.advancedFilterLogic = null; // Force no matches
@@ -244,8 +243,8 @@
 		) {
 			curDelta = dbkChangesObject.end
 				? dbkChangesObject.end
-						.clone()
-						.diff(dbkChangesObject.start.clone())
+					.clone()
+					.diff(dbkChangesObject.start.clone())
 				: null;
 		} else {
 			if (!allDayChanged && dbkChangesObject.end) {
@@ -255,12 +254,12 @@
 					.diff(dbkRevertObject.end.clone().startOf('day'), 'days');
 				curDelta = dbkEvent.allDay
 					? dbkChangesObject.end
-							.clone()
-							.startOf('day')
-							.diff(dbkRevertObject.end.clone().startOf('day'))
+						.clone()
+						.startOf('day')
+						.diff(dbkRevertObject.end.clone().startOf('day'))
 					: dbkChangesObject.end
-							.clone()
-							.diff(dbkRevertObject.end.clone());
+						.clone()
+						.diff(dbkRevertObject.end.clone());
 			} else if (dbkChangesObject.start) {
 				diffDays = dbkChangesObject.start
 					.clone()
@@ -269,14 +268,14 @@
 				curDelta =
 					allDayChanged || dbkEvent.allDay
 						? dbkChangesObject.start
-								.clone()
-								.startOf('day')
-								.diff(
-									dbkRevertObject.start.clone().startOf('day')
-								)
+							.clone()
+							.startOf('day')
+							.diff(
+								dbkRevertObject.start.clone().startOf('day')
+							)
 						: dbkChangesObject.start
-								.clone()
-								.diff(dbkRevertObject.start.clone());
+							.clone()
+							.diff(dbkRevertObject.start.clone());
 			}
 		}
 
@@ -434,12 +433,12 @@
 						error.error && error.error.message
 							? error.error.message
 							: error.message
-							? error.message
-							: error.ERRORCODE
-							? error.ERRORCODE + ' - ' + error.DESCRIPTION
-							: error.errorCode
-							? error.errorCode
-							: 'Unknown';
+								? error.message
+								: error.ERRORCODE
+									? error.ERRORCODE + ' - ' + error.DESCRIPTION
+									: error.errorCode
+										? error.errorCode
+										: 'Unknown';
 				} else {
 					matchingEvent.updated = true;
 					matchingEvent.sourceEvent = updatedEvent;
@@ -465,7 +464,7 @@
 							globals.utilities.showModal(
 								'Error during save',
 								failedEvents[0].error +
-									'. Changes will be reverted.',
+								'. Changes will be reverted.',
 								'continue',
 								revertChanges
 							);
@@ -615,8 +614,8 @@
 			} else {
 				return convertToString
 					? value1 &&
-							value2 &&
-							value1.toString() === value2.toString()
+					value2 &&
+					value1.toString() === value2.toString()
 					: value1 == value2;
 			}
 		}
@@ -705,9 +704,9 @@
 				) {
 					throw new Error(
 						'Expected ' +
-							expectedTypeOrValue +
-							' but found ' +
-							(t.value || t.type)
+						expectedTypeOrValue +
+						' but found ' +
+						(t.value || t.type)
 					);
 				}
 				position += 1;
@@ -726,7 +725,7 @@
 						group.push(parseAnd());
 					} else break;
 				}
-				return group.length > 1 ? {or: group} : node;
+				return group.length > 1 ? { or: group } : node;
 			}
 			function parseAnd() {
 				let node = parseFactor();
@@ -738,14 +737,14 @@
 						group.push(parseFactor());
 					} else break;
 				}
-				return group.length > 1 ? {and: group} : node;
+				return group.length > 1 ? { and: group } : node;
 			}
 			function parseFactor() {
 				const t = peek();
 				if (!t) throw new Error('Unexpected end of expression');
 				if (t.type === 'OP' && t.value === 'NOT') {
 					consume();
-					return {not: parseFactor()};
+					return { not: parseFactor() };
 				}
 				if (t.type === 'LPAREN') {
 					consume('LPAREN');
@@ -774,9 +773,9 @@
 							value: m[1],
 						});
 					} else if (m[2]) {
-						result.push({type: 'OP', value: m[2].toUpperCase()});
+						result.push({ type: 'OP', value: m[2].toUpperCase() });
 					} else if (m[3]) {
-						result.push({type: 'IDENT', value: m[3]});
+						result.push({ type: 'IDENT', value: m[3] });
 					}
 				}
 				return result;
@@ -892,7 +891,7 @@
 					} else if (customFieldID) {
 						matchResult = checkMatchingGroups(
 							cascadeOptions.propertyFilters.customFields[
-								customField
+							customField
 							],
 							linkedEvent,
 							compareEvent,
@@ -1044,13 +1043,11 @@
 	 */
 	function reportError(error) {
 		const errorTitle = 'Error Running Custom Action';
-		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${
-			globals.action.name?.length > 0
+		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${globals.action.name?.length > 0
 				? globals.action.name
 				: globals.action.type
-		}</span>"</p><p>Error: ${
-			error.message
-		}.</p><p>This may result in unexpected behavior of the calendar.</p>`;
+			}</span>"</p><p>Error: ${error.message
+			}.</p><p>This may result in unexpected behavior of the calendar.</p>`;
 		if (
 			globals.action.preventDefault &&
 			globals.action.category !== 'event' &&

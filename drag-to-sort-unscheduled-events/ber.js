@@ -1,5 +1,7 @@
 // Drag to Sort Unscheduled Events v1.0 - Part 3 of 5
 //
+// Name: Drag to Sort Unscheduled Events
+// Type: Event Action
 // Purpose:
 // Sets the sort sequence for events based on the 
 // stored custom field value.

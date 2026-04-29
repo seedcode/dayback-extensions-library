@@ -1,5 +1,7 @@
 // Set CSS by User v1.1
 
+// Name: Set CSS by User
+// Type: App Action
 // Purpose:
 // Adds a CSS class to the calendar container based on
 // a specific logged in user, or the logged in user's

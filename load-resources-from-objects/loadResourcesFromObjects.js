@@ -1,5 +1,7 @@
 // Load Resources From Objects - Salesforce v1.50
 
+// Name: Load Resources From Objects
+// Type: App Action
 // Purpose:
 // Loads resources in DayBack from Salesforce objects
 // Action Type: On Resources Fetched

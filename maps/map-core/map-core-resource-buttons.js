@@ -1,5 +1,7 @@
 // DayBack Custom Action Template v1.0.5
 
+// Name: Map Core Resource Buttons
+// Type: App Action
 // Purpose: Creates mapping buttons for resources
 // Action Type: On Resources Fetched
 // Prevent Default Action: No

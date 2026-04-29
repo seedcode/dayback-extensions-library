@@ -1,6 +1,8 @@
 // Override Start Edit v1.0
 // Salesforce-only
 
+// Name: Override Start Edit
+// Type: Event Action
 // Purpose:
 // This action prevents the editing of the mapped Start field
 // and allows you to specify an alternate field to editing

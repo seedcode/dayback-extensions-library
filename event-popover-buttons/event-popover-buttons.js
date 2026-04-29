@@ -1,5 +1,7 @@
 // Event Popover Buttons v1.0
 
+// Name: Event Popover Buttons
+// Type: Button Action
 // Purpose:
 // Allows you to add one or more custom buttons
 // to the button tray in the standard DayBack

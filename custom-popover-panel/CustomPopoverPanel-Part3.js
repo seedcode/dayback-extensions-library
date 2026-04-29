@@ -1,5 +1,7 @@
 // Custom Popover Panel v1.0 - Part 1
 //
+// Name: Custom Popover Panel
+// Type: App Action
 // Purpose:
 // This app action loads the google charts library
 // for use with custom side panels. If you do not

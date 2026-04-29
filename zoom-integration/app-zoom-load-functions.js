@@ -1,5 +1,7 @@
 // Register Zoom Functions v1.0
 
+// Name: Register Zoom Functions
+// Type: App Action
 // Purpose:
 // Registers functions that handle authorization, deauthorization, and create, edit, delete meetings from DayBack.
 // Action Type: On Startup

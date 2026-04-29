@@ -1,5 +1,7 @@
 // Navigate Calendar on Gesture v2.7 - Add Nav Buttons Component
 
+// Name: Navigate Calendar on Gesture
+// Type: App Action
 // Purpose:
 //
 // Add Swipe Pagination Buttons to the root Calendar container.

@@ -1,5 +1,7 @@
 // DayBack Custom Action Template v1.0.5
 
+// Name: Map Core After Events Rendered
+// Type: App Action
 // Purpose: Updates routes and clears mapping data when appropriate after rendering changed events
 // Action Type: After Events Rendered
 // Prevent Default Action: No

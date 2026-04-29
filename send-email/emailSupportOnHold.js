@@ -1,5 +1,7 @@
 // Email Support On Hold Status v1.5
 
+// Name: Email Support On Hold Status
+// Type: Event Action
 // Purpose:
 // Opens a new email in the default mail client with details of an event
 // This takes effect when an event has been changed to the status specified

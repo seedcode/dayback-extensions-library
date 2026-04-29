@@ -1,5 +1,7 @@
 // Add TinyMCE Text Editor - Part 2 - v1.0
 //
+// Name: Add TinyMCE Text Editor
+// Type: Button Action
 // Purpose:
 // Allows you to modify an event property in a rich text editor
 //

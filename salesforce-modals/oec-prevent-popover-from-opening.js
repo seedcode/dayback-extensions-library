@@ -1,10 +1,14 @@
-// On Event Click
+// Prevent Event Click Action v1.0
 //
+// Name: Prevent Event Click Action
+// Type: Event Action
+// Trigger: On Event Click
+// Prevent Default: True
+
+// Purpose:
 // This code handles the click event on a calendar event.
 // It prevets the accidental opening of the Event popover
 // if the user requested the opening of a chatter activity modal.
-//
-// Prevent Default: True
 
 if (seedcodeCalendar.get('preventEventClick')) {
     action.callbacks.cancel();

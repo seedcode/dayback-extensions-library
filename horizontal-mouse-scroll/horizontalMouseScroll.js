@@ -1,15 +1,17 @@
 
 
-//Horizontal mouse scroll to page change
+// Horizontal mouse scroll to page change
 
-//Purpose:
-//Listens to mouse scroll horizontal clicks and translates that to paging back and forth on the calendar
+// Name: Horizontal Mouse Scroll
+// Type: App Action
+// Purpose:
+// Listens to mouse scroll horizontal clicks and translates that to paging back and forth on the calendar
 
-//Action Type: After Calendar Rendered
-//Prevent Default Action: No
+// Action Type: After Calendar Rendered
+// Prevent Default Action: No
 
-//More info on On Calendars Fetched actions and objects here:
-//https://docs.dayback.com/article/140-custom-app-actions
+// More info on On Calendars Fetched actions and objects here:
+// https://docs.dayback.com/article/140-custom-app-actions
 
 var config = {
 	delay: 1000,

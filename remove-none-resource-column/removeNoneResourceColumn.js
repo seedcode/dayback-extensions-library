@@ -1,5 +1,7 @@
 // Remove None Resource Columnf v1.0
 
+// Name: Remove None Resource Column
+// Type: App Action
 // Purpose:
 // Removes the 'none' column from the calendar
 //

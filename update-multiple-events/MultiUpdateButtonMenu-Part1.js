@@ -1,5 +1,7 @@
 // Multi Update Button Menu - Part 1 v1.0
 //
+// Name: Multi Update Button Menu
+// Type: Button Action
 // Purpose:
 // Adds a single button, multiple buttons, or container
 // of buttons to DayBack bottom right. This is Part 1 of

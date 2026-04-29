@@ -1,5 +1,7 @@
 // Move Resource Filters in Sidebar v1.0
 //
+// Name: Move Resource Filters
+// Type: App Action
 // Purpose:
 // Moves the resource filters in the side bar
 // above the Status filters

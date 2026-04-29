@@ -1,5 +1,7 @@
 // Check Resource Capacity v1.0
 
+// Name: Check Resource Capacity
+// Type: Event Action
 // Purpose:
 // This function enforces daily limits on a resource established in the below config object
 // e.g. The resource 'Jason Young' cannot have more than 8 events scheduled per day

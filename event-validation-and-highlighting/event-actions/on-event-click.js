@@ -1,5 +1,7 @@
 // Event Validation - On Event Click - v1.0
 //
+// Name: Event Validation
+// Type: Event Action
 // Purpose:
 // Validates event fields when they are clicked on
 // triggering recalculation of any required

@@ -1,5 +1,7 @@
 // Fetch auth code v1.0
 
+// Name: Fetch Zoom Auth Code
+// Type: App Action
 // Purpose:
 // Pick up a url parameter on the page if we landed here after the zoom auth in FileMaker
 // Action Type: Before Calendar Rendered

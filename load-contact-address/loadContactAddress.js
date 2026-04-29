@@ -1,5 +1,7 @@
 // Load Contact Address v1.0
 
+// Name: Load Contact Address
+// Type: Event Action
 // Purpose:
 // Looks up the Contact's address when the Event is related to a contact
 // and fills in the Event address with the value if an address is found

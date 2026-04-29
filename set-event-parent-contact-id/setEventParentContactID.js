@@ -1,5 +1,7 @@
 // Set Event Parent Contact ID v1.1
 
+// Name: Set Event Parent Contact ID
+// Type: Event Action
 // Purpose:
 // Sets specific Contact ID and Contact Name for all events on event creation
 

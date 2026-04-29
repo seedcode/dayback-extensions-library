@@ -1,5 +1,7 @@
 // Navigate Calendar on Gesture v2.7 - After Events Rendered Component
 
+// Name: Navigate Calendar on Gesture
+// Type: App Action
 // Purpose:
 
 // Navigates the calendar forward or backward a page with swipe gestures or horizontal scroll

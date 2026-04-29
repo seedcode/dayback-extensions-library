@@ -1,5 +1,7 @@
 // Event Notes - Part 3 v1.00
 //
+// Name: Event Notes
+// Type: Event Action
 // Purpose:
 // Adds event notes feature to events in large pill view.
 // This component prevents event pills from being clicked if

@@ -1,5 +1,7 @@
 // Mutate Events by Resource v1.10
 
+// Name: Mutate Events by Resource
+// Type: Event Action
 // Purpose:
 // Allows you to mutate the properties of a new event depending on which resource the event is assigned to
 // Action Type: On Event Create

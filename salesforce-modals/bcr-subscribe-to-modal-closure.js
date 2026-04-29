@@ -1,13 +1,18 @@
 // Subscribe Modal Closure Events  - v1.0
 //
+// Name: Subscribe Modal Closure Events
+// Type: App Action
+// Purpose:
+// This app action subscribes to the 'dbk.modalClosed' event
+// that is sent from the Visualforce page when a modal dialog
 // This app action subscribes to the 'dbk.modalClosed' event
 // that is sent from the Visualforce page when a modal dialog
 // is closed. It can be used to perform actions based on the
 // closure of the modal, such as refreshing the calendar,
 // or triggering other DayBack workflows.
 
-// Prevent Default: No
-// Action Type: Before Calendar Rendered
+// Prevent Default Action: No
+// Trigger: Before Calendar Rendered
 
 Sfdc.canvas.client.subscribe(fbk.client(), {
     name: 'dbk.modalClosed',

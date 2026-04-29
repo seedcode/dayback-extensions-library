@@ -1,5 +1,7 @@
 // Create Internal URL v1.6
 
+// Name: Create Internal URL
+// Type: Button Action
 // Purpose:
 // Gets a list of active filters and builds a URL to share
 // your current view with internal users of the organization

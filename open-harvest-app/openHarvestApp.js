@@ -1,5 +1,7 @@
 // Open Harvest App v1.1
 
+// Name: Open Harvest App
+// Type: Button Action
 // Purpose:
 // The following button action will launch a time
 // tracking modal using the Harvest app. You will

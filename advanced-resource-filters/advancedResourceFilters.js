@@ -1,5 +1,7 @@
 // Advanced Resource Filters - v1.1
 
+// Name: Advanced Resource Filters
+// Type: App Action
 // Purpose:
 
 // Creates toggle buttons and multi-select boxes

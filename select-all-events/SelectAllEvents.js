@@ -1,5 +1,7 @@
 // Select All Events v1.0
 //
+// Name: Select All Events
+// Type: App Action
 // Purpose:
 // This function adds a listener that will multi-select all visible events
 // https://dayback.com/reschedule-multiple-events-at-once/

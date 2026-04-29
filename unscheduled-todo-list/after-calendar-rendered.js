@@ -1,5 +1,7 @@
 // Unscheduled To Do Items v1.0 - Part 1 of 6
 //
+// Name: Unscheduled To Do Items
+// Type: App Action
 // Purpose:
 // Adds support for Unscheduled To Do Items into the Unscheduled
 // side bar. Items can be sorted through drag and drop and

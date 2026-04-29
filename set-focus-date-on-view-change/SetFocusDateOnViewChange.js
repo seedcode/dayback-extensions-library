@@ -1,5 +1,7 @@
 // Set Focus Date On View Change v1.1
 
+// Name: Set Focus Date On View Change
+// Type: App Action
 // Purpose:
 // Changes DayBack's focus date to the day of the
 // week, month or quarter you specify after a specified 

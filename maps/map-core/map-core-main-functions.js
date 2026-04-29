@@ -1,5 +1,7 @@
 // DayBack Custom Action Template v1.0.5
 
+// Name: Map Core Main Functions
+// Type: App Action
 // Purpose: Registers all of the functionality needed for calculating distances and routing
 // Action Type: On Startup
 // Prevent Default Action: No

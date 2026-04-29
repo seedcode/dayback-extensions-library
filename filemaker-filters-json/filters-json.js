@@ -1,5 +1,7 @@
 // Pull Filters from FileMaker in JSON format v1.01
 
+// Name: FileMaker Filters JSON
+// Type: App Action
 // Purpose:
 // Pulls resource or status filters from a table in FileMaker and displays them in DayBack Calendar.
 // Action Type: On Resources Fetched/On Statuses Fetched

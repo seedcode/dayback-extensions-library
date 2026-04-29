@@ -1,5 +1,7 @@
 // Read Only Past Events - Part 1 - v1.0
 //
+// Name: Read Only Past Events
+// Type: Event Action
 // Purpose:
 // Prevents items with a start date in the past from being edited via drag and drop.
 // To be uses in conjunction with Part 2

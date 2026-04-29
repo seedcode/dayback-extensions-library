@@ -1,5 +1,7 @@
 // Reset zoom values v1
 
+// Name: Reset Zoom Values
+// Type: Event Action
 // Purpose:
 // Clear zoom fields on create for duplication
 // Action Type: On Event Create

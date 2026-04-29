@@ -1,5 +1,7 @@
 // Open First URL v1.0
 
+// Name: Open First URL
+// Type: Button Action
 // Purpose:
 // This button action will look through an event's
 // description and will automatically open the first

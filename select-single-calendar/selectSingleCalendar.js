@@ -1,5 +1,7 @@
 // Select A Single Calendar Source v1.0
 
+// Name: Select Single Calendar
+// Type: App Action
 // Purpose:
 // This app action will allow you to single select a calendar source. 
 // So you will only be able to view one calendar source on the calendar at a time. 

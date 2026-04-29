@@ -1,5 +1,7 @@
 // DayBack Mutation Observer Library - v1.0
 
+// Name: DayBack Mutation Observer
+// Type: App Action
 // Purpose:
 // Installs a mutation observer library for
 // monitoring real-time DOM changes. This

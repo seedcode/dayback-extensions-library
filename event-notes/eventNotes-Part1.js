@@ -1,5 +1,7 @@
 // Event Notes - Part 1 v1.00
 //
+// Name: Event Notes
+// Type: Event Action
 // Purpose:
 // Adds event notes feature to events in any view
 // This component loops through rendered events and adds

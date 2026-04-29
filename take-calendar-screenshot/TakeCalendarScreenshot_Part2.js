@@ -1,5 +1,7 @@
 // Take Calendar Screenshot - Part 2 v2.0
 //
+// Name: Take Calendar Screenshot
+// Type: Button Action
 // Purpose:
 // This is a Part 2 of the Take Calendar Screenshot custom app 
 // action. It is based on the Add Custom Button Part 2 function.

@@ -1,5 +1,7 @@
 // Key Combination Batch Edit v1.1
 
+// Name: Key Combination Batch Edit
+// Type: App Action
 // Purpose:
 // Applies changes to selected events when a key combination is held
 // and one of the selected events is clicked

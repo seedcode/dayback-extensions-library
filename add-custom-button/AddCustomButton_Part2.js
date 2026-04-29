@@ -1,5 +1,7 @@
 // Add Custom Button - Part 2 v1.0
 //
+// Name: Add Custom Button
+// Type: Button Action
 // Purpose:
 // This is a Part 2 of the Add Custom Button custom app action.
 // It moves the Custom Button bar down when we do not

@@ -1,5 +1,7 @@
 // Set Status On Checkbox Checked v1.0
 
+// Name: Set Status On Checkbox Checked
+// Type: Event Action
 // Purpose:
 // Sets the event status based on a checkbox being checked.
 // Can be used with existing event fields, or custom fields.

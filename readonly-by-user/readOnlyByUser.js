@@ -1,5 +1,7 @@
 // Set Calendars to Read Only by User v1.0
 
+// Name: Set Calendars to Read Only by User
+// Type: App Action
 // Purpose:
 // Sets specified calendars to read-only based on the logged in user
 

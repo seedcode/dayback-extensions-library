@@ -1,3 +1,5 @@
+// Name: Show Distances to Resources
+// Type: Button Action
 // Purpose: Shows the distance from an event to a resource if the resource has a location
 // Action Type: Button
 // Requires: Map core functions, Map core resource buttons

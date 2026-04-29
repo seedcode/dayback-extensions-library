@@ -1,5 +1,7 @@
 // Unscheduled To Do Items v1.0 - Part 4 of 6
 //
+// Name: Unscheduled To Do Items
+// Type: Event Action
 // Purpose:
 // The Saving of a To Do item, a Change in the To Do Item status, 
 // or a change in the Sequence parameter, or Checkbox state all

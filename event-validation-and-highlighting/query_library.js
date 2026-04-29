@@ -1,4 +1,16 @@
 // Salesforce Client for Canvas + Direct REST (sfApi.ajaxRequest)
+
+// Name: Salesforce Client
+// Type: App Action
+// Trigger: On Startup
+// Prevent Default Action: No
+
+// Purpose:
+// A helper library to simplify making Salesforce API calls from both Canvas apps and non-Canvas contexts (like Event Actions).
+// It abstracts away the differences in authentication and transport between Canvas and direct REST calls, providing a unified interface for querying, retrieving, creating, updating, and deleting Salesforce records.
+//
+// This library is designed to work in DayBack's Event Actions but can be used in any JavaScript context where you need to interact with Salesforce.
+
 // --------------------------------------------------------------
 // Usage:
 //   const sf = SalesforceClient({ mode: 'canvas' }); // inside Canvas app

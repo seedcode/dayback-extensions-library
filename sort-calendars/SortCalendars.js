@@ -1,5 +1,7 @@
 // Sort Calendars v1.0
 
+// Name: Sort Calendars
+// Type: App Action
 // Purpose:
 // Defines the order in which calendars should be listed
 

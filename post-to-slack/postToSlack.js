@@ -1,5 +1,7 @@
 // Post Event to Slack v1.1
 
+// Name: Post Event to Slack
+// Type: Button Action
 // Purpose:
 // This button action will copy the details of an event and post
 // them to a Slack Channel. You will need to modify the configuraiton

@@ -1,5 +1,7 @@
 // Display Timezone Selector v1.0
 
+// Name: Display Timezone Selector
+// Type: App Action
 // Purpose:
 // Displays a timezone selector in DayBack's Settings sidebar
 // and adds a timezone dispay to the right of the date

@@ -1,5 +1,7 @@
 // Event Border Colors v1.0
 // 
+// Name: Event Border Colors
+// Type: Event Action
 // Purpose:
 // Set Event Border Color based on Custom Field Value.
 //

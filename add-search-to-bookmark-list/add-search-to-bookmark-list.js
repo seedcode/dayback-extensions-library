@@ -1,5 +1,7 @@
 // Add Search to Bookmark List v1.0
 
+// Name: Add Search to Bookmark List
+// Type: App Action
 // Purpose:
 // Adds the ability to search bookmarks
 // Action Type: After Calendar Rendered

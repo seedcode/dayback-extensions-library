@@ -1,5 +1,7 @@
 // Horizon View Event Styles v1.0
 // 
+// Name: Horizon View Event Styles
+// Type: Event Action
 // Purpose:
 // Set an Event's resizable box background style 
 // to a CSS gradient or pattern based on specific 

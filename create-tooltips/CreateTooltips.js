@@ -1,5 +1,7 @@
 // Create Tooltips v1.0
 //
+// Name: Create Tooltips
+// Type: Event Action
 // Purpose:
 // Creates formatted tooltips with advanced layouts.
 // Multiple tooltips can be defined, with restriction rules

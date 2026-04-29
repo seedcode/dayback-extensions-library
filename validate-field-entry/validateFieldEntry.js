@@ -1,5 +1,7 @@
 // Validate Field Entry v1.2
 
+// Name: Validate Field Entry
+// Type: Event Action
 // Purpose:
 // Verifies that specified additional fields have a value entered
 // Prevents saving the event if the specified additional field's value is empty

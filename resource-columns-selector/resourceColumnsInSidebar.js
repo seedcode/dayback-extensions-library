@@ -1,5 +1,7 @@
 // Sidebar resource selector v1.00
 
+// Name: Sidebar Resource Selector
+// Type: App Action
 // Purpose:
 // Adds a resource selector to the Resource Filters section of the sidebar
 // Action Type: After Calendar Rendered

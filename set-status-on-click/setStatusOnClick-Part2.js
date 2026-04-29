@@ -1,5 +1,7 @@
 // Set Status on Click - Part 2 v1.0
 //
+// Name: Set Status on Click
+// Type: App Action
 // Purpose:
 // Allows point and click Status changes when a key is
 // held down. Different sounds can be configured to play

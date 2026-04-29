@@ -1,5 +1,7 @@
 // Event Percent Complete v1.0
 // 
+// Name: Event Percent Complete
+// Type: Event Action
 // Purpose:
 // Set Event Color in Horizon View to reflect a percentage
 // of task completion based on a custom calculation

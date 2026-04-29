@@ -1,5 +1,7 @@
 // Event Validation and Highlighting v1.00
 //
+// Name: Event Validation and Highlighting
+// Type: App Action
 // Purpose:
 // This module provides a comprehensive framework for validating and highlighting event 
 // fields in DayBack, supporting both standard and custom fields.Validation rules are defined

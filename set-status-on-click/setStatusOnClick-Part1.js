@@ -1,5 +1,7 @@
 // Set Status on Click - Part 1 v1.0
 //
+// Name: Set Status on Click
+// Type: Event Action
 // Purpose:
 // Allows point and click Status changes when a key is
 // held down. Different sounds can be configured to play

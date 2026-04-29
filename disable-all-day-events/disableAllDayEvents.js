@@ -1,6 +1,8 @@
 // Disable All-Day Events v1.1
 // 1.1: base start time on slot duration
 
+// Name: Disable All-Day Events
+// Type: Event Action
 // Purpose:
 // Prevents the default All-Day event type when creating events on the calendar
 // in non-schedule views (Month, Horizon, Resource Daily/List)

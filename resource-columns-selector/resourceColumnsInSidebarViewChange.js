@@ -1,5 +1,7 @@
 // Sidebar resource selector v1.00
 
+// Name: Sidebar Resource Selector
+// Type: App Action
 // Purpose:
 // Updates the resource selector in the sidebar when the view changes
 // Action Type: On View Changed
