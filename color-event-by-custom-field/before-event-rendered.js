@@ -39,8 +39,7 @@ try {
 	// Custom Field, which will change the background color of 
 	// the event on the calendar. You can use any valid CSS 
 	// color value in your Custom Field, including hex codes 
-	// (e.g. #FF0000), rgb values (e.g. rgb(255,0,0)), or 
-	// color names (e.g. red).
+	// (e.g. #FF0000), or rgb values (e.g. rgb(255,0,0)).
 
 	//----------- End Configuration -------------------
 } catch (error) {
