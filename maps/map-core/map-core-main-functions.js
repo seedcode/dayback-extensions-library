@@ -5,7 +5,7 @@
 // Purpose: Registers all of the functionality needed for calculating distances and routing
 // Action Type: On Startup
 // Prevent Default Action: No
-// Version: v1.1.8
+// Version: v1.1.9
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -171,6 +171,10 @@
 
 		let routes = {};
 		let wasDestroyed = false;
+		/** @type {{preventBoundsAdjustment: boolean, afterUpdate?: Function, onDestroy?: Function}} */
+		let mapSettings = {
+			preventBoundsAdjustment: false,
+		};
 
 		initialize();
 
@@ -183,11 +187,17 @@
 			globals.google = globals.dbk.mapManager.initialize({
 				apiKey: mapApiKey,
 			});
-			globals.dbk.mapManager.set('options', {
+			mapSettings = {
+				preventBoundsAdjustment: false,
 				afterUpdate: function () {
 					executeRunner('afterUpdate');
 				},
 				onDestroy: function () {
+					// Suppress default zoom on next map open and
+					// re-schedule marker refresh
+					mapSettings.preventBoundsAdjustment = true;
+					scheduleRunner('afterUpdate', refreshMapMarkers);
+
 					if (!Object.keys(routes).length) {
 						return;
 					}
@@ -205,7 +215,8 @@
 						wasDestroyed = false;
 					});
 				},
-			});
+			};
+			globals.dbk.mapManager.set('options', mapSettings);
 			// Load specific libraries from google maps
 			const { Map } = await globals.google.maps.importLibrary('maps');
 			// Marker libraries
@@ -230,6 +241,16 @@
 					})
 				);
 			}
+
+			// Schedule a marker refresh for when the map first opens.
+			// Workaround: Svelte's onMount fires before $effect sets
+			// enabled=true, so the initial updateMap() call returns
+			// early and markers never render. This runner fires on the
+			// first afterUpdate (triggered by isShown changing) and
+			// pushes events into the map via rerenderEvents.
+			// Suppress default zoom until fitMapToMarkers runs.
+			mapSettings.preventBoundsAdjustment = true;
+			scheduleRunner('afterUpdate', refreshMapMarkers);
 		}
 
 		/** @type {(resourceId?: string) => void} */
@@ -1189,6 +1210,52 @@
 		}
 
 		// =============================== Map ===============================
+
+		/** @type {() => void} */
+		function refreshMapMarkers() {
+			if (Object.keys(routes).length) {
+				mapSettings.preventBoundsAdjustment = false;
+				return;
+			}
+			const markers = document.querySelectorAll('.dbk-map-marker');
+			if (markers.length === 0) {
+				const element = globals.seedcodeCalendar.get('element');
+				if (element) {
+					element.fullCalendar('rerenderEvents');
+					scheduleRunner('afterUpdate', fitMapToMarkers);
+				}
+			} else {
+				// Markers rendered normally (e.g. bookmark with map open).
+				// Since we suppressed the default fitBounds, apply it now.
+				fitMapToMarkers();
+			}
+		}
+
+		/** @type {() => void} */
+		function fitMapToMarkers() {
+			mapSettings.preventBoundsAdjustment = false;
+			const map = globals.dbk.mapManager.get('map');
+			if (!map) {
+				return;
+			}
+			const clientEvents = globals.seedcodeCalendar
+				.get('element')
+				.fullCalendar('clientEvents');
+			const bounds = new globals.google.maps.LatLngBounds();
+			let hasBounds = false;
+			for (const event of clientEvents) {
+				if (event.geocode && globals.dbk.isEventShown(event)) {
+					bounds.extend({
+						lat: parseFloat(event.geocode.lat),
+						lng: parseFloat(event.geocode.lng),
+					});
+					hasBounds = true;
+				}
+			}
+			if (hasBounds) {
+				map.fitBounds(bounds);
+			}
+		}
 
 		/** @type{() => Promise<void>} */
 		function focusMapTab() {
