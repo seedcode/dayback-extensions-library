@@ -70,29 +70,35 @@
 			return;
 		}
 
-		const bufferPriorFieldId = fieldSettings.bufferPrior;
-		const bufferPostFieldId = fieldSettings.bufferAfter;
+		const bufferBeforeFieldName = fieldSettings.bufferBefore;
+		const bufferAfterFieldName = fieldSettings.bufferAfter;
+		const bufferBeforeFieldId = bufferBeforeFieldName
+			? dbk.getCustomFieldIdByName(bufferBeforeFieldName, schedule)
+			: null;
+		const bufferAfterFieldId = bufferAfterFieldName
+			? dbk.getCustomFieldIdByName(bufferAfterFieldName, schedule)
+			: null;
 
-		if (bufferPriorFieldId && Number(editEvent[bufferPriorFieldId]) < 0) {
-			editEvent[bufferPriorFieldId] = 0;
+		if (bufferBeforeFieldId && Number(editEvent[bufferBeforeFieldId]) < 0) {
+			editEvent[bufferBeforeFieldId] = 0;
 		} else if (
-			bufferPriorFieldId &&
-			Number(editEvent[bufferPriorFieldId]) > 0 &&
-			Number(editEvent[bufferPriorFieldId]) < bufferMinimum
+			bufferBeforeFieldId &&
+			Number(editEvent[bufferBeforeFieldId]) > 0 &&
+			Number(editEvent[bufferBeforeFieldId]) < bufferMinimum
 		) {
 			//round to minimum
-			editEvent[bufferPriorFieldId] = bufferMinimum;
+			editEvent[bufferBeforeFieldId] = bufferMinimum;
 		}
 
-		if (bufferPostFieldId && Number(editEvent[bufferPostFieldId]) < 0) {
-			editEvent[bufferPostFieldId] = 0;
+		if (bufferAfterFieldId && Number(editEvent[bufferAfterFieldId]) < 0) {
+			editEvent[bufferAfterFieldId] = 0;
 		} else if (
-			bufferPostFieldId &&
-			Number(editEvent[bufferPostFieldId]) > 0 &&
-			Number(editEvent[bufferPostFieldId]) < bufferMinimum
+			bufferAfterFieldId &&
+			Number(editEvent[bufferAfterFieldId]) > 0 &&
+			Number(editEvent[bufferAfterFieldId]) < bufferMinimum
 		) {
 			//round to minimum
-			editEvent[bufferPostFieldId] = bufferMinimum;
+			editEvent[bufferAfterFieldId] = bufferMinimum;
 		}
 	}
 
@@ -184,11 +190,9 @@
 	 */
 	function reportError(error) {
 		const errorTitle = 'Error Running Custom Action';
-		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${
-			action.name?.length > 0 ? action.name : action.type
-		}</span>"</p><p>Error: ${
-			error.message
-		}</p><p>This may result in unexpected behavior of the calendar.</p>`;
+		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${action.name?.length > 0 ? action.name : action.type
+			}</span>"</p><p>Error: ${error.message
+			}</p><p>This may result in unexpected behavior of the calendar.</p>`;
 		if (
 			action.preventDefault &&
 			action.category !== 'event' &&

@@ -1,12 +1,12 @@
-//Name: Buffer Events - Clear and Render Buffers After Events Render
-//Type: App Action
+// Buffer Events - Clear and Render Buffers v1.1
 
-// Clear and Render Buffers v1.1
+// Name: Buffer Events - Clear and Render Buffers After Events Render
+// Type: App Action
+// Action Type: After Events Render
+// Prevent Default Action: No
 
 // Purpose:
 // According to event settings, clear and re-render buffers
-// // Action Type: After Events Render
-// Prevent Default Action: No
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -17,7 +17,7 @@
 	// Declare global imports
 	// prettier-ignore
 	// @ts-ignore
-	const globals = {action, dbk, seedcodeCalendar, utilities, moment, Sfdc, fbk, event, editEvent};
+	const globals = { action, dbk, seedcodeCalendar, utilities, moment, Sfdc, fbk, event, editEvent };
 
 	const options = {};
 	const inputs = {};
@@ -151,11 +151,10 @@
 	 */
 	function reportError(error) {
 		const errorTitle = 'Error Running Custom Action';
-		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${
-			globals.action.name?.length > 0
-				? globals.action.name
-				: globals.action.type
-		}</span>"</p>
+		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${globals.action.name?.length > 0
+			? globals.action.name
+			: globals.action.type
+			}</span>"</p>
     <p>Error: ${error.message}.</p>
     <p>This may result in unexpected behavior of the calendar.</p>`;
 		if (

@@ -61,31 +61,39 @@
 		let schedule = params.data.schedule;
 		//this action runs per source.  So get the buffer field map.
 		let bufferFieldsMap = seedcodeCalendar.get('buffers-bufferFieldsMap');
-		let fieldSettings = bufferFieldsMap[schedule.name];
-
-		let bufferPriorFieldId = fieldSettings
-			? fieldSettings.bufferPrior
-			: null;
-		let bufferPostFieldId = fieldSettings
-			? fieldSettings.bufferAfter
-			: null;
 
 		if (!bufferFieldsMap) {
 			//just return.
 			return;
 		}
 
+		let fieldSettings = bufferFieldsMap[schedule.name];
+
+		let bufferBeforeFieldName = fieldSettings
+			? fieldSettings.bufferBefore
+			: null;
+		let bufferAfterFieldName = fieldSettings
+			? fieldSettings.bufferAfter
+			: null;
+
+		let bufferBeforeFieldId = bufferBeforeFieldName
+			? dbk.getCustomFieldIdByName(bufferBeforeFieldName, schedule)
+			: null;
+		let bufferAfterFieldId = bufferAfterFieldName
+			? dbk.getCustomFieldIdByName(bufferAfterFieldName, schedule)
+			: null;
+
 		if (eventsArray && eventsArray.length) {
 			for (let i = 0; i < eventsArray.length; i++) {
 				let event = eventsArray[i];
 
 				//add this event to our buffer array if it has buffers.
-				let bufferPrior = event[bufferPriorFieldId];
-				let bufferPost = event[bufferPostFieldId];
+				let bufferBefore = event[bufferBeforeFieldId];
+				let bufferAfter = event[bufferAfterFieldId];
 				seedcodeCalendar.get('buffers-compileBuffers')(
 					event,
-					bufferPrior,
-					bufferPost
+					bufferBefore,
+					bufferAfter
 				);
 			}
 		}
@@ -179,11 +187,9 @@
 	 */
 	function reportError(error) {
 		const errorTitle = 'Error Running Custom Action';
-		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${
-			action.name?.length > 0 ? action.name : action.type
-		}</span>"</p><p>Error: ${
-			error.message
-		}</p><p>This may result in unexpected behavior of the calendar.</p>`;
+		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${action.name?.length > 0 ? action.name : action.type
+			}</span>"</p><p>Error: ${error.message
+			}</p><p>This may result in unexpected behavior of the calendar.</p>`;
 		if (
 			action.preventDefault &&
 			action.category !== 'event' &&

@@ -1,12 +1,12 @@
+// Buffer Events - Load buffer functions v1.1
+
 // Name: Buffer Events - Register Buffer Functions
 // Type: App Action
-
-// Load buffer functions v1.1
+// Action Type: On Startup
+// Prevent Default Action: No
 
 // Purpose:
 // Load and register the functions that we use to render and clear buffers, so that we can call them from other places.
-// Action Type: On Startup
-// Prevent Default Action: No
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -17,7 +17,7 @@
 	// Declare global imports
 	// prettier-ignore
 	// @ts-ignore
-	const globals = {action, dbk, seedcodeCalendar, utilities, moment, Sfdc, fbk, event, editEvent};
+	const globals = { action, dbk, seedcodeCalendar, utilities, moment, Sfdc, fbk, event, editEvent };
 
 	const options = {};
 	const inputs = {};
@@ -50,12 +50,14 @@
 		 */
 		inputs.account = sc.get('config').account;
 
-		// for each calendar name, specify a buffer prior and buffer post field to use.
-		// please map the field ID instead of the field name here.  This is so that the action is compatible with shares.
+		// for each calendar name, specify a buffer before and buffer after field to use.
+		// map the custom field's store-in field name here (not the numerical field ID).
+		// At runtime we resolve the numerical field ID via dbk.getCustomFieldIdByName(fieldName, schedule),
+		// which keeps this configuration human-readable and compatible with shares.
 		inputs.bufferFieldsMap = {
 			Events: {
-				bufferPrior: '1774308624098-1496797706',
-				bufferAfter: '1774308644077-3203571116',
+				bufferBefore: 'Buffer_Before__c',
+				bufferAfter: 'Buffer_After__c',
 			},
 		};
 		inputs.bufferMinimum = 10; //minutes.  if the buffer is > 0, but less than this amount, we will round up to this amount.
@@ -95,8 +97,8 @@
 			return;
 		}
 
-		/** @type {(event: any, bufferPrior: number, bufferPost: number) => void} */
-		function compileBuffers(event, bufferPrior, bufferPost) {
+		/** @type {(event: any, bufferBefore: number, bufferAfter: number) => void} */
+		function compileBuffers(event, bufferBefore, bufferAfter) {
 			//create the buffer events for inserting later.
 
 			//pull the map here?
@@ -111,27 +113,27 @@
 				return;
 			}
 
-			if (bufferPrior > 0) {
-				//prior buffer on the event, create event.
-				let priorEvent = buildEvent(
+			if (bufferBefore > 0) {
+				//before buffer on the event, create event.
+				let beforeEvent = buildEvent(
 					event,
-					bufferPrior,
+					bufferBefore,
 					true,
 					false,
 					event.schedule
 				);
-				buffers.push(priorEvent);
+				buffers.push(beforeEvent);
 			}
-			if (bufferPost > 0) {
-				//post buffer on the event, create event.
-				let postEvent = buildEvent(
+			if (bufferAfter > 0) {
+				//after buffer on the event, create event.
+				let afterEvent = buildEvent(
 					event,
-					bufferPost,
+					bufferAfter,
 					false,
 					true,
 					event.schedule
 				);
-				buffers.push(postEvent);
+				buffers.push(afterEvent);
 			}
 			//
 			if (buffers.length > 0) {
@@ -158,8 +160,8 @@
 				globals.dbk.addEvents(bufferEvents);
 			}
 		}
-		/** @type {(parentEvent: any, bufferMinutes: number, prior: boolean, post: boolean, schedule: any) => any} */
-		function buildEvent(parentEvent, bufferMinutes, prior, post, schedule) {
+		/** @type {(parentEvent: any, bufferMinutes: number, before: boolean, after: boolean, schedule: any) => any} */
+		function buildEvent(parentEvent, bufferMinutes, before, after, schedule) {
 			//build a buffer event in relation to the parent event
 
 			let bufferEvent = {};
@@ -174,13 +176,13 @@
 
 			let parentEventId = parentEvent.eventID;
 			let resource = parentEvent.resource;
-			if (prior) {
+			if (before) {
 				startCalc = parentEvent.start
 					.clone()
 					.subtract(bufferMinutes, 'minutes');
 
 				endCalc = parentEvent.start.clone();
-			} else if (post) {
+			} else if (after) {
 				startCalc = parentEvent.end.clone();
 
 				endCalc = parentEvent.end.clone().add(bufferMinutes, 'minutes');
@@ -201,8 +203,8 @@
 			bufferEvent.color = parentEvent.color;
 			bufferEvent.parentColor = parentEvent.color;
 			bufferEvent.editable = false;
-			bufferEvent.parentBufferPrior = prior ? bufferMinutes : 0;
-			bufferEvent.parentBufferAfter = post ? bufferMinutes : 0;
+			bufferEvent.parentBufferBefore = before ? bufferMinutes : 0;
+			bufferEvent.parentBufferAfter = after ? bufferMinutes : 0;
 
 			return bufferEvent;
 		}
@@ -294,13 +296,11 @@
 	 */
 	function reportError(error) {
 		const errorTitle = 'Error Running Custom Action';
-		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${
-			globals.action.name?.length > 0
-				? globals.action.name
-				: globals.action.type
-		}</span>"</p><p>Error: ${
-			error.message
-		}.</p><p>This may result in unexpected behavior of the calendar.</p>`;
+		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${globals.action.name?.length > 0
+			? globals.action.name
+			: globals.action.type
+			}</span>"</p><p>Error: ${error.message
+			}.</p><p>This may result in unexpected behavior of the calendar.</p>`;
 		if (
 			globals.action.preventDefault &&
 			globals.action.category !== 'event' &&

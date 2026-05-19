@@ -60,10 +60,16 @@
 		const schedule = event.schedule;
 
 		if (bufferFieldMap[schedule.name]) {
-			const priorFieldId = bufferFieldMap[schedule.name].bufferPrior;
-			const afterFieldId = bufferFieldMap[schedule.name].bufferAfter;
+			const beforeFieldName = bufferFieldMap[schedule.name].bufferBefore;
+			const afterFieldName = bufferFieldMap[schedule.name].bufferAfter;
+			const beforeFieldId = beforeFieldName
+				? dbk.getCustomFieldIdByName(beforeFieldName, schedule)
+				: null;
+			const afterFieldId = afterFieldName
+				? dbk.getCustomFieldIdByName(afterFieldName, schedule)
+				: null;
 
-			if (event[priorFieldId] || event[afterFieldId]) {
+			if (event[beforeFieldId] || event[afterFieldId]) {
 				seedcodeCalendar
 					.get('element')
 					.fullCalendar('removeEvents', function (buffer) {
@@ -161,11 +167,9 @@
 	 */
 	function reportError(error) {
 		const errorTitle = 'Error Running Custom Action';
-		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${
-			action.name?.length > 0 ? action.name : action.type
-		}</span>"</p><p>Error: ${
-			error.message
-		}</p><p>This may result in unexpected behavior of the calendar.</p>`;
+		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${action.name?.length > 0 ? action.name : action.type
+			}</span>"</p><p>Error: ${error.message
+			}</p><p>This may result in unexpected behavior of the calendar.</p>`;
 		if (
 			action.preventDefault &&
 			action.category !== 'event' &&
