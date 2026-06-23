@@ -5,7 +5,7 @@
 // Purpose: Registers all of the functionality needed for calculating distances and routing
 // Action Type: On Startup
 // Prevent Default Action: No
-// Version: v1.1.9
+// Version: v1.1.10
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -162,6 +162,16 @@
 			hasRoutes,
 			true
 		);
+		globals.seedcodeCalendar.init(
+			`${globalPrefix}refreshMapMarkers`,
+			refreshMapMarkers,
+			true
+		);
+		globals.seedcodeCalendar.init(
+			`${globalPrefix}requestRecenter`,
+			requestRecenter,
+			true
+		);
 
 		let mapApiKey = '';
 		let advancedMarkerElement;
@@ -171,6 +181,7 @@
 
 		let routes = {};
 		let wasDestroyed = false;
+		let recenterPending = false;
 		/** @type {{preventBoundsAdjustment: boolean, afterUpdate?: Function, onDestroy?: Function}} */
 		let mapSettings = {
 			preventBoundsAdjustment: false,
@@ -191,11 +202,19 @@
 				preventBoundsAdjustment: false,
 				afterUpdate: function () {
 					executeRunner('afterUpdate');
+					// Persistent recenter: keep checking each afterUpdate
+					// until the map exists and geocoded events are available.
+					if (recenterPending && !Object.keys(routes).length) {
+						if (fitMapToMarkers()) {
+							recenterPending = false;
+						}
+					}
 				},
 				onDestroy: function () {
 					// Suppress default zoom on next map open and
 					// re-schedule marker refresh
 					mapSettings.preventBoundsAdjustment = true;
+					recenterPending = true;
 					scheduleRunner('afterUpdate', refreshMapMarkers);
 
 					if (!Object.keys(routes).length) {
@@ -250,6 +269,7 @@
 			// pushes events into the map via rerenderEvents.
 			// Suppress default zoom until fitMapToMarkers runs.
 			mapSettings.preventBoundsAdjustment = true;
+			recenterPending = true;
 			scheduleRunner('afterUpdate', refreshMapMarkers);
 		}
 
@@ -1231,16 +1251,26 @@
 			}
 		}
 
-		/** @type {() => void} */
+		/**
+		 * Request a map recenter. The actual fitBounds will be deferred
+		 * until markers appear in the DOM (checked on each afterUpdate).
+		 * @type {() => void}
+		 */
+		function requestRecenter() {
+			recenterPending = true;
+		}
+
+		/** @type {() => boolean} */
 		function fitMapToMarkers() {
-			mapSettings.preventBoundsAdjustment = false;
 			const map = globals.dbk.mapManager.get('map');
 			if (!map) {
-				return;
+				return false;
 			}
-			const clientEvents = globals.seedcodeCalendar
-				.get('element')
-				.fullCalendar('clientEvents');
+			const element = globals.seedcodeCalendar.get('element');
+			if (!element) {
+				return false;
+			}
+			const clientEvents = element.fullCalendar('clientEvents');
 			const bounds = new globals.google.maps.LatLngBounds();
 			let hasBounds = false;
 			for (const event of clientEvents) {
@@ -1253,8 +1283,11 @@
 				}
 			}
 			if (hasBounds) {
+				mapSettings.preventBoundsAdjustment = false;
 				map.fitBounds(bounds);
+				return true;
 			}
+			return false;
 		}
 
 		/** @type{() => Promise<void>} */

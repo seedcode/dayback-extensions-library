@@ -6,7 +6,7 @@
 // Action Type: After Events Rendered
 // Prevent Default Action: No
 // Requires: Map core functions
-// Version: v1.0.1
+// Version: v1.0.2
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -17,7 +17,7 @@
 	// Declare global imports
 	// prettier-ignore
 	// @ts-ignore
-	const globals = {action, params, dbk, seedcodeCalendar, utilities};
+	const globals = { action, params, dbk, seedcodeCalendar, utilities };
 
 	const options = {};
 	const inputs = {};
@@ -70,12 +70,24 @@
 		const scheduleRunner = globals.seedcodeCalendar.get(
 			`${globalPrefix}scheduleRunner`
 		);
+		const requestRecenter = globals.seedcodeCalendar.get(
+			`${globalPrefix}requestRecenter`
+		);
 
 		if (
 			globals.params.data.fromFilterChange ||
 			globals.params.data.fromViewStateChange
 		) {
 			resetAll();
+			// Request a recenter — the afterUpdate callback will wait
+			// until markers appear in the DOM before calling fitBounds.
+			requestRecenter();
+		} else if (
+			globals.params.data.fromBookmark ||
+			globals.params.data.fromScheduleChange
+		) {
+			// Bookmark or calendar toggle changed the event set — re-zoom
+			requestRecenter();
 		} else if (!globals.params.data.fromResize) {
 			// Will schedule to run after the markers have updated
 			scheduleRunner('afterUpdate', reRouteResource);
@@ -167,13 +179,11 @@
 	 */
 	function reportError(error) {
 		const errorTitle = 'Error Running Custom Action';
-		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${
-			globals.action.name?.length > 0
+		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${globals.action.name?.length > 0
 				? globals.action.name
 				: globals.action.type
-		}</span>"</p><p>Error: ${
-			error.message
-		}.</p><p>This may result in unexpected behavior of the calendar.</p>`;
+			}</span>"</p><p>Error: ${error.message
+			}.</p><p>This may result in unexpected behavior of the calendar.</p>`;
 		if (
 			globals.action.preventDefault &&
 			globals.action.category !== 'event' &&
