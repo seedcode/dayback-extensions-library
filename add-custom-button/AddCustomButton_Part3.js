@@ -1,18 +1,18 @@
-// Add Custom Button - Part 2 v2.0
+// Add Custom Button - Part 3 v2.0
 //
-// Name: Add Custom Button - Before Calendar Rendered
+// Name: Add Custom Button - After Events Rendered
 // Type: App Action
-// Trigger: Before Calendar Rendered
+// Trigger: After Events Rendered
 // Prevent Default Action: No
 
 // Purpose:
 // Thin delegate for the customButtonTray registry.
-// Calls the centralized beforeCalendarRendered() lifecycle method
+// Calls the centralized afterEventsRendered() lifecycle method
 // defined in AddCustomButton_Part1.js (On Startup).
 //
 // USER NOTE: You do NOT need to modify this file.
 // All button configuration and registration happens in Part 1.
-// This file simply triggers the DOM build at the right time.
+// This file simply handles button visibility updates when the view changes.
 
 var tray = seedcodeCalendar.get('customButtonTray');
-tray?.appActions?.beforeCalendarRendered({action: action});
+tray?.appActions?.afterEventsRendered({action: action});
