@@ -5,7 +5,7 @@
 // Purpose: Registers all of the functionality needed for calculating distances and routing
 // Action Type: On Startup
 // Prevent Default Action: No
-// Version: v1.1.10
+// Version: v1.1.2
 
 // More info on custom App Actions here:
 // https://docs.dayback.com/article/140-custom-app-actions
@@ -237,9 +237,9 @@
 			};
 			globals.dbk.mapManager.set('options', mapSettings);
 			// Load specific libraries from google maps
-			const { Map } = await globals.google.maps.importLibrary('maps');
+			const {Map} = await globals.google.maps.importLibrary('maps');
 			// Marker libraries
-			const { AdvancedMarkerElement, PinElement } =
+			const {AdvancedMarkerElement, PinElement} =
 				await globals.google.maps.importLibrary('marker');
 			advancedMarkerElement = AdvancedMarkerElement;
 			pinElement = PinElement;
@@ -530,8 +530,8 @@
 		function locationToDistanceLocation(location) {
 			try {
 				return typeof location === 'string'
-					? { waypoint: dbkLocationToGoogleAddress(location) }
-					: { waypoint: dbkGeocodeToGoogleGeocode(location) };
+					? {waypoint: dbkLocationToGoogleAddress(location)}
+					: {waypoint: dbkGeocodeToGoogleGeocode(location)};
 			} catch (err) {
 				throw err;
 			}
@@ -597,7 +597,7 @@
 				return;
 			}
 
-			const { routableEvents, unroutableEvents } = getEventsToRoute(
+			const {routableEvents, unroutableEvents} = getEventsToRoute(
 				targetResource.name
 			);
 
@@ -658,11 +658,16 @@
 			waypoints.unshift(origin);
 			waypoints.push(destination);
 
+			const departureTime = routableEvents[0]?.start
+				? routableEvents[0].start.toDate()
+				: null;
+
 			try {
 				const routeResults = await generateRoute(
 					resourceId,
 					waypoints,
-					routeColor
+					routeColor,
+					departureTime
 				);
 
 				if (!routeResults.length) {
@@ -808,8 +813,8 @@
 			}
 		}
 
-		/** @type {(resourceId: string, waypoints: Array, color: string) => Promise<Array>} */
-		function generateRoute(resourceId, waypoints, color) {
+		/** @type {(resourceId: string, waypoints: Array, color: string, departureTime: Date | null) => Promise<Array>} */
+		function generateRoute(resourceId, waypoints, color, departureTime) {
 			return new Promise((resolve, reject) => {
 				const requestPromises = [];
 				const maxWaypoints = 24; // Subtract one from max allowed so we can prepend the previous destination as new origin on paging
@@ -828,11 +833,13 @@
 							lastIndex
 						);
 
-						requestPromises.push(fetchRoute(pagedWaypoints));
+						requestPromises.push(
+							fetchRoute(pagedWaypoints, departureTime)
+						);
 						page++;
 					}
 				} else {
-					requestPromises.push(fetchRoute(waypoints));
+					requestPromises.push(fetchRoute(waypoints, departureTime));
 				}
 
 				Promise.all(requestPromises)
@@ -867,7 +874,7 @@
 			});
 		}
 
-		async function fetchRoute(waypoints) {
+		async function fetchRoute(waypoints, departureTime) {
 			const apiUrl =
 				'https://routes.googleapis.com/directions/v2:computeRoutes/';
 			const origin = waypoints.shift();
@@ -877,9 +884,6 @@
 				destination: destination,
 				intermediates: waypoints,
 				travelMode: getTravelMode(options.travelMode, false),
-				routingPreference: options.realtimeTraffic
-					? 'TRAFFIC_AWARE_OPTIMAL'
-					: 'TRAFFIC_UNAWARE',
 				computeAlternativeRoutes: false,
 				routeModifiers: {
 					avoidTolls: false,
@@ -891,6 +895,19 @@
 					distanceTypes[options.distanceUnit].apiUnit || 'imperial'
 				).toUpperCase(),
 			};
+
+			// Only use traffic aware routing if the departure time is in the future and realtimeTraffic is enabled.
+			// Otherwise, Maps can return some strange routes
+			if (
+				options.realtimeTraffic &&
+				departureTime &&
+				departureTime > new Date()
+			) {
+				payload.departureTime = departureTime;
+				payload.routingPreference = 'TRAFFIC_AWARE_OPTIMAL';
+			} else {
+				payload.routingPreference = 'TRAFFIC_UNAWARE';
+			}
 
 			try {
 				const response = await fetch(apiUrl, {
@@ -997,10 +1014,10 @@
 				.fullCalendar('clientEvents');
 			const eventsToRoute = hasMultiSelect
 				? clientEvents.filter((event) => {
-					return !!multiSelect[
-						`${event.eventID}-${event.schedule.id}`
-					];
-				})
+						return !!multiSelect[
+							`${event.eventID}-${event.schedule.id}`
+						];
+					})
 				: clientEvents;
 
 			for (const event of eventsToRoute) {
@@ -1063,7 +1080,7 @@
 			return {
 				event: event,
 				markerOptions: event.map?.markerOptions
-					? { ...event.map.markerOptions }
+					? {...event.map.markerOptions}
 					: undefined,
 				markerContent: event.map?.marker?.content,
 				zIndex: event.map?.marker?.zIndex,
@@ -1136,7 +1153,7 @@
 						'Could not retrieve geocode. The response was invalid.'
 					);
 				}
-				return { lat: geocode.lat(), lng: geocode.lng() };
+				return {lat: geocode.lat(), lng: geocode.lng()};
 			} catch (err) {
 				throw new Error(
 					'Could not retrieve geocode. The response was invalid'
@@ -1313,7 +1330,7 @@
 					return;
 				}
 
-				globals.dbk.updateAltView({ show: true, type: 'map' });
+				globals.dbk.updateAltView({show: true, type: 'map'});
 
 				// Wait for the map markers to render before continuing
 				if (
@@ -1337,7 +1354,7 @@
 
 		/** @type {(type: string, func: Function) => void} */
 		function scheduleRunner(type, func) {
-			const runner = { type: type, func: func };
+			const runner = {type: type, func: func};
 			scheduledRunners.push(runner);
 		}
 
@@ -1474,7 +1491,7 @@
 		function getResource(resourceId) {
 			const resources = globals.seedcodeCalendar.get('resources');
 			return resources.find(
-				/** @type {(resource: Object) => boolean} */(resource) => {
+				/** @type {(resource: Object) => boolean} */ (resource) => {
 					return resource.id === resourceId;
 				}
 			);
@@ -1680,11 +1697,13 @@
 	 */
 	function reportError(error) {
 		const errorTitle = 'Error Running Custom Action';
-		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${globals.action.name?.length > 0
-			? globals.action.name
-			: globals.action.type
-			}</span>"</p><p>Error: ${error.message
-			}.</p><p>This may result in unexpected behavior of the calendar.</p>`;
+		const errorMessage = `<p>There was a problem running the action "<span style="white-space: nowrap">${
+			globals.action.name?.length > 0
+				? globals.action.name
+				: globals.action.type
+		}</span>"</p><p>Error: ${
+			error.message
+		}.</p><p>This may result in unexpected behavior of the calendar.</p>`;
 		if (
 			globals.action.preventDefault &&
 			globals.action.category !== 'event' &&
