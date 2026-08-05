@@ -1,14 +1,54 @@
-// Salesforce Client for Canvas and Salesforce Connect - v2.0 (Object Response API)
+// Salesforce Client for Canvas and Salesforce Connect - v2.2 (Object Response API)
 //
 // Name: Salesforce Client
 // Type: App Action
 // Purpose:
 // Unified client for Salesforce API calls in both Canvas (Sfdc.canvas.client.ajax)
 // and Salesforce Connect REST (sfApi.ajaxRequest). Auto-detects environment and
-// self-authenticates in REST mode if token / restURL are missing.
+// self-authenticates in REST mode if token / restURL are missing. Transparently
+// supports the DayBack Salesforce relay (sfApi.useProxy) in REST mode.
 //
 // Full docs & migration guide:
 //   https://github.com/seedcode/dayback-extensions-library/tree/main/salesforce-client
+//
+// Changelog - v2.1 to v2.2:
+// -------------------------
+// New
+//   * Metadata API: getSObjects() (alias objects()) lists the org's sObjects,
+//     describe({ objectName }) returns one sObject's full metadata, and
+//     request({ base, path, method, params, body }) reaches any REST endpoint
+//     that has no dedicated method.
+//   * DayBack relay support. The client detects sfApi.useProxy() and adapts in
+//     two ways: query parameters are always sent to sfApi as `params`, the only
+//     form the relay preserves, and relayed parameter values get a second
+//     encoding pass because they are decoded twice before Salesforce sees them
+//     (once by the relay, once by Salesforce) where sfApi supplies only one.
+//     A relay option on the constructor - SalesforceClient({ relay: false }) -
+//     forces a direct connection for one instance, and { relay: true } requires
+//     the relay.
+//   * Version reporting. SalesforceClient.version and
+//     SalesforceClient.getClientVersion() report the version without building a
+//     client; an instance answers sf.getClientVersion(). Neither exists before
+//     v2.2, so call them optionally - SalesforceClient.version ?? "2.1 or
+//     earlier" - when the deployed version is unknown.
+//
+// Fixed
+//   * bulkQuery() and bulkQuery.pages() inlined the SOQL into the request URL.
+//     Under the DayBack relay that query string is discarded, so relayed bulk
+//     queries ran with no SOQL at all.
+//   * Relayed queries whose filter contained &, %, # or + reached Salesforce as
+//     a malformed URL and were rejected with "Illegal Request". The same query
+//     succeeded on a direct connection.
+//   * upsert() referenced an undefined identifier and always threw a
+//     ReferenceError.
+//   * retryCheck was read from sfApi.settings, where it does not exist, so
+//     sfApi never refreshed an expired session on the client's behalf. It is
+//     now taken from sfApi itself.
+//   * onError assumed a JSON string, but sfApi hands it a parsed array when
+//     retryCheck matches. Every such error collapsed to httpStatus 0 with an
+//     unusable message. The real HTTP status is now reported.
+//   * The 401 / INVALID_SESSION_ID retry only ran under errorMode "throw". It
+//     now also runs under errorMode "return", which resolves instead of throwing.
 //
 // New Usage (single options object + single response object):
 // -----------------------------------------------------------
@@ -37,11 +77,51 @@
 //          envelopeSize: 25,      // max requests per outer composite
 //          allOrNone: true
 //      });
-// 
+//
+//   // Metadata / introspection:
+//
+//   const r = await sf.getSObjects();                        // org-wide sObject list
+//   const r = await sf.describe({ objectName: "Contact" });  // one sObject's metadata
+//
+//   // Generic endpoint access (use only when no dedicated method fits):
+//
+//   const r = await sf.request({ base: "data", path: "/limits", method: "GET" });
+//
 // Helper functions:
 //   sf.escapeSOQL(value) / sf.quote(value) - escape string literal for SOQL
 //   sf.showError(error)  - present errors via toast or modal in Canvas
 //   sf.formatDateTime(momentObj) - format a moment object for Salesforce DateTime fields
+//
+// DayBack Relay (Salesforce Connect only):
+// ----------------------------------------
+// When an On Startup action calls sfApi.useProxy(dbkEnv.sfrelayAPIKey), every
+// Salesforce call is relayed through DayBack's servers so that refresh tokens are
+// managed server-side and sessions do not expire. The relay authenticates itself
+// using the top-level query string of its own URL (apiKey + endpoint), which means
+// a request may NOT carry its own top-level query string - sfApi discards it
+// (options.url.split('?')[0]).
+//
+// This client passes every query parameter to sfApi as `params`, and inlines
+// nothing. sfApi encodes the separators so the parameters ride inside `endpoint`.
+// That is the same code path DayBack's own event fetching uses, so the client
+// behaves consistently with the rest of the app, relayed or direct.
+//
+// Three rules apply to code you write:
+//
+//   1. Pass query parameters via `params`. A query string written into a URL is
+//      dropped when the relay is active.
+//   2. Pass parameter values raw. A relayed value must survive two decodes - the
+//      relay's own `endpoint`, then Salesforce's query string - and this client
+//      supplies the second encoding pass when, and only when, the relay is active.
+//      Pre-encoding a value yourself double-encodes it.
+//   3. Request bodies (create/update/upsert/batch/compoundBatch) are always safe;
+//      the relay never touches them.
+//
+// sfApi.useProxy() is global and has no counterpart, so the constructor accepts a
+// per-instance override - useful for comparing relayed and direct behaviour:
+//
+//   const sfDirect = SalesforceClient({ relay: false });  // ignore the relay
+//   const sfRelay  = SalesforceClient({ relay: true });   // require the relay
 //
 // Response Object Shape:
 //   { ok, status, data, raw, error?, method, url, source, meta? }
@@ -102,6 +182,24 @@
     }
 
     function run() {
+
+        // The one place the version is declared. Keep it in step with the
+        // banner at the top of this file when promoting a new version.
+        //
+        // Reachable two ways, both of which older clients lack - so callers
+        // must always probe with optional calls rather than assume:
+        //
+        //   SalesforceClient.version                     // no instance needed
+        //   SalesforceClient()?.getClientVersion?.()     // from an instance
+        //
+        // The static form is preferable for a capability check, because
+        // constructing a client can throw in REST mode when there is no token
+        // or restURL yet. Treat undefined as "2.1 or earlier".
+        const CLIENT_VERSION = "2.2";
+
+        function getClientVersion() {
+            return CLIENT_VERSION;
+        }
 
         // Escape a string literal for SOQL. Example: "O'Neil" -> `'O\'Neil'`
 
@@ -240,6 +338,11 @@
                 sfApi = (typeof globalThis !== "undefined" && globalThis.sfApi) ? globalThis.sfApi : undefined,
                 restURL,       // optional manual override (if not using sfApi.settings.restURL)
                 accessToken,   // optional manual override (if not using sfApi.settings.token)
+
+                // DayBack relay (REST mode only). Leave undefined to follow
+                // sfApi.useProxy(); pass false to force a direct connection, or
+                // true to require the relay and fail fast if it isn't configured.
+                relay,
 
                 // Auto-auth options (REST mode)
                 auth = {
@@ -456,31 +559,154 @@
                     }
                 }
 
+                // -------------------------------------------------------------
+                // DayBack relay awareness
+                // -------------------------------------------------------------
+                // sfApi.useProxy() routes calls through DayBack's relay so refresh
+                // tokens live server-side. The relay authenticates using the
+                // top-level query string of its own URL (apiKey + endpoint), and
+                // sfApi must reclaim that query string to build it - so it DISCARDS
+                // any query string in `url` (sfApi.js: options.url.split('?')[0]).
+                //
+                // Two consequences for the code below:
+                //
+                //   * Pass query parameters as `params` and let sfApi fold them in;
+                //     it encodes the separators as %3F/%3D/%26 so they stay inside
+                //     `endpoint`. Never inline a query string into a URL.
+                //   * Pass values raw. sfApi encodes them, and a second encoding
+                //     pass makes Salesforce reject the SOQL with MALFORMED_QUERY
+                //     ("unexpected token: '%'").
+                //
+                // This is the same path DayBack's own event fetching uses, so the
+                // client matches the rest of the app rather than encoding its own way.
+
+                // Is the relay in play for this client instance?
+                function relayEnabled() {
+                    if (relay === false) return false;
+                    const p = (_sfApi && _sfApi.getProxy) ? _sfApi.getProxy() : null;
+                    if (relay === true) {
+                        if (!(p && p.url)) {
+                            throw new Error("SalesforceClient({ relay: true }) requires sfApi.useProxy() to have been called first.");
+                        }
+                        return true;
+                    }
+                    return !!(p && p.enabled);
+                }
+
+                // A relayed parameter value has to survive TWO decodes: the relay
+                // decodes its own `endpoint` parameter, then Salesforce decodes the
+                // query string of the URL the relay forwards. sfApi applies one
+                // level of encoding, so the second one has to come from here.
+                //
+                // Without it, a value containing & % # or + arrives at Salesforce
+                // as a malformed URL - `100% #x` becomes an invalid percent-escape
+                // and a raw fragment marker - and Salesforce answers "Illegal
+                // Request" rather than running the query.
+                //
+                // This is the same compensation DayBack's own source applies in
+                // app/sources/source-definitions/salesforce/shared.js, which
+                // pre-encodes all-day datetimes (whose ISO offsets contain +) when
+                // sfApi.getProxy().enabled. Applying it to every parameter, rather
+                // than one known-bad field, is the general form.
+                //
+                // Direct connections must NOT get this second pass - that would
+                // double-encode them. Hence the relayEnabled() gate.
+                function encodeParamsForTransport(params) {
+                    if (!params || !relayEnabled()) return params;
+                    const out = {};
+                    Object.keys(params).forEach((k) => {
+                        const v = params[k];
+                        out[k] = (v === undefined || v === null)
+                            ? v
+                            : encodeURIComponent(String(v));
+                    });
+                    return out;
+                }
+
+                // Guard against a caller (or a future edit) reintroducing an inline
+                // query string, which the relay silently truncates.
+                function assertNoInlineQuery(url) {
+                    if (relayEnabled() && url.indexOf("?") !== -1 && url.indexOf(".dayback.com") === -1) {
+                        console.warn(
+                            "SalesforceClient: a query string was inlined into a URL while the DayBack relay is active. "
+                            + "sfApi will discard it - pass query parameters via `params` instead. URL: " + url
+                        );
+                    }
+                }
+
+                // Opting out of the relay takes more than declining to use it: while
+                // the latch is on, sfApi rewrites every non-dayback URL itself. So
+                // for { relay: false } we clear the latch across the synchronous URL
+                // construction inside ajaxRequest and restore it immediately.
+                // Nothing can interleave - JS is single threaded, and ajaxRequest
+                // has computed its URL and called send() before it yields.
+                function withRelaySuppressed(fn) {
+                    const p = (_sfApi && _sfApi.getProxy) ? _sfApi.getProxy() : null;
+                    if (relay !== false || !p || !p.enabled) return fn();
+                    p.enabled = false;
+                    try {
+                        return fn();
+                    } finally {
+                        p.enabled = true;
+                    }
+                }
+
                 // Low-level ajax using sfApi.ajaxRequest
                 const rawAjax = ({ url, method = "GET", params, data }) =>
                     new Promise((resolve, reject) => {
                         const s = getSettings();
-                        (_sfApi || { ajaxRequest: () => { } }).ajaxRequest ? _sfApi.ajaxRequest({
-                            url,
+                        // Hand `params` to sfApi rather than folding them into the
+                        // URL ourselves: under the relay sfApi encodes the
+                        // separators so the parameters ride inside `endpoint`.
+                        assertNoInlineQuery(url);
+                        const sendUrl = url;
+                        (_sfApi || { ajaxRequest: () => { } }).ajaxRequest ? withRelaySuppressed(() => _sfApi.ajaxRequest({
+                            url: sendUrl,
                             type: method,
-                            params,
+                            params: encodeParamsForTransport(params),
                             data,
                             preventErrorReporter: true,
                             access_token: s.token,
-                            onSuccess: (response) => resolve({ ok: true, status: 200, payload: response, method, url, source: "rest" }),
-                            onError: (error) => {
+                            // Let sfApi recognize an expired session, refresh the
+                            // token, and retry before surfacing the error to us.
+                            //
+                            // Suppressed under { relay: false }: sfApi's internal
+                            // retry re-enters ajaxRequest asynchronously, after the
+                            // latch has been restored, so the retry would quietly
+                            // travel through the relay this instance asked to avoid.
+                            // Our own ajax() wrapper recovers from an expired
+                            // session instead, re-suppressing on each attempt.
+                            retryCheck: relay === false ? undefined : (_sfApi && _sfApi.retryCheck),
+                            onSuccess: (response) => resolve({ ok: true, status: 200, payload: response, method, url: sendUrl, source: "rest" }),
+                            // sfApi calls onError(payload, httpStatus, preventDeauth).
+                            // `payload` is a JSON string for ordinary Salesforce
+                            // errors, but an already-parsed array when retryCheck
+                            // matched - so normalize before parsing.
+                            onError: (error, httpStatus) => {
                                 try {
-                                    const arr = JSON.parse(error);
-                                    const parsed = parseSfErrorPayload(arr);
-                                    const e = { httpStatus: arr[0]?.statusCode || 400, message: parsed.message, code: parsed.code, payload: arr, method, url, source: "rest" };
+                                    const payload = typeof error === "string" ? JSON.parse(error) : error;
+                                    const parsed = parseSfErrorPayload(payload);
+                                    const e = {
+                                        httpStatus: Number(httpStatus) || payload?.[0]?.statusCode || 400,
+                                        message: parsed.message,
+                                        code: parsed.code,
+                                        payload,
+                                        method,
+                                        url: sendUrl,
+                                        source: "rest",
+                                    };
                                     return shouldThrow ? reject(makeSfError(e)) : resolve(asResult(e));
                                 } catch (e2) {
-                                    const e = { httpStatus: 0, message: String(error), payload: error, method, url, source: "rest" };
+                                    const e = { httpStatus: Number(httpStatus) || 0, message: String(error), payload: error, method, url: sendUrl, source: "rest" };
                                     return shouldThrow ? reject(makeSfError(e)) : resolve(asResult(e));
                                 }
                             },
-                        }) : reject(new Error("sfApi.ajaxRequest not found"));
+                        })) : reject(new Error("sfApi.ajaxRequest not found"));
                     });
+
+                // Does a result/error represent an expired Salesforce session?
+                const isSessionError = (e) =>
+                    e && (e.code === "INVALID_SESSION_ID" || /unauthorized|401/i.test(e.message || ""));
 
                 // Wrap rawAjax with ensureAuth + 401 retry
                 ajax = async (method, url, { params, body } = {}) => {
@@ -488,10 +714,17 @@
                     await ensureAuth();
 
                     try {
-                        return await rawAjax({ url, method, params, data: body });
+                        const res = await rawAjax({ url, method, params, data: body });
+                        // In errorMode "return" rawAjax resolves rather than throws,
+                        // so the retry below has to inspect the resolved result too.
+                        if (!res.ok && isSessionError(res.error)) {
+                            await ensureAuth({ force: true });
+                            return await rawAjax({ url, method, params, data: body });
+                        }
+                        return res;
                     } catch (e) {
                         // Retry once on 401/INVALID_SESSION_ID
-                        if ((e.code === "INVALID_SESSION_ID" || /unauthorized|401/i.test(e.message || ""))) {
+                        if (isSessionError(e)) {
                             await ensureAuth({ force: true });
                             return await rawAjax({ url, method, params, data: body });
                         }
@@ -508,6 +741,13 @@
             // =========================
             // Core ops (Response Object API)
             // =========================
+
+            // The query endpoint. Canvas takes context.links.queryUrl as-is; REST
+            // wants the trailing slash. The SOQL is always supplied separately as a
+            // `q` parameter, never inlined here.
+            function queryBaseUrl() {
+                return useCanvas ? endpoints.queryUrl : `${endpoints.queryUrl}/`;
+            }
 
             // Helper to standardize response object shape
             function buildResponse(res, { data, meta } = {}) {
@@ -538,9 +778,10 @@
                 }
                 if (!soql) throw new Error("query({ soql }) requires a SOQL string");
 
-                const res = useCanvas
-                    ? await ajax("GET", `${endpoints.queryUrl}?q=${encodeURIComponent(soql)}`)
-                    : await ajax("GET", `${endpoints.queryUrl}/`, { params: { q: soql } });
+                // The SOQL travels as a query parameter in both transports. Never
+                // inline it into the URL string: under the DayBack relay sfApi
+                // discards a caller-supplied query string.
+                const res = await ajax("GET", queryBaseUrl(), { params: { q: soql } });
 
                 if (!res.ok) return buildResponse(res, { data: [] });
                 let all = (res.payload?.records) || [];
@@ -548,8 +789,7 @@
                 if ((opts.pageAll ?? true) && nextUrl) {
                     // paginate until done (REST only; Canvas nextRecordsUrl may differ)
                     while (nextUrl) {
-                        const url = useCanvas ? `${endpoints.base}${nextUrl}` : `${endpoints.base}${nextUrl}`;
-                        const more = await ajax("GET", url);
+                        const more = await ajax("GET", `${endpoints.base}${nextUrl}`);
                         if (!more.ok) {
                             // stop paging but keep original data
                             break;
@@ -569,6 +809,39 @@
                         soql,
                     }
                 });
+            }
+
+            /**
+             * getObjects()
+             * ------------
+             * Lists every sObject available in the org, along with its basic
+             * attributes (name, label, createable, queryable, keyPrefix, ...).
+             * Use describe() when you need a single object's fields.
+             *
+             * @returns {Promise<object>} response.data = the global describe body,
+             *   whose `sobjects` property is the array of object descriptions.
+             */
+            async function getObjects() {
+                const path = `${endpoints.dataBase}/sobjects/`;
+                const res = await ajax("GET", path);
+                return buildResponse(res, { data: res.payload });
+            }
+
+            /**
+             * describe({ objectName })
+             * -----------------------
+             * Full metadata for one sObject: fields with their types, picklist
+             * values, relationships, record types, and permissions.
+             *
+             * @param {object} params
+             * @param {string} params.objectName - API name, e.g. "Contact"
+             * @returns {Promise<object>} response.data = the sObject describe body
+             */
+            async function describe({ objectName } = {}) {
+                if (!objectName) throw new Error("describe({ objectName }) requires objectName");
+                const path = `${endpoints.dataBase}/sobjects/${objectName}/describe/`;
+                const res = await ajax("GET", path);
+                return buildResponse(res, { data: res.payload });
             }
 
             async function retrieve({ objectName, id, fields } = {}) {
@@ -595,7 +868,7 @@
             async function upsert({ objectName, externalIdField, externalIdValue, record } = {}) {
                 if (!objectName || !externalIdField || externalIdValue == null || !record) throw new Error("upsert({ objectName, externalIdField, externalIdValue, record }) requires all parameters");
                 const path = `${endpoints.dataBase}/sobjects/${objectName}/${externalIdField}/${encodeURIComponent(externalIdValue)}`;
-                const res = await ajax("PATCH", path, { body: sobjectsrecord });
+                const res = await ajax("PATCH", path, { body: record });
                 return buildResponse(res, { data: res.payload });
             }
 
@@ -651,6 +924,43 @@
                 if (!path) throw new Error("apex({ path }) requires path");
                 const clean = path.startsWith("/") ? path : `/${path}`;
                 const url = `${endpoints.apexBase}${clean}`;
+                const res = await ajax(method, url, { params, body });
+                return buildResponse(res, { data: res.payload });
+            }
+
+            /**
+             * request({ base, path, method, params, body })
+             * --------------------------------------------
+             * Escape hatch for endpoints without a dedicated method. Always prefer
+             * a dedicated method when one exists.
+             *
+             * Pass query parameters via `params` - do NOT append a query string to
+             * `path`, or it will be lost when the DayBack relay is active.
+             *
+             * @param {object} config
+             * @param {string} [config.base="data"] - "data" (/services/data/vXX),
+             *   "query" (the query endpoint), "apex" (/services/apexrest), or "raw"
+             *   (path is a full URL, or is appended to the instance origin).
+             * @param {string} [config.path=""] - path appended to the chosen base
+             * @param {string} [config.method="GET"] - HTTP method
+             * @param {object} [config.params] - query parameters
+             * @param {object} [config.body] - request body for POST/PATCH/PUT
+             * @returns {Promise<object>} standard response object; data = raw payload
+             */
+            async function request({ base = "data", path = "", method = "GET", params, body } = {}) {
+                const bases = {
+                    data: endpoints.dataBase,
+                    query: endpoints.queryUrl,
+                    apex: endpoints.apexBase,
+                    raw: endpoints.base,
+                };
+                if (!Object.prototype.hasOwnProperty.call(bases, base)) {
+                    throw new Error(`request({ base }) must be one of ${Object.keys(bases).join(", ")}`);
+                }
+                // "raw" accepts a fully-qualified URL as the path
+                const url = (base === "raw" && /^https?:\/\//.test(path))
+                    ? path
+                    : `${bases[base]}${path && !path.startsWith("/") ? "/" : ""}${path}`;
                 const res = await ajax(method, url, { params, body });
                 return buildResponse(res, { data: res.payload });
             }
@@ -791,18 +1101,16 @@
             function bulkQueryBase({ soql, onRow, delayMs = 0, maxPages = Infinity } = {}) {
                 if (!soql) throw new Error("bulkQuery({ soql }) requires a SOQL string");
 
-                const initialUrl = useCanvas
-                    ? `${endpoints.queryUrl}?q=${encodeURIComponent(soql)}`
-                    : `${endpoints.queryUrl}/?q=${encodeURIComponent(soql)}`;
-
                 async function* rowGenerator() {
-                    let nextUrl = initialUrl;
+                    // First page sends the SOQL as a `q` parameter; every following
+                    // page is a nextRecordsUrl, which carries no query string.
+                    let nextUrl = queryBaseUrl();
+                    let nextParams = { q: soql };
                     let pageCount = 0;
 
                     while (nextUrl && pageCount < maxPages) {
-                        const res = useCanvas
-                            ? await ajax("GET", nextUrl)
-                            : await ajax("GET", nextUrl);
+                        const res = await ajax("GET", nextUrl, { params: nextParams });
+                        nextParams = undefined;
 
                         if (!res.ok) {
                             const p = parseSfErrorPayload(res.payload);
@@ -855,15 +1163,15 @@
             bulkQueryBase.pages = async function* ({ soql, delayMs = 0, maxPages = Infinity } = {}) {
                 if (!soql) throw new Error("bulkQuery.pages({ soql }) requires a SOQL string");
 
-                const initialUrl = useCanvas
-                    ? `${endpoints.queryUrl}?q=${encodeURIComponent(soql)}`
-                    : `${endpoints.queryUrl}/?q=${encodeURIComponent(soql)}`;
-
-                let nextUrl = initialUrl;
+                // See rowGenerator: SOQL as a parameter on page one, bare
+                // nextRecordsUrl thereafter.
+                let nextUrl = queryBaseUrl();
+                let nextParams = { q: soql };
                 let pageCount = 0;
 
                 while (nextUrl && pageCount < maxPages) {
-                    const res = await ajax("GET", nextUrl);
+                    const res = await ajax("GET", nextUrl, { params: nextParams });
+                    nextParams = undefined;
 
                     if (!res.ok) {
                         const p = parseSfErrorPayload(res.payload);
@@ -896,6 +1204,7 @@
             // Public surface (new object-based API)
             return {
                 endpoints,
+                getClientVersion,
                 escapeSOQL,
                 quote: escapeSOQL,
                 formatDateTime,
@@ -906,17 +1215,26 @@
                 update,
                 upsert,
                 delete: del,
+                // Metadata / introspection
+                objects: getObjects,
+                getSObjects: getObjects,
+                describe,
                 // Advanced
                 batch,
                 createTree,
                 apex,
+                request,
                 showError,
                 compoundBatch,
                 bulkQuery
             };
         }
 
-        // Global export
+        // Global export. `version` and `getClientVersion` hang off the
+        // constructor so a caller can check what it is dealing with without
+        // building a client first.
+        SalesforceClient.version = CLIENT_VERSION;
+        SalesforceClient.getClientVersion = getClientVersion;
         globalThis.SalesforceClient = SalesforceClient;
         globalThis.escapeSOQL = escapeSOQL;
     }
